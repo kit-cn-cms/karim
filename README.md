@@ -27,6 +27,7 @@ All of the above is automatically set for shell scripts submitted to the NAF bat
 
 
 ## How does it work?
+#### `karim.py`
 All scripts that need to be executed are located in the `scripts` directory. Single ntuple files can be processes with `scripts/karim.py`. This requires some inputs:
 ```
 python karim.py -m MODEL -c CONFIG.py -o OUTPATH INFILES
@@ -38,7 +39,7 @@ python karim.py -m MODEL -c CONFIG.py -o OUTPATH INFILES
 
 
 
-
+#### `generateSubmitScripts.py`
 For convenience `scripts/generateSubmitScripts.py` to create multiple shell scripts that execute `scripts/karim.py`. These scripts can be submitted to the NAF batch system. This requires some inputs:
 ```
 python generateSubmitScripts.py -m MODEL -c CONFIG.py -o OUTPATH -s SHELLPATH [-r NAME -n NEVENTS] SAMPLES
@@ -59,7 +60,7 @@ Optionally, the following arugments can be used:
 - `-n NEVENTS`: number of events per job. If none is given the default value of `50000` is used
 
 
-
+#### `NAFSubmit.py`
 Information on how to submit these shell scripts to the batch system is printed at the end of the script. In summary, use
 ```
 python karim/submit/NAFSubmit.py -f FOLDER -n NAME -o LOGPATH -M MEMORY -r RUNTIME
@@ -67,7 +68,7 @@ python karim/submit/NAFSubmit.py -f FOLDER -n NAME -o LOGPATH -M MEMORY -r RUNTI
 to submit all scripts found in `FOLDER`.
 
 
-
+#### `checkFiles.py`
 After all jobs have finished running on the batch system, make sure they have terminated successfully. For this purpose `scripts/checkFiles.py` can be used:
 ```
 python checkFiles.py -o OUTPATH -s SHELLPATH [-r NAME] SAMPLES
