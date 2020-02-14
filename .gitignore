@@ -1,0 +1,6 @@
+workdir/
+*.root
+*.txt
+*.pdf
+*.h5
+*.pyc
