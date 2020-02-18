@@ -33,7 +33,7 @@ class TreeIterator:
     def __iter__(self):
         self.idx = 0
         self.max = self.tree.GetEntries()
-        self.pstep = 100
+        self.pstep = 500
         # ToDo add branch address initialization?
         self.timer = ROOT.TStopwatch()
         self.timer.Start()
@@ -44,6 +44,8 @@ class TreeIterator:
 
             print("at event {}/{}".format(self.idx, self.max))
             print("  time for {} events:  {:.1f} s".format(self.pstep, self.timer.RealTime()))
+            print("  estimated time for 50k events: {:.0f} min".format(
+                self.timer.RealTime()/self.pstep*50000/60.))
             self.timer.Start()
 
         if self.idx < self.max:

@@ -44,8 +44,10 @@ def evaluate_model(filename, modelname, configpath, outpath):
                 outputVariables = entry.columns.values
                 # append output value to columns
                 outputVariables = np.append(outputVariables, config.get_reco_naming()+"_DNNOutput")
-                outputVariables = np.append(outputVariables, config.get_reco_naming()+"_logDNNOutput")
+                outputVariables = np.append(outputVariables, config.get_reco_naming()+"_squaredDNNOutput")
                 outputVariables = np.append(outputVariables, config.get_reco_naming()+"_transformedDNNOutput")
+                for v in outputVariables:
+                    print(v)
                 
                 # setup empty array for event data storage
                 outputData = np.zeros(shape = (ntuple.GetEntries(), len(outputVariables)))
@@ -68,9 +70,14 @@ def evaluate_model(filename, modelname, configpath, outpath):
                 outputData[i,:-3] = entry.iloc[bestIndex].values
                 # fill output values of DNN
                 outputData[i, -3] = outputValue
-                outputData[i, -2] = np.log(outputValue)
+                outputData[i, -2] = outputValue**2
                 outputData[i, -1] = np.log(outputValue/(1.-outputValue))
                 
+            if i<=10:
+                print("=== testevent ===")
+                for name, value in zip(outputVariables, outputData[i]):
+                    print(name, value)
+                print("================="+"\n\n")
 
     # save information as h5 file
     df = pd.DataFrame(outputData, columns = outputVariables)
