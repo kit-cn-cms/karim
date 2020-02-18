@@ -1,7 +1,7 @@
 import numpy as np
 import common
 
-name = "dnnRecoZ"
+name = "dnnRecoHiggs"
 def get_reco_naming():
     '''
     define name for this reconstruction
@@ -62,17 +62,17 @@ def calculate_variables(df):
                                 (df[name+"_dPhi"].values/(2.*np.pi))**2 + \
                                 (df[name+"_dPt"].values/1000.))
 
-    # reconstruct Z boson
+    # reconstruct Higgs boson
     vectors = common.Vectors(df, name, ["B1", "B2"])
-    vectors.add(["B1", "B2"], out = "Z")
+    vectors.add(["B1", "B2"], out = "H")
 
-    df[name+"_Z_Pt"]  = vectors.get("Z", "Pt")
-    df[name+"_Z_Eta"] = vectors.get("Z", "Eta")
-    df[name+"_Z_M"]   = vectors.get("Z", "M")
-    df[name+"_Z_E"]   = vectors.get("Z", "E")
+    df[name+"_H_Pt"]  = vectors.get("H", "Pt")
+    df[name+"_H_Eta"] = vectors.get("H", "Eta")
+    df[name+"_H_M"]   = vectors.get("H", "M")
+    df[name+"_H_E"]   = vectors.get("H", "E")
 
     # log values
-    for obj in ["B1", "B2", "Z"]:
+    for obj in ["B1", "B2", "H"]:
         df[name+"_"+obj+"_logPt"] = np.log(df[name+"_"+obj+"_Pt"].values)
         df[name+"_"+obj+"_logM"] = np.log(df[name+"_"+obj+"_M"].values)
         df[name+"_"+obj+"_logE"] = np.log(df[name+"_"+obj+"_E"].values)
@@ -81,15 +81,15 @@ def calculate_variables(df):
     df[name+"_openingAngle"] = vectors.getOpeningAngle("B1", "B2")
 
     # boost
-    vectors.boost(["B1", "B2", "Z"], frame = "Z")
+    vectors.boost(["B1", "B2", "H"], frame = "H")
 
     # add boosted variables
-    for obj in ["B1", "B2", "Z"]:
-        df[name+"_"+obj+"_Pt_boosted"] = vectors.get(obj, "Pt", boostFrame = "Z")
-        df[name+"_"+obj+"_M_boosted"] = vectors.get(obj, "M", boostFrame = "Z")
-        df[name+"_"+obj+"_E_boosted"] = vectors.get(obj, "E", boostFrame = "Z")
-        df[name+"_"+obj+"_Eta_boosted"] = vectors.get(obj, "Eta", boostFrame = "Z")
-        df[name+"_"+obj+"_Phi_boosted"] = vectors.get(obj, "Phi", boostFrame = "Z")
+    for obj in ["B1", "B2", "H"]:
+        df[name+"_"+obj+"_Pt_boosted"] = vectors.get(obj, "Pt", boostFrame = "H")
+        df[name+"_"+obj+"_M_boosted"] = vectors.get(obj, "M", boostFrame = "H")
+        df[name+"_"+obj+"_E_boosted"] = vectors.get(obj, "E", boostFrame = "H")
+        df[name+"_"+obj+"_Eta_boosted"] = vectors.get(obj, "Eta", boostFrame = "H")
+        df[name+"_"+obj+"_Phi_boosted"] = vectors.get(obj, "Phi", boostFrame = "H")
 
         df[name+"_"+obj+"_logPt_boosted"] = np.log(df[name+"_"+obj+"_Pt_boosted"])
 
