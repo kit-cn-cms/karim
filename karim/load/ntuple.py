@@ -33,7 +33,7 @@ class TreeIterator:
     def __iter__(self):
         self.idx = 0
         self.max = self.tree.GetEntries()
-        self.pstep = 500
+        self.pstep = 100
         # ToDo add branch address initialization?
         self.timer = ROOT.TStopwatch()
         self.timer.Start()

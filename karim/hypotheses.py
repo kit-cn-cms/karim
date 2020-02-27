@@ -19,6 +19,8 @@ class Hypotheses:
         self.template = "{name}_OBJECT_FEATURE".format(name = self.naming)
         print("naming template for variables:" )
         print(self.template)
+        self.base_selection = config.base_selection
+        print("base selection {}".format(self.base_selection))
 
         # load function to calculate variables for all hypotheses
         self.calculate_variables = config.calculate_variables
@@ -39,7 +41,7 @@ class Hypotheses:
         self.baseVariables = len(self.variables)
         # add additional variables to variable list
         self.additional_variables = config.get_additional_variables()
-        self.additional_variables+= ["Evt_ID", "Evt_Lumi", "Evt_Run"]
+        #self.additional_variables+= ["Evt_ID", "Evt_Lumi", "Evt_Run"]
         self.additional_variables = list(set(self.additional_variables))
         for av in self.additional_variables:
             self.variables.append(av)
@@ -68,17 +70,14 @@ class Hypotheses:
         output: DataFrame, error
         '''
         error = False
-        if nJets < self.hypothesisJets:
-            # fill dummy entry if number of jets is not high enough
+        if not self.base_selection(event) or nJets < self.hypothesisJets:
             error = True
             data = np.zeros(shape = (1, len(self.variables)))
-            data[:,:self.baseVariables] = -99.
-            idy = self.baseVariables
+            data[:,:] = -99.
         else:
             # fill data matrix with permutations
             nJets = min(nJets, 10)
             data = np.zeros(shape = (len(self.permutations[nJets]), len(self.variables)))
-
             idy = 0
             for feat in self.features:
                 variable = getattr(event, "Jet_{}".format(feat))
@@ -91,9 +90,14 @@ class Hypotheses:
                     data[idx, idy] = p[i]
                 idy += 1
 
-        for i, av in enumerate(self.additional_variables):
-            data[:,idy] = getattr(event, self.additional_variables[i])
-            idy += 1
+            for i, av in enumerate(self.additional_variables):
+                if "[" in av and "]" in av:
+                    av, avidx = av.split("[")
+                    avidx = int(avidx.replace("]",""))
+                    data[:,idy] = getattr(event, av)[avidx]
+                else:
+                    data[:,idy] = getattr(event, av)
+                idy += 1
 
         df = pd.DataFrame(data, columns = self.variables)
         return self.calculate_variables(df), error
