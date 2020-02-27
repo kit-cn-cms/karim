@@ -8,7 +8,7 @@ scriptTemplate = """
 export VO_CMS_SW_DIR=/cvmfs/cms.cern.ch
 source $VO_CMS_SW_DIR/cmsset_default.sh
 export SCRAM_ARCH=slc7_amd64_gcc700
-cd /nfs/dust/cms/user/vdlinden/legacyTTH/CMSSW/CMSSW_10_6_8_patch1/src
+cd {cmssw}/src
 eval `scram runtime -sh`
 cd -
 
@@ -39,6 +39,7 @@ def writeScripts(inputSample, scriptDir, options, basepath):
 
         if entries>=int(options.nevents) or rf==rootfiles[-1]:
             script = scriptTemplate.format(
+                cmssw    = os.environ['CMSSW_BASE'],
                 basepath = basepath,
                 dnnModel = options.model,
                 config   = options.config_path,

@@ -57,7 +57,7 @@ for sample in args:
 
 cmd = " ".join([
     "for f in resubmit*.txt;",
-    "do python {basedir}/karim/submit/NAFSubmit.py",
+    "do python {basedir}/karim/submit/condorSubmit.py",
     "--file $f -o ../resubmit -M 4000 -r 120 -n $f;",
     "done"]).format(basedir = base)
 
@@ -67,7 +67,7 @@ text = ["",
     "done checking shell scripts.",
     "",
     "shell scripts to be resubmitted in total: {}".format(totalBroken),
-    "these can be resubmitted with NAFSubmit.py",
+    "these can be resubmitted with condorSubmit.py",
     "",
     "e.g. move to output directory {}".format(opts.shell_path),
     "\033[1;31mcd {}\033[0m".format(opts.shell_path),
