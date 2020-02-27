@@ -20,27 +20,46 @@ usage = ["",
     "all .root files matching the '-r' requirement will be processed" 
     ]
 
-    
+ 
 parser = optparse.OptionParser(usage = "\n".join(usage))
-parser.add_option("-m", "--model", dest="model",default=None,
+parser.add_option("-M", "--mode", dest = "mode", choices = ["Reconstruction", "R", "Matching", "M"],
+    help = "switch between reconstruction evaluation mode and gen level particle matching mode")
+
+recoOptions = optparse.OptionGroup(parser, "Reconstruction options")
+recoOptions.add_option("-m", "--model", dest="model",default=None,
     help = "path to trained dnn model")
-parser.add_option("-c", "--config", dest="config_path",default=None,
-    help = "module for generating variables in modules/variables directory")
-parser.add_option("-r", "--requirement", dest="name_requirement",default="nominal",
-    help = "naming requirement of root files to be submitted. default is 'nominal'")
-parser.add_option("-o", "--output", dest="output",default=None,
+parser.add_option_group(recoOptions)
+
+matchOptions = optparse.OptionGroup(parser, "Matching options")
+matchOptions.add_option("-t", "--threshold", dest = "threshold", default=0.2,
+    help = "dR threshold for when a jet is considered matched to a gen object")
+parser.add_option_group(matchOptions)
+
+submitOptions = optparse.OptionGroup(parser, "Submit options")
+submitOptions.add_option("-c", "--config", dest = "config_path", default=None,
+    help = "module for defining objects and variables in config directory")
+submitOptions.add_option("-o", "--output", dest="output",default=None,
     help = "output path for new ntuples. ")
-parser.add_option("-s", "--shellpath", dest="shell_path",default=None,
+submitOptions.add_option("-r", "--requirement", dest="name_requirement",default="nominal",
+    help = "naming requirement of root files to be submitted. default is 'nominal'")
+submitOptions.add_option("-s", "--shellpath", dest="shell_path",default=None,
     help = "output path for shell scripts (relative to workdir or absolute)")
-parser.add_option("-n", "--nevents", dest="nevents",default=50000,
+submitOptions.add_option("-n", "--nevents", dest="nevents",default=50000,
     help = "number of events per job, default = 50000")
+parser.add_option_group(submitOptions)
 (opts, args) = parser.parse_args()
 
-# check arguments
-if opts.model is None:
-    exit("need to specify a dnn model")
-opts.model = os.path.abspath(opts.model)
 
+if opts.mode == "R":
+    opts.mode = "Reconstruction"
+if opts.mode == "M":
+    opts.mode = "Matching"
+# check arguments
+if opts.mode == "Reconstruction":
+    if opts.model is None:
+        exit("need to specify a dnn model")
+    opts.model = os.path.abspath(opts.model)
+    
 if opts.config_path is None:
     exit("need to specify a config module")
 opts.config_path = os.path.abspath(opts.config_path)
@@ -49,8 +68,6 @@ if opts.output is None:
     exit("need to specify an output directory")
 opts.output = os.path.abspath(opts.output)
 
-if opts.shell_path is None:
-    exit("need to specify path for shell scripts")
 if len(args) == 0:
     exit("need to specify at least one input file")
 

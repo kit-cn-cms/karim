@@ -1,3 +1,4 @@
+import ROOT
 import importlib
 import os
 import sys
@@ -110,3 +111,89 @@ def check_entry(entry, variables):
 
 
 
+
+
+def evaluate_reco(files, opts):
+    c = ROOT.TChain("MVATree")
+    for f in files:
+        c.Add(f)
+
+    # init groups
+    groups = {}
+    plot_vars = []
+    efficiencies = {}
+    for g in opts.groups:
+        name, variables = g.split("=")
+        groups[name] = variables.split("+")
+        plot_vars += groups[name]
+        efficiencies[name] = 0.
+
+    plot_vars = list(set(plot_vars))
+    print(plot_vars)
+
+    # init binedges
+    low, hi = opts.binrange.split(",")
+
+    # init desired th1 histograms
+    histograms = {}
+    for i, v in enumerate(plot_vars):
+        histograms[v] = ROOT.TH1F(v, v, int(opts.nbins), float(low), float(hi))
+        histograms[v].SetLineColor(i+1)
+
+    
+    # event loop fill histograms
+    nEvtsAfterSelection = 0
+    for i in range(c.GetEntries()):
+        c.GetEntry(i)
+        if not eval(opts.selection):
+            continue
+        nEvtsAfterSelection += 1
+        for v in histograms:
+            histograms[v].Fill(getattr(c, v))
+        for g in efficiencies:
+            eff = True
+            for v in groups[g]:
+                if opts.mode=="leq":
+                    if getattr(c, v) > float(opts.cutoff):
+                        eff = False
+                if opts.mode=="geq":
+                    if getattr(c, v) < float(opts.cutoff):
+                        eff = False
+            if eff:
+                efficiencies[g]+=1
+
+    # set specs for histograms
+    for v in histograms:
+        histograms[v].SetLineWidth(2)
+        
+    # loop over groups and create some plot
+    for g in groups:
+        canvas = ROOT.TCanvas(g, g, 1024, 1024)
+
+        efficiencies[g]/=nEvtsAfterSelection
+        title = "efficiency for {group}{mode}{cutoff}: {eff:.2f}%".format(
+            group = g, 
+            mode = (">=" if opts.mode=="geq" else "<="), 
+            cutoff = opts.cutoff,
+            eff = efficiencies[g]*100.
+            )
+
+        for i, v in enumerate(groups[g]):
+            if i == 0:
+                histograms[v].Draw("histo")
+                histograms[v].SetTitle(title)
+            else:
+                histograms[v].Draw("histo same")
+                histograms[v].SetTitle(title)
+
+        legend = ROOT.TLegend(0.6,0.7,0.88,0.88)
+        for v in groups[g]:
+            legend.AddEntry(histograms[v], v, "L")
+        legend.Draw("SAME")
+        canvas.SetTitle(title)
+        print(title)
+        canvas.SaveAs("/".join([opts.output, g+".pdf"]))
+        canvas.SaveAs("/".join([opts.output, g+".png"]))
+        canvas.Clear()
+        legend.Clear()
+        

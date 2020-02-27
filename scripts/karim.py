@@ -22,16 +22,32 @@ usage = ["",
 
     
 parser = optparse.OptionParser(usage = "\n".join(usage))
-parser.add_option("-m", "--model", dest="model",default=None,
+parser.add_option("-M", "--mode", dest = "mode", choices = ["Reconstruction", "R", "Matching", "M"],
+    help = "switch between reconstruction evaluation mode and gen level particle matching mode")
+
+recoOptions = optparse.OptionGroup(parser, "Reconstruction options")
+recoOptions.add_option("-m", "--model", dest="model",default=None,
     help = "path to trained dnn model")
-parser.add_option("-c", "--config", dest="config_path",default=None,
-    help = "module for generating variables in modules/variables directory")
+parser.add_option_group(recoOptions)
+
+matchOptions = optparse.OptionGroup(parser, "Matching options")
+matchOptions.add_option("-t", "--threshold", dest = "threshold", default=0.2,
+    help = "dR threshold for when a jet is considered matched to a gen object")
+parser.add_option_group(matchOptions)
+
+parser.add_option("-c", "--config", dest = "config_path", default=None,
+    help = "module for defining objects and variables in config directory")
 parser.add_option("-o", "--output", dest="output",default=None,
     help = "output path for new ntuples. ")
 (opts, args) = parser.parse_args()
 
+
+if opts.mode == "R":
+    opts.mode = "Reconstruction"
+if opts.mode == "M":
+    opts.mode = "Matching"
 # check arguments
-if opts.model is None:
+if opts.model is None and opts.mode == "Reconstruction":
     exit("need to specify a dnn model")
 if opts.config_path is None:
     exit("need to specify a config module")
@@ -52,10 +68,18 @@ for ntuple in args:
     if not os.path.exists(outfilePath):
         os.makedirs(outfilePath)
 
-    karim.evaluate_model(
-        filename   = ntuple,
-        modelname  = opts.model,
-        configpath = os.path.abspath(opts.config_path),
-        outpath    = "/".join([outfilePath, outfileName])
-        )
-
+    if opts.mode == "Reconstruction":
+        karim.evaluate_model(
+            filename   = ntuple,
+            modelname  = opts.model,
+            configpath = os.path.abspath(opts.config_path),
+            outpath    = "/".join([outfilePath, outfileName])
+            )
+    elif opts.mode == "Matching":
+        karim.match_jets(
+            filename   = ntuple,
+            configpath = os.path.abspath(opts.config_path),
+            threshold  = opts.threshold,
+            outpath    = "/".join([outfilePath, outfileName])
+            )
+        

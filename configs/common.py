@@ -29,6 +29,12 @@ class Vectors:
 
         if feat == "Pt":
             return [x.Pt() for x in self.vectors[obj]]
+        if feat == "Px":
+            return [x.Px() for x in self.vectors[obj]]
+        if feat == "Py":
+            return [x.Py() for x in self.vectors[obj]]
+        if feat == "Pz":
+            return [x.Pz() for x in self.vectors[obj]]
         if feat == "Phi":
             return [x.Phi() for x in self.vectors[obj]]
         if feat == "Eta":
@@ -50,6 +56,44 @@ class Vectors:
         vectors1 = self.vectors[obj1]
         vectors2 = self.vectors[obj2]
         return [vectors1[i].Angle(vectors2[i].Vect()) for i in range(len(vectors1))]
+
+    def initIndexedVector(self, df, obj, idx):
+        self.vectors[obj+"_"+str(idx)] = np.array([ROOT.TLorentzVector() for _ in range(df.shape[0])])
+        for i, entry in df.iterrows():
+            self.vectors[obj+"_"+str(idx)][i].SetPtEtaPhiE(
+                entry[obj+"_Pt[{}]".format(idx)],
+                entry[obj+"_Eta[{}]".format(idx)],
+                entry[obj+"_Phi[{}]".format(idx)],
+                entry[obj+"_E[{}]".format(idx)]
+                )
+
+    def addNeutrino(self, df, metPt, metPhi, lepName):
+        self.vectors["nu"] = np.array([ROOT.TLorentzVector() for _ in range(df.shape[0])])
+        nu_px = df[metPt].values*np.cos(df[metPhi].values)
+        nu_py = df[metPt].values*np.sin(df[metPhi].values)
+        
+        mu = (80.4**2/2.) + self.get(lepName, "Px")*nu_px + self.get(lepName, "Py")*nu_py
+        a  = (mu * self.get(lepName, "Pz"))/(np.power(self.get(lepName, "Pt"),2))
+        a2 = a**2
+        b  = (np.power(self.get(lepName, "E"),2)*np.power(df[metPt].values,2) - mu**2)/(np.power(self.get(lepName, "Pt"),2)) 
+
+        for i, entry in df.iterrows():
+            if a2[i] < b[i]:
+                pz = a[i]
+            else:
+                pz1 = a[i]+(a2[i]-b[i])**0.5
+                pz2 = a[i]-(a2[i]-b[i])**0.5
+                if abs(pz1) <= abs(pz2):
+                    pz = pz1
+                else:
+                    pz = pz2
+            self.vectors["nu"][i].SetPxPyPzE(
+                nu_px[i], nu_py[i], pz, 0.)
+            self.vectors["nu"][i].SetE(
+                self.vectors["nu"][i].P())
+
+
+
 
 def get_dPhi(phi1, phi2):
     dphi = abs(phi1-phi2)
