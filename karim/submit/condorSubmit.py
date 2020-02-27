@@ -9,6 +9,38 @@ import time
 import optparse
 import sys
 
+submitTemplateNAF = """
+universe = vanilla
+executable = /bin/zsh
+arguments = {arg}
+error  = {dir}/{name}submitScript.$(Cluster)_$(ProcId).err
+log    = {dir}/{name}submitScript.$(Cluster)_$(ProcId).log
+output = {dir}/{name}submitScript.$(Cluster)_$(ProcId).out
+run_as_owner = true
+Requirements = ( OpSysAndVer == "CentOS7" )
+RequestMemory = {memory}
+RequestDisk = {disk}
++RequestRuntime = {runtime}
+JobBatchName = {batchname}
+"""
+
+submitTemplateETP = """
+universe = docker
+executable = /bin/zsh
+arguments = {arg}
+error  = {dir}/{name}submitScript.$(Cluster)_$(ProcId).err
+log    = {dir}/{name}submitScript.$(Cluster)_$(ProcId).log
+output = {dir}/{name}submitScript.$(Cluster)_$(ProcId).out
+run_as_owner = true
+Requirements = ( OpSysAndVer == "CentOS7" )
+RequestMemory = {memory}
+RequestDisk = {disk}
++RequestWalltime = {runtime}
+JobBatchName = {batchname}
+accounting_group=cms.higgs
+requirements = TARGET.ProvidesIO && TARGET.ProvidesEKPResources
+docker_image = mschnepf/slc7-condocker
+"""
 
 def submitToBatch(workdir, list_of_shells, memory_ = "1000", disk_ = "1000000", runtime_ = "43200", use_proxy = False, proxy_dir_ = "", name_ = ""):
     ''' submit the list of shell script to the NAF batch system '''
@@ -24,8 +56,9 @@ def submitToBatch(workdir, list_of_shells, memory_ = "1000", disk_ = "1000000", 
     return [jobID]
 
 def writeArrayScript(workdir, files, name_):
-    path = workdir+"/"+name_+"_arraySubmit.sh"
-
+    path = os.path.abspath(workdir+"/"+name_+"_arraySubmit.sh")
+    files = [os.path.abspath(f) for f in files]
+    
     code = """
 #!/bin/bash
 subtasklist=(
@@ -54,35 +87,31 @@ def writeSubmitScript(workdir, arrayScript, nScripts, memory_, disk_, runtime_, 
     if not os.path.exists(logdir):
         os.makedirs(logdir)
 
-    code = """
-universe = vanilla
-executable = /bin/zsh
-arguments = {arg}
-error  = {dir}/{name}submitScript.$(Cluster)_$(ProcId).err
-log    = {dir}/{name}submitScript.$(Cluster)_$(ProcId).log
-output = {dir}/{name}submitScript.$(Cluster)_$(ProcId).out
-run_as_owner = true
-Requirements = ( OpSysAndVer == "CentOS7")
-RequestMemory = {memory}
-RequestDisk = {disk}
-+RequestRuntime = {runtime}
-JobBatchName = {batchname}
-""".format(
-        arg = arrayScript,
-        dir = logdir,
+    code = ""
+    if "naf" in os.environ["HOSTNAME"]:
+        code += submitTemplateNAF
+    else:
+        code += submitTemplateETP
+
+    code = code.format(
+        arg = os.path.abspath(arrayScript),
+        dir = os.path.abspath(logdir),
         memory = memory_,
         disk = disk_,
         runtime = runtime_,
         name = name_,
         batchname = name_.replace(".txt",""))
+
     if use_proxy:
         code+="""
 environment = X509_USER_PROXY={proxy_dir}
 getenv = True
 use_x509userproxy = True
 x509userproxy = {proxy_dir}""".format(proxy_dir = proxy_dir_)
+
     code+="""
-Queue Environment From ("""
+Queue Environment From (
+"""
     for taskID in range(nScripts):
         code += "\"SGE_TASK_ID="+str(taskID+1)+"\"\n"
     code += ")"
