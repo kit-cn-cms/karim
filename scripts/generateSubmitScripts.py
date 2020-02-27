@@ -100,7 +100,7 @@ for sample in args:
 
 cmd = " ".join([
     "for f in *;",
-    "do python {basedir}/karim/submit/NAFSubmit.py",
+    "do python {basedir}/karim/submit/condorSubmit.py",
     "-f $f -o ../submit -M 4000 -r 120 -n $f;",
     "done"]).format(basedir = base)
 
@@ -109,7 +109,7 @@ text = ["",
     "="*50,
     "done creating shell scripts.",
     "",
-    "the scripts can be submitted with NAFSubmit.py",
+    "the scripts can be submitted with condorSubmit.py",
     "",
     "e.g. move to output directory {}".format(shell_path),
     "\033[1;31mcd {}\033[0m".format(shell_path),
