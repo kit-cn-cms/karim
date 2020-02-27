@@ -44,7 +44,8 @@ def writeScripts(inputSample, scriptDir, options, basepath):
 
         if entries>=int(options.nevents) or rf==rootfiles[-1]:
             if options.mode == "Reconstruction":
-                script = scriptTemplate+recoTemplate.format(
+                script = scriptTemplate+recoTemplate
+                script = script.format(
                     cmssw    = os.environ['CMSSW_BASE'],
                     basepath  = basepath,
                     mode      = options.mode,
@@ -53,7 +54,8 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     outPath   = options.output,
                     files     = " ".join(jobfiles))
             elif options.mode == "Matching":
-                script = scriptTemplate+matchTemplate.format(
+                script = scriptTemplate+matchTemplate
+                script = script.format(
                     cmssw    = os.environ['CMSSW_BASE'],
                     basepath  = basepath,
                     mode      = options.mode,
