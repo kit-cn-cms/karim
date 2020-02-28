@@ -25,7 +25,7 @@ class Vectors:
     
     def get(self, obj, feat, boostFrame = None):
         if not boostFrame is None:
-            obj+="_boosted_"+boostFrame
+            obj="B"+obj+"_boosted_"+boostFrame #need to be changed for reconstruct_Z(Higgs)Boson.py config
 
         if feat == "Pt":
             return [x.Pt() for x in self.vectors[obj]]

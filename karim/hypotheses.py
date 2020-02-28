@@ -39,7 +39,7 @@ class Hypotheses:
         self.baseVariables = len(self.variables)
         # add additional variables to variable list
         self.additional_variables = config.get_additional_variables()
-        self.additional_variables+= ["Evt_ID", "Evt_Lumi", "Evt_Run"]
+        self.additional_variables+= ["Evt_ID", "Evt_Lumi", "Evt_Run","Weight_XS","Weight_GEN_nom"]
         self.additional_variables = list(set(self.additional_variables))
         for av in self.additional_variables:
             self.variables.append(av)
