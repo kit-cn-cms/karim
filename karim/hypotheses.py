@@ -9,6 +9,14 @@ class Hypotheses:
         '''
         initialize config settings and variable lists
         '''
+        if config.get_Mode() != None:
+            self.mode = config.get_Mode()
+            print("Running Hypotheses in {} mode".format(self.mode))
+       
+        else:
+            print("Hypothesis Mode not specified in config doing default")
+            self.mode = "PERMUTATIONS"
+
         self.naming   = config.get_reco_naming()
         self.objects  = config.get_objects()
         self.features = config.get_features()
@@ -48,6 +56,12 @@ class Hypotheses:
 
         self.hypothesisJets = len(self.objects)
         print("\nhypothesis requires {njets} jets\n".format(njets = self.hypothesisJets))
+
+    def set_memDF(self, memDF_):
+        self.memFile = memDF_
+
+    def set_systematic(self, syst):
+        self.systematic = syst
 
     def initPermutations(self):
         '''
@@ -102,3 +116,51 @@ class Hypotheses:
         df = pd.DataFrame(data, columns = self.variables)
         return self.calculate_variables(df), error
 
+    def GetMEM(self, event):
+        '''
+        get dataframe with MEMvalue for a single event
+        returns error = True if e.g. no MEM entry is found
+
+        output: DataFrame, error
+        '''
+        error = False
+        data = np.zeros(shape = (1, len(self.variables)))
+
+        idy = 0
+        # for feat in self.features:
+        #     variable = getattr(event, "Jet_{}".format(feat))
+        #     for i, obj in enumerate(self.objects):
+        #         for idx, p in enumerate(self.permutations[nJets]):
+        #             data[idx,idy] = variable[p[i]]
+        #         idy += 1
+        # for i, obj in enumerate(self.objects):
+        #     for idx, p in enumerate(self.permutations[nJets]):
+        #         data[idx, idy] = p[i]
+        #     idy += 1
+
+        for i, av in enumerate(self.additional_variables):
+            if "[" in av and "]" in av:
+                av, avidx = av.split("[")
+                avidx = int(avidx.replace("]",""))
+                data[:,idy] = getattr(event, av)[avidx]
+            else:
+                data[:,idy] = getattr(event, av)
+            idy += 1
+        # print(data)
+        df = pd.DataFrame(data, columns = self.variables)
+        # print(df.head)
+        self.loadMEM(df)
+        # return self.calculate_variables(df), error
+        return df, error
+
+    def loadMEM(self, df):
+        if self.systematic == "nominal":
+            var = "mem_p"
+        else:
+            var = "mem_"+self.systematic+"_p"
+        filterDF = self.memFile[(self.memFile['event'] == df["Evt_ID"].values[0]) & (self.memFile['run'] == df["Evt_Run"].values[0]) & (self.memFile['lumi'] == df["Evt_Lumi"].values[0])]
+        # print(filterDF[var].values)
+        try:
+            df["memDBp"] = filterDF[var].values[0]
+        except:
+            df["memDBp"] = -1

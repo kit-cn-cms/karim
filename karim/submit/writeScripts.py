@@ -20,6 +20,9 @@ python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPa
 matchTemplate = """
 python {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {files}
 """
+MEMtemplate = """
+python {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} --memPath {memPath} {files}
+"""
 
 def writeScripts(inputSample, scriptDir, options, basepath):
     ''' 
@@ -44,7 +47,8 @@ def writeScripts(inputSample, scriptDir, options, basepath):
 
         if entries>=int(options.nevents) or rf==rootfiles[-1]:
             if options.mode == "Reconstruction":
-                script = scriptTemplate+recoTemplate.format(
+                script = scriptTemplate.format(cmssw    = os.environ['CMSSW_BASE'])
+                script += recoTemplate.format(
                     cmssw    = os.environ['CMSSW_BASE'],
                     basepath  = basepath,
                     mode      = options.mode,
@@ -53,7 +57,8 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     outPath   = options.output,
                     files     = " ".join(jobfiles))
             elif options.mode == "Matching":
-                script = scriptTemplate+matchTemplate.format(
+                script = scriptTemplate.format(cmssw    = os.environ['CMSSW_BASE'])
+                script += matchTemplate.format(
                     cmssw    = os.environ['CMSSW_BASE'],
                     basepath  = basepath,
                     mode      = options.mode,
@@ -61,6 +66,16 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     config    = options.config_path,
                     outPath   = options.output,
                     files     = " ".join(jobfiles))
+            elif options.mode == "MEM":
+                script = scriptTemplate.format(cmssw    = os.environ['CMSSW_BASE'])
+                script += MEMtemplate.format(
+                    basepath  = basepath,
+                    mode      = options.mode,
+                    files     = " ".join(jobfiles),
+                    config    = options.config_path,
+                    outPath   = options.output,
+                    memPath   = options.memPath + "/" 
+                )
             outFile = scriptNameTemplate.format(idx = scriptID)
             with open(outFile, "w") as of:
                 of.write(script)

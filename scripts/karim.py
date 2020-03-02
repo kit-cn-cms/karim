@@ -22,7 +22,7 @@ usage = ["",
 
     
 parser = optparse.OptionParser(usage = "\n".join(usage))
-parser.add_option("-M", "--mode", dest = "mode", choices = ["Reconstruction", "R", "Matching", "M"],
+parser.add_option("-M", "--mode", dest = "mode", choices = ["Reconstruction", "R", "Matching", "M", "MEM"],
     help = "switch between reconstruction evaluation mode and gen level particle matching mode")
 
 recoOptions = optparse.OptionGroup(parser, "Reconstruction options")
@@ -34,6 +34,11 @@ matchOptions = optparse.OptionGroup(parser, "Matching options")
 matchOptions.add_option("-t", "--threshold", dest = "threshold", default=0.2,
     help = "dR threshold for when a jet is considered matched to a gen object")
 parser.add_option_group(matchOptions)
+
+memOptions = optparse.OptionGroup(parser, "MEM options")
+memOptions.add_option("--memPath", dest="memPath",default=None,
+    help = "path to MEM h5 Files")
+parser.add_option_group(memOptions)
 
 parser.add_option("-c", "--config", dest = "config_path", default=None,
     help = "module for defining objects and variables in config directory")
@@ -81,5 +86,12 @@ for ntuple in args:
             configpath = os.path.abspath(opts.config_path),
             threshold  = opts.threshold,
             outpath    = "/".join([outfilePath, outfileName])
+            )
+    elif opts.mode == "MEM":
+        karim.query_MEMs(
+            filename   = ntuple,
+            configpath = os.path.abspath(opts.config_path),
+            outpath    = "/".join([outfilePath, outfileName]),
+            memPath = opts.memPath + "/" 
             )
         

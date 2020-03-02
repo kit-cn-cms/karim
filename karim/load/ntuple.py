@@ -41,6 +41,7 @@ class TreeIterator:
 
     def next(self):
         if self.idx%self.pstep==0 and self.idx>0:
+            print("next")
 
             print("at event {}/{}".format(self.idx, self.max))
             print("  time for {} events:  {:.1f} s".format(self.pstep, self.timer.RealTime()))
@@ -51,7 +52,11 @@ class TreeIterator:
         if self.idx < self.max:
             self.tree.GetEntry(self.idx)
             self.idx+=1
-            return self.Hypotheses.GetPermutations(self.tree, self.tree.N_Jets)
+            if self.Hypotheses.mode == "MEM":
+                # print("Running in {} mode".format(self.Hypotheses.mode))
+                return self.Hypotheses.GetMEM(self.tree)
+            else:
+                return self.Hypotheses.GetPermutations(self.tree, self.tree.N_Jets)
         else:
             raise StopIteration
  
