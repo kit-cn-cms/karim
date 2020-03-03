@@ -21,7 +21,7 @@ def query_MEMs(filename, configpath, outpath, memPath):
     # Figure out Systematic
     systematic = outpath.rsplit("/",1)[1]
     if "nominal" in systematic:
-        systematic == "nominal"
+        systematic = "nominal"
     elif ("JES") in systematic:
         systematic = "JES" + systematic.rsplit("JES",1)[1]
         systematic = systematic.split("_Tree")[0].replace("JES","")
@@ -35,7 +35,15 @@ def query_MEMs(filename, configpath, outpath, memPath):
 
     print("looking for MEM dataframes in {}".format(memPath))
     memFile = memPath + os.path.basename(os.path.dirname(outpath)) + ".h5"
+    if "SingleEl" in memFile:
+        memFile = memPath + "/SingleElectron.h5"
+    if "SingleMu" in memFile:
+        memFile = memPath + "/SingleMuon.h5"
+    if "EGamma" in memFile:
+        memFile = memPath + "/EGamma.h5"
     memFile = memFile.replace("_new_pmx","")
+    memFile = memFile.replace("_v2","")
+
 
     print("using {} as mem h5 file".format(memFile))
     mem_df = pd.read_hdf(memFile)
