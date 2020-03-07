@@ -41,13 +41,15 @@ opts.shell_path = os.path.abspath(opts.shell_path)
 if len(args) == 0:
     exit("need to specify at least one input file")
 
+
 totalBroken = 0
 for sample in args:
     sampleName = os.path.basename(sample)
     outfilePath = "/".join([opts.shell_path, sampleName])
 
     nbroken = submit.checkFiles(
-        sample          = os.path.abspath(sample),
+        # sample          = os.path.abspath(sample),
+        sample          = opts.output+"/"+sampleName,
         nameRequirement = opts.name_requirement,
         shellPath       = opts.shell_path,
         outPath         = opts.output
