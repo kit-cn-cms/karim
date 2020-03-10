@@ -46,10 +46,15 @@ def query_MEMs(filename, configpath, outpath, memPath):
 
 
     print("using {} as mem h5 file".format(memFile))
-    mem_df = pd.read_hdf(memFile)
-
+    try: 
+        mem_df = pd.read_hdf(memFile)
+    except:
+        d = {'event': [-1], 'run': [-1], 'lumi': [-1]}
+        mem_df = pd.DataFrame(data=d)
+        print("Using dummy Dataframe!!!")
     # open input file
     with load.InputFile(filename) as ntuple:
+        N_ev_input = ntuple.GetEntries()
 
         # load hypotheses module
         hypotheses = Hypotheses(config)
@@ -63,7 +68,6 @@ def query_MEMs(filename, configpath, outpath, memPath):
             if first:
                 # get list of all dataframe variables
                 outputVariables = entry.columns.values
-                # outputVariables = np.append(outputVariables, config.get_reco_naming()+"_matchable")
                 for v in outputVariables:
                     print(v)
                 
@@ -98,3 +102,11 @@ def query_MEMs(filename, configpath, outpath, memPath):
         # loop over events and fill tree
         for event in output:
             outfile.FillTree(event)
+        N_ev_output = outfile.tree.GetEntries()
+    print("N_Events in input File: {}".format(N_ev_input))
+    print("N_Events in output File: {}".format(N_ev_output))
+    if N_ev_input != N_ev_output:
+        sys.stderr.write("Number of events don't match up!!!")
+        sys.stderr.write("N_Events in input File: {}".format(N_ev_input))
+        sys.stderr.write("N_Events in output File: {}".format(N_ev_output))
+    print("================="+"\n\n")
