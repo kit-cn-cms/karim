@@ -22,10 +22,10 @@ usage = ["",
 
     
 parser = optparse.OptionParser(usage = "\n".join(usage))
-parser.add_option("-M", "--mode", dest = "mode", choices = ["Reconstruction", "R", "Matching", "M"],
+parser.add_option("-M", "--mode", dest = "mode", choices = ["Reconstruction", "R", "Matching", "M", "Evaluation", "E"],
     help = "switch between reconstruction evaluation mode and gen level particle matching mode")
 
-recoOptions = optparse.OptionGroup(parser, "Reconstruction options")
+recoOptions = optparse.OptionGroup(parser, "Reconstruction/Evaluate options")
 recoOptions.add_option("-m", "--model", dest="model",default=None,
     help = "path to trained dnn model")
 parser.add_option_group(recoOptions)
@@ -46,8 +46,13 @@ if opts.mode == "R":
     opts.mode = "Reconstruction"
 if opts.mode == "M":
     opts.mode = "Matching"
+if opts.mode == "E":
+    opts.mode = "Evaluation"
+
 # check arguments
 if opts.model is None and opts.mode == "Reconstruction":
+    exit("need to specify a dnn model")
+if opts.model is None and opts.mode == "Evaluation":
     exit("need to specify a dnn model")
 if opts.config_path is None:
     exit("need to specify a config module")
@@ -69,7 +74,7 @@ for ntuple in args:
         os.makedirs(outfilePath)
 
     if opts.mode == "Reconstruction":
-        karim.evaluate_model(
+        karim.evaluate_reconstruction(
             filename   = ntuple,
             modelname  = opts.model,
             configpath = os.path.abspath(opts.config_path),
@@ -80,6 +85,13 @@ for ntuple in args:
             filename   = ntuple,
             configpath = os.path.abspath(opts.config_path),
             threshold  = opts.threshold,
+            outpath    = "/".join([outfilePath, outfileName])
+            )
+    elif opts.mode == "Evaluation":
+        karim.evaluate_model(
+            filename   = ntuple,
+            modelname  = opts.model,
+            configpath = os.path.abspath(opts.config_path),
             outpath    = "/".join([outfilePath, outfileName])
             )
         

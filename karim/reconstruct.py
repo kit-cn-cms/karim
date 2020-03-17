@@ -7,7 +7,7 @@ import pandas as pd
 from karim import load as load
 from hypotheses import Hypotheses
 
-def evaluate_model(filename, modelname, configpath, outpath):
+def evaluate_reconstruction(filename, modelname, configpath, outpath):
     print(" ===== EVALUATING FILE ===== ")
     print(filename)
     print(" =========================== ")
