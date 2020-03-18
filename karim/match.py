@@ -6,7 +6,7 @@ import pandas as pd
 from karim import load as load
 from hypotheses import Hypotheses
 
-def match_jets(filename, configpath, threshold, outpath):
+def match_jets(filename, configpath, threshold, signal_only, outpath):
     print(" ===== EVALUATING FILE ===== ")
     print(filename)
     print(" =========================== ")
@@ -40,7 +40,8 @@ def match_jets(filename, configpath, threshold, outpath):
                 
                 # setup empty array for event data storage
                 outputSig = np.zeros(shape = (ntuple.GetEntries(), len(outputVariables)))
-                outputBkg = np.zeros(shape = (ntuple.GetEntries(), len(outputVariables)))
+                if not signal_only:
+                    outputBkg = np.zeros(shape = (ntuple.GetEntries(), len(outputVariables)))
 
                 first = False
 
@@ -48,27 +49,34 @@ def match_jets(filename, configpath, threshold, outpath):
                 # for some reason no hypotheses are viable
                 #   e.g. not enough jets
                 outputSig[i,:] = -99
-                outputBkg[i,:] = -99
+                if not signal_only:
+                    outputBkg[i,:] = -99
             else:
                 # get best permutation
                 bestIndex = findBest(entry, threshold, match_variables)
                 if bestIndex == -1:
                     
                     outputSig[i,:] = -1.
-                    outputBkg[i,:] = -1.
+                    if not signal_only:
+                        outputBkg[i,:] = -1.
                 else:
                     randIndex = config.get_random_index(entry, bestIndex)
 
                     outputSig[i,:-1] = entry.iloc[bestIndex].values
-                    outputBkg[i,:-1] = entry.iloc[randIndex].values
                     outputSig[i, -1] = 1
-                    outputBkg[i, -1] = 1
+                    if not signal_only:
+                        outputBkg[i,:-1] = entry.iloc[randIndex].values
+                        outputBkg[i, -1] = 1
 
                 
             if i<=10:
                 print("=== testevent ===")
-                for name, sigval, bkgval in zip(outputVariables, outputSig[i], outputBkg[i]):
-                    print(name, sigval, bkgval)
+                if not signal_only:
+                    for name, sigval, bkgval in zip(outputVariables, outputSig[i], outputBkg[i]):
+                        print(name, sigval, bkgval)
+                else:
+                    for name, sigval in zip(outputVariables, outputSig[i]):
+                        print(name, sigval)
                 print("================="+"\n\n")
 
     # save information as h5 file
@@ -77,21 +85,26 @@ def match_jets(filename, configpath, threshold, outpath):
     #del df            
 
     # open output root file
-    sigpath = outpath.replace(".root","_sig.root")
-    bkgpath = outpath.replace(".root","_bkg.root")
+    if not signal_only:
+        sigpath = outpath.replace(".root","_sig.root")
+        bkgpath = outpath.replace(".root","_bkg.root")
+    else:
+        sigpath = outpath
+
     with load.OutputFile(sigpath) as outfile:
         # initialize branches
         outfile.SetBranches(outputVariables)
         # loop over events and fill tree
         for event in outputSig:
             outfile.FillTree(event)
-    
-    with load.OutputFile(bkgpath) as outfile:
-        # initialize branches
-        outfile.SetBranches(outputVariables)
-        # loop over events and fill tree
-        for event in outputBkg:
-            outfile.FillTree(event)
+
+    if not signal_only:    
+        with load.OutputFile(bkgpath) as outfile:
+            # initialize branches
+            outfile.SetBranches(outputVariables)
+            # loop over events and fill tree
+            for event in outputBkg:
+                outfile.FillTree(event)
 
 
 def findBest(entry, threshold, match_variables):
