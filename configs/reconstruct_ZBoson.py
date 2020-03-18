@@ -46,6 +46,8 @@ def get_additional_variables():
         ]
     return variables
 
+def base_selection(event):
+    return event.N_Jets>=2
 
 
 def calculate_variables(df):
