@@ -33,6 +33,10 @@ parser.add_option_group(recoOptions)
 matchOptions = optparse.OptionGroup(parser, "Matching options")
 matchOptions.add_option("-t", "--threshold", dest = "threshold", default=0.2,
     help = "dR threshold for when a jet is considered matched to a gen object")
+matchOptions.add_option("--signal-only", dest = "signal_only", default = False, action = "store_true",
+    help = "activate to only write root files with correct (i.e. best) matches."
+           " Default is false - i.e. a file with wrong assignments is written."
+           " This can be for example be used as DNN training background definitions.")
 parser.add_option_group(matchOptions)
 
 submitOptions = optparse.OptionGroup(parser, "Submit options")
@@ -101,7 +105,7 @@ for sample in args:
 cmd = " ".join([
     "for f in *;",
     "do python {basedir}/karim/submit/condorSubmit.py",
-    "-f $f -o ../submit -M 4000 -r 120 -n $f;",
+    "-f $f -o ../submit -M 2000 -r 120 -n $f;",
     "done"]).format(basedir = base)
 
 text = ["",

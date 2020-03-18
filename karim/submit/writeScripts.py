@@ -18,7 +18,7 @@ recoTemplate = """
 python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {files}
 """
 matchTemplate = """
-python {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {files}
+python {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {sigOnly} {files}
 """
 
 def writeScripts(inputSample, scriptDir, options, basepath):
@@ -62,6 +62,7 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     threshold = options.threshold,
                     config    = options.config_path,
                     outPath   = options.output,
+                    sigOnly   = "--signal-only" if options.signal_only else "",
                     files     = " ".join(jobfiles))
             outFile = scriptNameTemplate.format(idx = scriptID)
             with open(outFile, "w") as of:
