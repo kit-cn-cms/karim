@@ -43,6 +43,12 @@ def get_additional_variables():
     variables = [
         "N_BTagsM",
         "N_Jets",
+
+        "GenZ_B1_Phi",
+        "GenZ_B2_Phi",
+        "GenZ_B1_Eta",
+        "GenZ_B2_Eta",
+
         ]
     return variables
 
@@ -100,6 +106,28 @@ def calculate_variables(df):
     df[name+"_dEta_boosted"] = abs(df[name+"_B1_Eta_boosted"].values - df[name+"_B2_Eta_boosted"].values)
     df[name+"_dR_boosted"] = np.sqrt(df[name+"_dEta_boosted"].values**2 + df[name+"_dPhi_boosted"].values**2)
 
+    df[name+"_dRGen_Z_genB1_recoB1"] = common.get_dR(
+        eta1 = df["GenZ_B1_Eta"].values,
+        phi1 = df["GenZ_B1_Phi"].values,
+        eta2 = df[name+"_B1_Eta"].values,
+        phi2 = df[name+"_B1_Phi"].values)
 
+    df[name+"_dRGen_Z_genB2_recoB2"] = common.get_dR(
+        eta1 = df["GenZ_B2_Eta"].values,
+        phi1 = df["GenZ_B2_Phi"].values,
+        eta2 = df[name+"_B2_Eta"].values,
+        phi2 = df[name+"_B2_Phi"].values)
+
+    df[name+"_dRGen_Z_genB1_recoB2"] = common.get_dR(
+        eta1 = df["GenZ_B1_Eta"].values,
+        phi1 = df["GenZ_B1_Phi"].values,
+        eta2 = df[name+"_B2_Eta"].values,
+        phi2 = df[name+"_B2_Phi"].values)
+
+    df[name+"_dRGen_Z_genB2_recoB1"] = common.get_dR(
+        eta1 = df["GenZ_B2_Eta"].values,
+        phi1 = df["GenZ_B2_Phi"].values,
+        eta2 = df[name+"_B1_Eta"].values,
+        phi2 = df[name+"_B1_Phi"].values)
     return df
 
