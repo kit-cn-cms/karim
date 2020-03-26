@@ -72,13 +72,29 @@ class Model:
 
     
     def evaluate(self, entry):
-        matrix = entry[self.variables].values
+        '''
+        evaluate dnn with inputs
+        inputs are either ndarray of events already cut to the dnn input variables
+        or dataframe with correct input variable column names
+    
+        output: dnn predictions, max value of prediction vectors
+        '''
+        if not type(entry) == np.ndarray:
+            matrix = entry[self.variables].values
+        else:
+            matrix = entry
+
+        # norm variables
         idx=0
         for _, row in self.variable_norms.iterrows():
             matrix[:,idx]-=row["mu"]
             matrix[:,idx]/=row["std"] 
             idx+=1
+
+        # predict
         predictions = self.model.predict(matrix)
+
+        # get maximum index 
         maxIndex = np.argmax(predictions, axis = 1)
         return predictions, maxIndex
 

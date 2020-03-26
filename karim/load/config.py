@@ -52,11 +52,5 @@ class Config:
             self.template = ""
     
         if mode == "Evaluation":
-            print("mode - evaluation")
-            self.objects    = []
-            self.features   = []
-            self.naming = ""
-            self.template = ""
-            
             self.dnn_output_variables = config.get_dnn_outputs()
             self.dnn_predicted_class  = config.get_dnn_predicted_class()   
