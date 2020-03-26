@@ -22,10 +22,10 @@ usage = ["",
 
  
 parser = optparse.OptionParser(usage = "\n".join(usage))
-parser.add_option("-M", "--mode", dest = "mode", choices = ["Reconstruction", "R", "Matching", "M"],
+parser.add_option("-M", "--mode", dest = "mode", choices = ["Reconstruction", "R", "Matching", "M", "Evaluation", "E"],
     help = "switch between reconstruction evaluation mode and gen level particle matching mode")
 
-recoOptions = optparse.OptionGroup(parser, "Reconstruction options")
+recoOptions = optparse.OptionGroup(parser, "Reconstruction/Evaluation options")
 recoOptions.add_option("-m", "--model", dest="model",default=None,
     help = "path to trained dnn model")
 parser.add_option_group(recoOptions)
@@ -58,8 +58,11 @@ if opts.mode == "R":
     opts.mode = "Reconstruction"
 if opts.mode == "M":
     opts.mode = "Matching"
+if opts.mode == "E":
+    opts.mode = "Evaluation"
+
 # check arguments
-if opts.mode == "Reconstruction":
+if opts.mode == "Reconstruction" or opts.mode == "Evaluation":
     if opts.model is None:
         exit("need to specify a dnn model")
     opts.model = os.path.abspath(opts.model)

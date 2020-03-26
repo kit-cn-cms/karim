@@ -6,48 +6,29 @@ from array import array
 class Hypotheses:
     maxJets = 10
     def __init__(self, config):
-        '''
-        initialize config settings and variable lists
-        '''
-        self.naming   = config.get_reco_naming()
-        self.objects  = config.get_objects()
-        self.features = config.get_features()
-        print("list of objects for reconstruction: ")
-        print(self.objects)
-        print("list of features for reconstruction: ")
-        print(self.features)
-        self.template = "{name}_OBJECT_FEATURE".format(name = self.naming)
-        print("naming template for variables:" )
-        print(self.template)
-        self.base_selection = config.base_selection
-        print("base selection {}".format(self.base_selection))
-
-        # load function to calculate variables for all hypotheses
-        self.calculate_variables = config.calculate_variables
-
-
         # generate a variable list that needs to be filled from ntuple information
         self.variables = []
-        for feat in self.features:
-            for obj in self.objects:
+        for feat in config.features:
+            for obj in config.objects:
                 self.variables.append(
-                    self.template.replace("OBJECT",obj).replace("FEATURE", feat))
+                    config.template.replace("OBJECT",obj).replace("FEATURE", feat))
 
         # add jet indices for all reconstructable objects
-        for obj in self.objects:
+        for obj in config.objects:
             self.variables.append(
-                self.template.replace("OBJECT",obj).replace("FEATURE", "idx"))
+                config.template.replace("OBJECT",obj).replace("FEATURE", "idx"))
 
         self.baseVariables = len(self.variables)
         # add additional variables to variable list
-        self.additional_variables = config.get_additional_variables()
-        #self.additional_variables+= ["Evt_ID", "Evt_Lumi", "Evt_Run"]
-        self.additional_variables = list(set(self.additional_variables))
-        for av in self.additional_variables:
+        for av in config.additional_variables:
             self.variables.append(av)
 
-        self.hypothesisJets = len(self.objects)
+        self.hypothesisJets = len(config.objects)
         print("\nhypothesis requires {njets} jets\n".format(njets = self.hypothesisJets))
+
+        # save config
+        self.config = config
+        self.permutations = None
 
     def initPermutations(self):
         '''
@@ -62,7 +43,7 @@ class Hypotheses:
         print("\npermutation configurations initialized.")
         print("maximum number of jets set to {}\n".format(self.maxJets))
 
-    def GetPermutations(self, event, nJets):
+    def GetEntry(self, event, nJets):
         '''
         get dataframe with all permutations for a single event with nJets
         returns error = True if e.g. number of jets is too low
@@ -70,27 +51,31 @@ class Hypotheses:
         output: DataFrame, error
         '''
         error = False
-        if not self.base_selection(event) or nJets < self.hypothesisJets:
+        if not self.config.base_selection(event) or nJets < self.hypothesisJets:
             error = True
             data = np.zeros(shape = (1, len(self.variables)))
             data[:,:] = -99.
         else:
-            # fill data matrix with permutations
-            nJets = min(nJets, 10)
-            data = np.zeros(shape = (len(self.permutations[nJets]), len(self.variables)))
+            if not self.permutations is None:
+                # fill data matrix with permutations
+                nJets = min(nJets, 10)
+                data = np.zeros(shape = (len(self.permutations[nJets]), len(self.variables)))
+            else:
+                data = np.zeros(shape = (1, len(self.variables)))
+
             idy = 0
-            for feat in self.features:
+            for feat in self.config.features:
                 variable = getattr(event, "Jet_{}".format(feat))
-                for i, obj in enumerate(self.objects):
+                for i, obj in enumerate(self.config.objects):
                     for idx, p in enumerate(self.permutations[nJets]):
                         data[idx,idy] = variable[p[i]]
                     idy += 1
-            for i, obj in enumerate(self.objects):
+            for i, obj in enumerate(self.config.objects):
                 for idx, p in enumerate(self.permutations[nJets]):
                     data[idx, idy] = p[i]
                 idy += 1
 
-            for i, av in enumerate(self.additional_variables):
+            for i, av in enumerate(self.config.additional_variables):
                 if "[" in av and "]" in av:
                     av, avidx = av.split("[")
                     avidx = int(avidx.replace("]",""))
@@ -100,5 +85,5 @@ class Hypotheses:
                 idy += 1
 
         df = pd.DataFrame(data, columns = self.variables)
-        return self.calculate_variables(df), error
+        return self.config.calculate_variables(df), error
 

@@ -29,8 +29,13 @@ class Model:
             sys.exit("could not find trained model {}".format(checkpointPath))
 
         print("\nloading DNN model from {}\n".format(self.modelPath))
-        from keras.models import load_model
-        self.model = load_model(checkpointPath)
+        try:
+            from keras.models import load_model
+            self.model = load_model(checkpointPath)
+        except:
+            from tensorflow.keras.models import load_model
+            self.model = load_model(checkpointPath)
+            
         self.model.summary()
 
     
@@ -65,5 +70,15 @@ class Model:
         bestIndex = np.argmax(predictions[:,0])
         return bestIndex, predictions[bestIndex][0]
 
-
+    
+    def evaluate(self, entry):
+        matrix = entry[self.variables].values
+        idx=0
+        for _, row in self.variable_norms.iterrows():
+            matrix[:,idx]-=row["mu"]
+            matrix[:,idx]/=row["std"] 
+            idx+=1
+        predictions = self.model.predict(matrix)
+        maxIndex = np.argmax(predictions, axis = 1)
+        return predictions, maxIndex
 

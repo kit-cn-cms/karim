@@ -7,7 +7,7 @@ import pandas as pd
 from karim import load as load
 from hypotheses import Hypotheses
 
-def evaluate_reconstruction(filename, modelname, configpath, outpath):
+def evaluate_reconstruction(filename, modelname, configpath, outpath, apply_selection = False):
     print(" ===== EVALUATING FILE ===== ")
     print(filename)
     print(" =========================== ")
@@ -18,12 +18,7 @@ def evaluate_reconstruction(filename, modelname, configpath, outpath):
     # set variables needed for dnn training
     model.setVariables()
 
-    # load config module
-    dirname, basename = os.path.split(configpath)
-    sys.path.append(dirname)
-    config_name = os.path.splitext(basename)[0]
-    config = importlib.import_module(config_name)
-    print("\nimporting config:\n{}\n".format(configpath))
+    config = load.Config(configpath, "Reconstruction")
 
     # open input file
     with load.InputFile(filename) as ntuple:
@@ -35,8 +30,11 @@ def evaluate_reconstruction(filename, modelname, configpath, outpath):
         hypotheses.initPermutations()
 
         first = True
+        fillIdx = 0
         # start loop over ntuple entries
-        for i, (entry, error) in enumerate(load.TreeIterator(ntuple, hypotheses)):
+        for i, event in enumerate(load.TreeIterator(ntuple)):
+            entry, error = hypotheses.GetEntry(event, event.N_Jets)
+
             if first:
                 # check if all variables for DNN evaluation are present in dataframe
                 check_entry(entry, model.variables)
@@ -44,9 +42,12 @@ def evaluate_reconstruction(filename, modelname, configpath, outpath):
                 # get list of all dataframe variables
                 outputVariables = entry.columns.values
                 # append output value to columns
-                outputVariables = np.append(outputVariables, config.get_reco_naming()+"_DNNOutput")
-                outputVariables = np.append(outputVariables, config.get_reco_naming()+"_squaredDNNOutput")
-                outputVariables = np.append(outputVariables, config.get_reco_naming()+"_transformedDNNOutput")
+                outputVariables = np.append(outputVariables, 
+                    config.naming+"_DNNOutput")
+                outputVariables = np.append(outputVariables, 
+                    config.naming+"_squaredDNNOutput")
+                outputVariables = np.append(outputVariables, 
+                    config.naming+"_transformedDNNOutput")
                 for v in outputVariables:
                     print(v)
                 
@@ -59,26 +60,35 @@ def evaluate_reconstruction(filename, modelname, configpath, outpath):
                 print("hypothesis not viable")
                 # for some reason no hypotheses are viable
                 #   e.g. not enough jets
-                outputData[i,:-3] = entry.iloc[0].values
-                # fill dummy output values of DNN
-                outputData[i, -3] = -1.
-                outputData[i, -2] = -99.
-                outputData[i, -1] = -99.
+                if not apply_selection:
+                    outputData[fillIdx,:-3] = entry.iloc[0].values
+                    # fill dummy output values of DNN
+                    outputData[fillIdx, -3] = -1.
+                    outputData[fillIdx, -2] = -99.
+                    outputData[fillIdx, -1] = -99.
+                    fillIdx+=1
+                continue
             else:
                 # get best permutation
                 bestIndex, outputValue = model.findBest(entry)
                 # fill output data array
-                outputData[i,:-3] = entry.iloc[bestIndex].values
+                outputData[fillIdx,:-3] = entry.iloc[bestIndex].values
                 # fill output values of DNN
-                outputData[i, -3] = outputValue
-                outputData[i, -2] = outputValue**2
-                outputData[i, -1] = np.log(outputValue/(1.-outputValue))
+                outputData[fillIdx, -3] = outputValue
+                outputData[fillIdx, -2] = outputValue**2
+                outputData[fillIdx, -1] = np.log(outputValue/(1.-outputValue))
+                fillIdx += 1
                 
-            if i<=10:
+            if fillIdx<=10:
                 print("=== testevent ===")
-                for name, value in zip(outputVariables, outputData[i]):
+                for name, value in zip(outputVariables, outputData[fillIdx]):
                     print(name, value)
                 print("================="+"\n\n")
+
+    # cut outputData to filled length
+    if apply_selection:
+        print("events that fulfilled the selection: {}/{}".format(fillIdx, len(outputData)))
+        outputData = outputData[:fillIdx]
 
     # save information as h5 file
     df = pd.DataFrame(outputData, columns = outputVariables)

@@ -22,7 +22,11 @@ usage = ["",
 
     
 parser = optparse.OptionParser(usage = "\n".join(usage))
-parser.add_option("-M", "--mode", dest = "mode", choices = ["Reconstruction", "R", "Matching", "M", "Evaluation", "E"],
+parser.add_option("-M", "--mode", dest = "mode", choices = [
+    "Reconstruction", "R", 
+    "Matching", "M", 
+    "Evaluation", "E", 
+    "Calculation", "C"],
     help = "switch between reconstruction evaluation mode and gen level particle matching mode")
 
 recoOptions = optparse.OptionGroup(parser, "Reconstruction/Evaluate options")
@@ -43,6 +47,11 @@ parser.add_option("-c", "--config", dest = "config_path", default=None,
     help = "module for defining objects and variables in config directory")
 parser.add_option("-o", "--output", dest="output",default=None,
     help = "output path for new ntuples. ")
+parser.add_option("--apply-selection", dest="apply_selection",default=False,action="store_true",
+    help = "by default, default values are written for variables in events where"
+           " base selection or other criteria are not fulfilled. Activate this"
+           " option to skip these events. this is not usable as friendtree anymore.")
+
 (opts, args) = parser.parse_args()
 
 
@@ -52,6 +61,8 @@ if opts.mode == "M":
     opts.mode = "Matching"
 if opts.mode == "E":
     opts.mode = "Evaluation"
+if opts.mode == "C":
+    opts.mode = "Calculation"
 
 # check arguments
 if opts.model is None and opts.mode == "Reconstruction":
@@ -84,6 +95,13 @@ for ntuple in args:
             configpath = os.path.abspath(opts.config_path),
             outpath    = "/".join([outfilePath, outfileName])
             )
+    elif opts.mode == "Evaluation":
+        karim.evaluate_model(
+            filename   = ntuple,
+            modelname  = opts.model,
+            configpath = os.path.abspath(opts.config_path),
+            outpath    = "/".join([outfilePath, outfileName])
+            )
     elif opts.mode == "Matching":
         karim.match_jets(
             filename    = ntuple,
@@ -92,10 +110,9 @@ for ntuple in args:
             signal_only = opts.signal_only,
             outpath     = "/".join([outfilePath, outfileName])
             )
-    elif opts.mode == "Evaluation":
-        karim.evaluate_model(
+    elif opts.mode == "Calculation":
+        karim.calculate_variables(
             filename   = ntuple,
-            modelname  = opts.model,
             configpath = os.path.abspath(opts.config_path),
             outpath    = "/".join([outfilePath, outfileName])
             )

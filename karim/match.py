@@ -6,19 +6,13 @@ import pandas as pd
 from karim import load as load
 from hypotheses import Hypotheses
 
-def match_jets(filename, configpath, threshold, signal_only, outpath):
+def match_jets(filename, configpath, threshold, signal_only, outpath, apply_selection = False):
     print(" ===== EVALUATING FILE ===== ")
     print(filename)
     print(" =========================== ")
 
-    # load config module
-    dirname, basename = os.path.split(configpath)
-    sys.path.append(dirname)
-    config_name = os.path.splitext(basename)[0]
-    config = importlib.import_module(config_name)
-    print("\nimporting config:\n{}\n".format(configpath))
+    config = load.Config(configpath, "Matching")
 
-    match_variables = config.get_match_variables()
     # open input file
     with load.InputFile(filename) as ntuple:
     
@@ -29,12 +23,15 @@ def match_jets(filename, configpath, threshold, signal_only, outpath):
         hypotheses.initPermutations()
 
         first = True
+        fillIdx = 0
         # start loop over ntuple entries
-        for i, (entry, error) in enumerate(load.TreeIterator(ntuple, hypotheses)):
+        for i, event in enumerate(load.TreeIterator(ntuple)):
+            entry, error = hypotheses.GetEntry(event, event.N_Jets)
+
             if first:
                 # get list of all dataframe variables
                 outputVariables = entry.columns.values
-                outputVariables = np.append(outputVariables, config.get_reco_naming()+"_matchable")
+                outputVariables = np.append(outputVariables, config.naming+"_matchable")
                 for v in outputVariables:
                     print(v)
                 
@@ -48,34 +45,40 @@ def match_jets(filename, configpath, threshold, signal_only, outpath):
             if error:
                 # for some reason no hypotheses are viable
                 #   e.g. not enough jets
-                outputSig[i,:] = -99
-                if not signal_only:
-                    outputBkg[i,:] = -99
+                if not apply_selection:
+                    outputSig[fillIdx,:] = -99
+                    if not signal_only:
+                        outputBkg[fillIdx,:] = -99
+                    fillIdx+=1
+                continue
+
+
+            # get best permutation
+            bestIndex = findBest(entry, threshold, match_variables)
+            if bestIndex == -1:
+                if not apply_selection:
+                    outputSig[fillIdx,:] = -1.
+                    if not signal_only:
+                        outputBkg[fillIdx,:] = -1.
+                    fillIdx+=1
             else:
-                # get best permutation
-                bestIndex = findBest(entry, threshold, match_variables)
-                if bestIndex == -1:
-                    
-                    outputSig[i,:] = -1.
-                    if not signal_only:
-                        outputBkg[i,:] = -1.
-                else:
-                    randIndex = config.get_random_index(entry, bestIndex)
+                randIndex = config.get_random_index(entry, bestIndex)
 
-                    outputSig[i,:-1] = entry.iloc[bestIndex].values
-                    outputSig[i, -1] = 1
-                    if not signal_only:
-                        outputBkg[i,:-1] = entry.iloc[randIndex].values
-                        outputBkg[i, -1] = 1
-
+                outputSig[fillIdx,:-1] = entry.iloc[bestIndex].values
+                outputSig[fillIdx, -1] = 1
+                if not signal_only:
+                    outputBkg[fillIdx,:-1] = entry.iloc[randIndex].values
+                    outputBkg[fillIdx, -1] = 1
+                fillIdx+=1
                 
-            if i<=10:
+            if fillIdx<=10:
                 print("=== testevent ===")
                 if not signal_only:
-                    for name, sigval, bkgval in zip(outputVariables, outputSig[i], outputBkg[i]):
+                    for name, sigval, bkgval in zip(
+                        outputVariables, outputSig[fillIdx], outputBkg[fillIdx]):
                         print(name, sigval, bkgval)
                 else:
-                    for name, sigval in zip(outputVariables, outputSig[i]):
+                    for name, sigval in zip(outputVariables, outputSig[fillIdx]):
                         print(name, sigval)
                 print("================="+"\n\n")
 
@@ -83,6 +86,11 @@ def match_jets(filename, configpath, threshold, signal_only, outpath):
     #df = pd.DataFrame(outputData, columns = outputVariables)
     #df.to_hdf(outpath.replace(".root",".h5"), key = "data", mode = "w")
     #del df            
+    if apply_selection:
+        print("events that fulfilled the selection {}/{}".format(fillIdx, len(outputSig)))
+        outputSig = outputSig[:fillIdx]
+        if not signal_only:
+            outputBkg = outputBkg[:fillIdx]
 
     # open output root file
     if not signal_only:
