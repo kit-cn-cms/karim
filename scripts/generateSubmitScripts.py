@@ -108,8 +108,10 @@ for sample in args:
 cmd = " ".join([
     "for f in *;",
     "do python {basedir}/karim/submit/condorSubmit.py",
-    "-f $f -o ../submit -M 2000 -r 120 -n $f;",
-    "done"]).format(basedir = base)
+    "-f $f -o ../submit -M 2000 -r 120 -n {mode}_$f;",
+    "done"]).format(
+        mode = "karim_"+opts.mode.lower(),
+        basedir = base)
 
 text = ["",
     "",
