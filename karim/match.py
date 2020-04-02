@@ -54,22 +54,19 @@ def match_jets(filename, configpath, threshold, signal_only, outpath, apply_sele
 
 
             # get best permutation
-            bestIndex = findBest(entry, threshold, match_variables)
+            bestIndex = findBest(entry, threshold, config.match_variables)
             if bestIndex == -1:
                 if not apply_selection:
                     outputSig[fillIdx,:] = -1.
                     if not signal_only:
                         outputBkg[fillIdx,:] = -1.
-                    fillIdx+=1
             else:
                 randIndex = config.get_random_index(entry, bestIndex)
-
                 outputSig[fillIdx,:-1] = entry.iloc[bestIndex].values
                 outputSig[fillIdx, -1] = 1
                 if not signal_only:
                     outputBkg[fillIdx,:-1] = entry.iloc[randIndex].values
                     outputBkg[fillIdx, -1] = 1
-                fillIdx+=1
                 
             if fillIdx<=10:
                 print("=== testevent ===")
@@ -81,6 +78,8 @@ def match_jets(filename, configpath, threshold, signal_only, outpath, apply_sele
                     for name, sigval in zip(outputVariables, outputSig[fillIdx]):
                         print(name, sigval)
                 print("================="+"\n\n")
+
+            fillIdx+=1
 
     # save information as h5 file
     #df = pd.DataFrame(outputData, columns = outputVariables)
