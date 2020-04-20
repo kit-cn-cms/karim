@@ -1,7 +1,7 @@
 import common
 
 name = "Reco"
-def get_reco_naming():
+def get_naming():
     '''
     define name for this reconstruction
     '''
