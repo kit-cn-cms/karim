@@ -77,13 +77,14 @@ def evaluate_reconstruction(filename, modelname, configpath, outpath, apply_sele
                 outputData[fillIdx, -3] = outputValue
                 outputData[fillIdx, -2] = outputValue**2
                 outputData[fillIdx, -1] = np.log(outputValue/(1.-outputValue))
-                fillIdx += 1
                 
-            if fillIdx<=10:
-                print("=== testevent ===")
-                for name, value in zip(outputVariables, outputData[fillIdx]):
-                    print(name, value)
-                print("================="+"\n\n")
+                if fillIdx<=10:
+                    print("=== testevent ===")
+                    for name, value in zip(outputVariables, outputData[fillIdx]):
+                        print(name, value)
+                    print("================="+"\n\n")
+
+                fillIdx += 1
 
     # cut outputData to filled length
     if apply_selection:
