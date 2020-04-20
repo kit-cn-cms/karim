@@ -1,8 +1,8 @@
 import numpy as np
 import common
 
-name = "dnnRecoZ"
-def get_reco_naming():
+name = "RecoZ"
+def get_naming():
     '''
     define name for this reconstruction
     '''
@@ -62,13 +62,13 @@ def calculate_variables(df):
     '''
 
     # angular differences
-    df[name+"_dPhi"]  = common.get_dPhi(df[name+"_B1_Phi"].values, df[name+"_B2_Phi"].values)
-    df[name+"_dEta"]  = abs(df[name+"_B1_Eta"].values - df[name+"_B2_Eta"].values)
-    df[name+"_dPt"]   = abs(df[name+"_B1_Pt"].values - df[name+"_B2_Pt"].values)
-    df[name+"_dR"]    = np.sqrt(df[name+"_dEta"].values**2 + df[name+"_dPhi"].values**2)
-    df[name+"_dKin"] = np.sqrt((df[name+"_dEta"].values/5.)**2 + \
-                                (df[name+"_dPhi"].values/(2.*np.pi))**2 + \
-                                (df[name+"_dPt"].values/1000.))
+    df[name+"_Z_dPhi"]  = common.get_dPhi(df[name+"_B1_Phi"].values, df[name+"_B2_Phi"].values)
+    df[name+"_Z_dEta"]  = abs(df[name+"_B1_Eta"].values - df[name+"_B2_Eta"].values)
+    df[name+"_Z_dPt"]   = abs(df[name+"_B1_Pt"].values - df[name+"_B2_Pt"].values)
+    df[name+"_Z_dR"]    = np.sqrt(df[name+"_Z_dEta"].values**2 + df[name+"_Z_dPhi"].values**2)
+    df[name+"_Z_dKin"] = np.sqrt((df[name+"_Z_dEta"].values/5.)**2 + \
+                                (df[name+"_Z_dPhi"].values/(2.*np.pi))**2 + \
+                                (df[name+"_Z_dPt"].values/1000.))
 
     # reconstruct Z boson
     vectors = common.Vectors(df, name, ["B1", "B2"])
@@ -86,7 +86,7 @@ def calculate_variables(df):
         df[name+"_"+obj+"_logE"] = np.log(df[name+"_"+obj+"_E"].values)
 
     # 3D opening angle
-    df[name+"_openingAngle"] = vectors.getOpeningAngle("B1", "B2")
+    df[name+"_Z_openingAngle"] = vectors.getOpeningAngle("B1", "B2")
 
     # boost
     vectors.boost(["B1", "B2", "Z"], frame = "Z")
