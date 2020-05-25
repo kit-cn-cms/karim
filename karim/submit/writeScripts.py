@@ -15,13 +15,13 @@ cd -
 export KERAS_BACKEND=tensorflow
 """
 recoTemplate = """
-python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {files}
+python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {friendTrees} {files}
 """
 evalTemplate = """
-python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {files}
+python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {friendTrees} {applySelection} {writeInputVars} {files}
 """
 matchTemplate = """
-python {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {sigOnly} {files}
+python {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {friendTrees} {sigOnly} {files}
 """
 
 def writeScripts(inputSample, scriptDir, options, basepath):
@@ -34,9 +34,15 @@ def writeScripts(inputSample, scriptDir, options, basepath):
     print(inputSample)
     print(" ================== ")
     print("number of files: {}".format(len(rootfiles)))
+    if len(rootfiles) == 0:
+        print("no files found.")
+        os.system("rm -r {}".format(scriptDir))
+        return 
 
     sampleName = os.path.basename(inputSample)
     scriptNameTemplate = "/".join([scriptDir, sampleName+"_{idx}.sh"])
+
+    friendTrees = "--friend-trees {}".format(options.friendTrees) if not options.friendTrees is None else ""
     # collect rootfiles until number of events per job is reached
     entries = 0
     scriptID = 1
@@ -55,9 +61,12 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     dnnModel  = options.model,
                     config    = options.config_path,
                     outPath   = options.output,
-                    files     = " ".join(jobfiles))
+                    friendTrees = friendTrees,
+                    files     = " ".join(jobfiles)
+                    )
+
             elif options.mode == "Evaluation":
-                script = scriptTemplate+recoTemplate
+                script = scriptTemplate+evalTemplate
                 script = script.format(
                     cmssw    = os.environ['CMSSW_BASE'],
                     basepath  = basepath,
@@ -65,7 +74,12 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     dnnModel  = options.model,
                     config    = options.config_path,
                     outPath   = options.output,
-                    files     = " ".join(jobfiles))
+                    friendTrees = friendTrees,
+                    applySelection = "--apply-selection" if options.apply_selection else "",
+                    writeInputVars = "--write-input-vars" if options.write_input_vars else "",
+                    files     = " ".join(jobfiles)
+                    )
+
             elif options.mode == "Matching":
                 script = scriptTemplate+matchTemplate
                 script = script.format(
@@ -75,8 +89,11 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     threshold = options.threshold,
                     config    = options.config_path,
                     outPath   = options.output,
+                    friendTrees = friendTrees,
                     sigOnly   = "--signal-only" if options.signal_only else "",
-                    files     = " ".join(jobfiles))
+                    files     = " ".join(jobfiles)
+                    )
+
             outFile = scriptNameTemplate.format(idx = scriptID)
             with open(outFile, "w") as of:
                 of.write(script)

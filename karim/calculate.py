@@ -7,16 +7,16 @@ import pandas as pd
 from karim import load as load
 from hypotheses import Hypotheses
 
-def calculate_variables(filename, configpath, outpath, apply_selection = False):
+def calculate_variables(filename, configpath, friendTrees, outpath, apply_selection = False):
     print(" ===== EVALUATING FILE ===== ")
     print(filename)
     print(" =========================== ")
 
-    config = load.Config(configpath, "Calculation")
+    config = load.Config(configpath, friendTrees, "Calculation")
 
     
     # open input file
-    with load.InputFile(filename) as ntuple:
+    with load.InputFile(filename, config.getFriendTrees(filename)) as ntuple:
 
         # load hypothesis module
         entry_loader = Hypotheses(config)

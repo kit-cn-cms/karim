@@ -6,26 +6,31 @@ import numpy as np
 import pandas as pd
 from karim import load as load
 
-def evaluate_model(filename, modelname, configpath, outpath, apply_selection = False, write_input_vars = False):
+def evaluate_model(filename, modelconfigpath, configpath, friendTrees, outpath, apply_selection = False, write_input_vars = False):
     print(" ===== EVALUATING FILE ===== ")
     print(filename)
     print(" =========================== ")
 
-    # load the DNN model
-    model = load.Model(modelname)
-
-    model.setVariables()
-
-    config = load.Config(configpath, "Evaluation")
+    modelconfig = load.ModelConfig(modelconfigpath)
     
+    model_variables = modelconfig.getAllVariables()
+
+    config = load.Config(configpath, friendTrees, "Evaluation")
+    additional_variables = []
+    for v in config.additional_variables:
+        if not v in model_variables:
+            additional_variables.append(v)
+    config.additional_variables = additional_variables
+
     # get information about variables that should be written into new friendtrees
-    idxCommonVars = len(config.additional_variables)
-    commonVars = list(config.additional_variables)
+    idxCommonVars = len(additional_variables)
+    commonVars = list(additional_variables)
 
-    config.additional_variables += model.variables
-    
+    additional_variables += model_variables
+    modelconfig.setVariableIndices(additional_variables)    
+
     # open input file
-    with load.InputFile(filename) as ntuple:
+    with load.InputFile(filename, config.getFriendTrees(filename)) as ntuple:
 
         # load hypothesis module
         entry_loader = load.Entry(config)
@@ -43,20 +48,16 @@ def evaluate_model(filename, modelname, configpath, outpath, apply_selection = F
 
                 # if 'write_input_vars' is activated also write dnn inputs to new file
                 if write_input_vars:
-                    for outVar in model.variables:
+                    for outVar in model_variables:
                         outputVariables = np.append(outputVariables, outVar)
                 idxBaseVars = len(outputVariables)
 
                 # append output values of dnn
-                for outVar in config.dnn_output_variables:
-                    outputVariables = np.append(outputVariables, outVar)
-                idxOutputVars = len(outputVariables)
+                outputVariables = modelconfig.setOutputVariables(outputVariables)
 
-                # append variables containing info about maximum dnn output node
-                for outVar in config.dnn_predicted_class:
-                    outputVariables = np.append(outputVariables, outVar)
-                idxPredictedClass = len(outputVariables)
-
+                # remove brakets
+                outputVariables = [v.replace("[","_").replace("]","") for v in outputVariables]
+                    
                 # print variables
                 print("variables to be written to output file:")
                 for v in outputVariables:
@@ -67,7 +68,7 @@ def evaluate_model(filename, modelname, configpath, outpath, apply_selection = F
                 outputData = np.zeros(shape = (ntuple.GetEntries(), len(outputVariables)))
 
                 # setup input array for dnn evaluation
-                inputData = np.zeros(shape= (ntuple.GetEntries(), len(model.variables)))
+                modelconfig.setInputData(ntuple.GetEntries()) 
 
                 first = False
 
@@ -76,10 +77,9 @@ def evaluate_model(filename, modelname, configpath, outpath, apply_selection = F
                 # fill default values of -1 into entry
                 if not apply_selection:
                     outputData[fillIdx,:] = -1
-                    inputData[fillIdx,:] = -1
+                    modelconfig.setEmptyEntry(fillIdx)
                     fillIdx += 1
                 continue
-
 
             # fill output data array
             
@@ -91,30 +91,23 @@ def evaluate_model(filename, modelname, configpath, outpath, apply_selection = F
                 outputData[fillIdx, idxCommonVars:idxBaseVars] = entry[0, idxCommonVars:idxBaseVars]
 
             # dnn input variables into input array
-            inputData[fillIdx, :] = entry[0, idxCommonVars:]
-
-            # test prints        
-            if fillIdx<=10:
-                print("=== test input ===")
-                for name, value in zip(model.variables, inputData[fillIdx]):
-                    print(name, value)
-                print("================="+"\n\n")
-
+            modelconfig.fillInputData(fillIdx, entry, event)
             fillIdx+=1
 
     # cut outputData to filled length
     if apply_selection:
         print("events that fulfilled the selection: {}/{}".format(fillIdx, len(outputData)))
         outputData = outputData[:fillIdx]
-        inputData = inputData[:fillIdx]
+        modelconfig.removeTrailingEntries(fillIdx)
 
     # get dnn output
-    dnnOutput, maxIndex = model.evaluate(inputData)
+    for dnnSet in modelconfig.dnnsets:
+        dnnOutput, maxIndex = dnnSet.evaluate(len(outputData))
     
-    # fill dnn output
-    outputData[:, idxBaseVars:idxOutputVars] = dnnOutput
-    # fill predicted index
-    outputData[:, idxOutputVars:idxPredictedClass] = maxIndex.reshape(len(outputData), -1)
+        # fill dnn output
+        outputData[:, dnnSet.idxOutLo:dnnSet.idxOutHi] = dnnOutput
+        # fill predicted index
+        outputData[:, dnnSet.idxOutHi:dnnSet.idxPrediction] = maxIndex.reshape(len(outputData), -1)
     
     # test print of outputs
     for i in range(10):

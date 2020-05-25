@@ -6,15 +6,15 @@ import pandas as pd
 from karim import load as load
 from hypotheses import Hypotheses
 
-def match_jets(filename, configpath, threshold, signal_only, outpath, apply_selection = False):
+def match_jets(filename, configpath, friendTrees, threshold, signal_only, outpath, apply_selection = False):
     print(" ===== EVALUATING FILE ===== ")
     print(filename)
     print(" =========================== ")
 
-    config = load.Config(configpath, "Matching")
+    config = load.Config(configpath, friendTrees, "Matching")
 
     # open input file
-    with load.InputFile(filename) as ntuple:
+    with load.InputFile(filename, config.getFriendTrees(filename)) as ntuple:
     
         # load hypotheses module
         hypotheses = Hypotheses(config)

@@ -5,13 +5,17 @@ class InputFile(object):
     '''
     open input file and return MVATree
     '''
-    def __init__(self, filename):
+    def __init__(self, filename, friendTrees = []):
         self.file = ROOT.TFile(filename)
         self.tree = self.file.Get("MVATree")
-
+        
         print("\nloading tree with {nentries} entries\n".format(
             nentries = self.tree.GetEntries()))
         
+        for ft in friendTrees:
+            print("adding friendTree {}".format(ft))
+            self.tree.AddFriend("MVATree", ft)        
+
     def __enter__(self):
         return self.tree
 
