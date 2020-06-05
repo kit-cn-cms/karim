@@ -18,10 +18,11 @@ class Hypotheses:
             self.variables.append(
                 config.template.replace("OBJECT",obj).replace("FEATURE", "idx"))
 
-        self.baseVariables = len(self.variables)
+        self.nBaseVariables = len(self.variables)
         # add additional variables to variable list
         for av in config.additional_variables:
             self.variables.append(av)
+        self.nAdditionalVariables = len(self.variables)
 
         self.hypothesisJets = len(config.objects)
         print("\nhypothesis requires {njets} jets\n".format(njets = self.hypothesisJets))
@@ -54,7 +55,19 @@ class Hypotheses:
         if not self.config.base_selection(event) or nJets < self.hypothesisJets:
             error = True
             data = np.zeros(shape = (1, len(self.variables)))
-            data[:,:] = -99.
+            idy = 0
+            for i, av in enumerate(self.config.additional_variables):
+                if "[" in av and "]" in av:
+                    av, avidx = av.split("[")
+                    avidx = int(avidx.replace("]",""))
+                    try:
+                        data[:,idy+self.nBaseVariables] = getattr(event, av)[avidx]
+                    except:
+                        data[:,idy+self.nBaseVariables] = -99.
+                else:
+                    data[:,idy+self.nBaseVariables] = getattr(event, av)
+                idy += 1
+            
         else:
             if not self.permutations is None:
                 # fill data matrix with permutations
