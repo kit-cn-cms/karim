@@ -2,7 +2,7 @@ import numpy as np
 import common
 
 name = "RecoZ"
-def get_reco_naming():
+def get_naming():
     '''
     define name for this reconstruction
     '''
