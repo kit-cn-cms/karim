@@ -18,6 +18,18 @@ class Hypotheses:
             self.variables.append(
                 config.template.replace("OBJECT",obj).replace("FEATURE", "idx"))
 
+        # if available add additional objects
+        for order in config.additional_objects:
+            for feat in config.features:
+                for obj in config.additional_objects[order]:
+                    self.variables.append(
+                        config.template.replace("OBJECT",obj).replace("FEATURE", feat))
+            for obj in config.additional_objects[order]:
+                self.variables.append(
+                    config.template.replace("OBJECT",obj).replace("FEATURE", "idx"))
+            
+                
+
         self.nBaseVariables = len(self.variables)
         # add additional variables to variable list
         for av in config.additional_variables:
@@ -76,6 +88,18 @@ class Hypotheses:
             else:
                 data = np.zeros(shape = (1, len(self.variables)))
 
+            ordered_indices = {}
+            used_indices = np.zeros(shape = (len(self.permutations[nJets]), self.hypothesisJets))
+            assigned_indices = {}
+            for order in self.config.additional_objects:
+                values = np.zeros(shape = nJets)
+                variable = getattr(event, "Jet_{}".format(order))
+                for idx in range(nJets):
+                    values[idx] = variable[idx]
+                ordered_indices[order] = np.argsort(values)[::-1]
+                assigned_indices[order] = np.zeros(shape = 
+                    (len(self.permutations[nJets]), len(self.config.additional_objects[order])))
+
             idy = 0
             for feat in self.config.features:
                 variable = getattr(event, "Jet_{}".format(feat))
@@ -83,11 +107,52 @@ class Hypotheses:
                     for idx, p in enumerate(self.permutations[nJets]):
                         data[idx,idy] = variable[p[i]]
                     idy += 1
+            idz = 0
             for i, obj in enumerate(self.config.objects):
                 for idx, p in enumerate(self.permutations[nJets]):
                     data[idx, idy] = p[i]
+                    used_indices[idx, idz] = p[i]
+                idz += 1
                 idy += 1
+            
+            # figure out indices of additional object information
+            for idx in range(len(self.permutations[nJets])):
+                used = used_indices[idx]
+                for order in self.config.additional_objects:
+                    for iobj in range(len(self.config.additional_objects[order])):
+                        if (iobj+1)+self.hypothesisJets > nJets:
+                            assigned_indices[order][idx, iobj] = -1
+                            continue
 
+                        used_here = np.concatenate((used, assigned_indices[order][idx, :iobj]))
+
+                        freeIndex = 0
+                        while ordered_indices[order][freeIndex] in used_here:
+                            freeIndex += 1
+                        assigned_indices[order][idx, iobj] = ordered_indices[order][freeIndex]
+                    
+
+            # if available add additional objects
+            for order in self.config.additional_objects:
+                for feat in self.config.features:
+                    variable = getattr(event, "Jet_{}".format(feat))
+
+                    for i in range(len(self.config.additional_objects[order])):
+                        for idx in range(len(self.permutations[nJets])):
+                            assigned_index = int(assigned_indices[order][idx, i])
+                            if assigned_index == -1:
+                                data[idx,idy] = -99.
+                            else:
+                                data[idx,idy] = variable[assigned_index]
+                        idy += 1
+
+                for i in range(len(self.config.additional_objects[order])):
+                    for idx in range(len(self.permutations[nJets])):
+                        data[idx, idy] = assigned_indices[order][idx, i]
+                    idy += 1
+
+
+            # add additional variables
             for i, av in enumerate(self.config.additional_variables):
                 if "[" in av and "]" in av:
                     av, avidx = av.split("[")

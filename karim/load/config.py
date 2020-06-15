@@ -28,7 +28,14 @@ class Config:
             print("\n".join(self.objects))
             print("list of features for reconstruction:")
             print("\n".join(self.features))
-
+            
+            self.additional_objects = config.get_additional_objects()
+            if len(self.additional_objects) > 0:
+                print("additional objects:")
+                for order in self.additional_objects:
+                    print("ordered by {}:".format(order))
+                    print("\n".join(self.additional_objects[order]))
+            
         if mode == "Matching":
             self.naming     = config.get_naming()
             self.objects    = config.get_objects()
