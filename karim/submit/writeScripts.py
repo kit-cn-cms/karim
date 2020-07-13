@@ -23,6 +23,9 @@ python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPa
 matchTemplate = """
 python {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {friendTrees} {sigOnly} {files}
 """
+calcTemplate = """
+python {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} {files}
+"""
 
 def writeScripts(inputSample, scriptDir, options, basepath):
     ''' 
@@ -93,6 +96,17 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     sigOnly   = "--signal-only" if options.signal_only else "",
                     files     = " ".join(jobfiles))
 
+
+            elif options.mode == "Calculation":
+                script = scriptTemplate+calcTemplate
+                script = script.format(
+                    cmssw    = os.environ['CMSSW_BASE'],
+                    basepath  = basepath,
+                    mode      = options.mode,
+                    config    = options.config_path,
+                    outPath   = options.output,
+                    friendTrees = friendTrees,
+                    files     = " ".join(jobfiles))
 
             outFile = scriptNameTemplate.format(idx = scriptID)
             with open(outFile, "w") as of:

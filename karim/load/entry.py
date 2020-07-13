@@ -30,8 +30,11 @@ class Entry:
             for i, v in enumerate(variables):
                 if "[" in v and "]" in v:
                     v, vidx = v.split("[")
-                    vidx = int(vidx.replace("]",""))
-                    data[:,idy] = getattr(event, v)[vidx]
+                    vidx = int(vidx.replace("]",""))    
+                    try:
+                        data[:,idy] = getattr(event, v)[vidx]
+                    except:
+                        data[:,idy] = 0.
                 else:
                     data[:,idy] = getattr(event, v)
                 idy += 1

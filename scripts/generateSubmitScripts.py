@@ -22,7 +22,8 @@ usage = ["",
 
  
 parser = optparse.OptionParser(usage = "\n".join(usage))
-parser.add_option("-M", "--mode", dest = "mode", choices = ["Reconstruction", "R", "Matching", "M", "Evaluation", "E"],
+parser.add_option("-M", "--mode", dest = "mode", 
+    choices = ["Reconstruction", "R", "Matching", "M", "Evaluation", "E", "Calculation", "C"],
     help = "switch between reconstruction evaluation mode and gen level particle matching mode")
 
 recoOptions = optparse.OptionGroup(parser, "Reconstruction/Evaluation options")
@@ -71,6 +72,8 @@ if opts.mode == "M":
     opts.mode = "Matching"
 if opts.mode == "E":
     opts.mode = "Evaluation"
+if opts.mode == "C":
+    opts.mode = "Calculation"
 
 # check arguments
 if opts.mode == "Reconstruction" or opts.mode == "Evaluation":
