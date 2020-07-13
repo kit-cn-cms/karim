@@ -166,7 +166,6 @@ def calculate_variables(df):
         eta2 = df["GenTopHad_Q2_Eta[0]"].values,
         phi2 = df["GenTopHad_Q2_Phi[0]"].values)
 
-    
     # ttbar kinematic differences
     df[name+"_ttbar_dPhi"] = common.get_dPhi(
         df[name+"_LepTop_Phi"].values,
