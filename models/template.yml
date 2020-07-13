@@ -1,0 +1,20 @@
+sets:
+    # each set can contain multiple dnns
+    # the selection must be orthogonal
+    "ttH_classification":
+        nodes:
+            # list of output nodes in the correct order
+            - ttH
+            - ...
+        models:
+            random_model_1:
+                path: # path to dnn model
+                selection: event.N_BTagsM==3
+            random_model_2:
+                path: # path to dnn model
+                selection: event.N_BTagsM>=4
+            ...:
+        predicted_class: "predictedClass_classificationDNN"
+        name: "dnnOutput_$NODE_node__$IDX"
+    "...":
+    

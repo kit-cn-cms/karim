@@ -7,7 +7,7 @@ import pandas as pd
 from karim import load as load
 from hypotheses import Hypotheses
 
-def evaluate_reconstruction(filename, modelname, configpath, outpath, apply_selection = False):
+def evaluate_reconstruction(filename, modelname, configpath, friendTrees, outpath, apply_selection = False):
     print(" ===== EVALUATING FILE ===== ")
     print(filename)
     print(" =========================== ")
@@ -18,10 +18,10 @@ def evaluate_reconstruction(filename, modelname, configpath, outpath, apply_sele
     # set variables needed for dnn training
     model.setVariables()
 
-    config = load.Config(configpath, "Reconstruction")
+    config = load.Config(configpath, friendTrees, "Reconstruction")
 
     # open input file
-    with load.InputFile(filename) as ntuple:
+    with load.InputFile(filename, config.getFriendTrees(filename)) as ntuple:
     
         # load hypotheses module
         hypotheses = Hypotheses(config)

@@ -1,0 +1,33 @@
+sets:
+    "ttH_4j3b":
+        nodes:
+            - ttH
+            - ttbb
+            - tt2b
+            - ttcc
+            - ttlf
+            - tHq
+            - tHW
+        models:
+            ge4j_3t:
+                path: /nfs/dust/cms/user/vdlinden/legacyTTH/DNNSets/ttH_final/ge4j_3t/1_classification/
+                selection: event.N_BTagsM>=2
+        predicted_class: "predictedClass_4j3b_DNN"
+        name: "dnnOutput_4j3b_$NODE_node__$IDX"
+    "ttH_4j4b":
+        nodes:
+            - ttH
+            - ttbb
+            - tt2b
+            - ttcc
+            - ttlf
+            - tHq
+            - tHW
+        models:
+            ge4j_ge4t:
+                path: /nfs/dust/cms/user/vdlinden/legacyTTH/DNNSets/ttH_final/ge4j_ge4t/1_classification/
+                selection: event.N_BTagsM>=2
+        predicted_class: "predictedClass_4j4b_DNN"
+        name: "dnnOutput_4j4b_$NODE_node__$IDX"
+                    
+                    

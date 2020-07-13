@@ -15,22 +15,25 @@ class Entry:
         # save config
         self.config = config
 
-    def GetEntry(self, event):
+    def GetEntry(self, event, variables = None):
+        if variables is None:
+            variables = self.variables
+
         error = False
         if not self.config.base_selection(event):
             error = True
-            data = np.zeros(shape = (1, len(self.variables)))
+            data = np.zeros(shape = (1, len(variables)))
             data[:,:] = -99.
         else:
-            data = np.zeros(shape = (1, len(self.variables)))
+            data = np.zeros(shape = (1, len(variables)))
             idy = 0
-            for i, av in enumerate(self.config.additional_variables):
-                if "[" in av and "]" in av:
-                    av, avidx = av.split("[")
-                    avidx = int(avidx.replace("]",""))
-                    data[:,idy] = getattr(event, av)[avidx]
+            for i, v in enumerate(variables):
+                if "[" in v and "]" in v:
+                    v, vidx = v.split("[")
+                    vidx = int(vidx.replace("]",""))
+                    data[:,idy] = getattr(event, v)[vidx]
                 else:
-                    data[:,idy] = getattr(event, av)
+                    data[:,idy] = getattr(event, v)
                 idy += 1
 
         return data, error

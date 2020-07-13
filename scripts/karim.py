@@ -32,6 +32,9 @@ parser.add_option("-M", "--mode", dest = "mode", choices = [
 recoOptions = optparse.OptionGroup(parser, "Reconstruction/Evaluate options")
 recoOptions.add_option("-m", "--model", dest="model",default=None,
     help = "path to trained dnn model")
+recoOptions.add_option("--write-input-vars", dest = "write_input_vars",default=False,action="store_true",
+    help = "by default only the DNN outputs are written to the new trees, activate"
+           " this option to write input features as well")
 parser.add_option_group(recoOptions)
 
 matchOptions = optparse.OptionGroup(parser, "Matching options")
@@ -51,6 +54,8 @@ parser.add_option("--apply-selection", dest="apply_selection",default=False,acti
     help = "by default, default values are written for variables in events where"
            " base selection or other criteria are not fulfilled. Activate this"
            " option to skip these events. this is not usable as friendtree anymore.")
+parser.add_option("--friend-trees", "-f", dest = "friendTrees", default = None,
+    help = "add friend trees as additional source of input information. comma separated list.")
 
 (opts, args) = parser.parse_args()
 
@@ -80,6 +85,8 @@ if len(args) == 0:
 if not os.path.exists(opts.output):
     os.makedirs(opts.output)
 
+friendTrees = opts.friendTrees.split(",") if not opts.friendTrees is None else []
+
 for ntuple in args:
     outfileName = os.path.basename(ntuple)
     outfileDir  = os.path.basename(os.path.dirname(ntuple))
@@ -90,30 +97,36 @@ for ntuple in args:
 
     if opts.mode == "Reconstruction":
         karim.evaluate_reconstruction(
-            filename   = ntuple,
-            modelname  = opts.model,
-            configpath = os.path.abspath(opts.config_path),
-            outpath    = "/".join([outfilePath, outfileName])
+            filename    = ntuple,
+            modelname   = opts.model,
+            configpath  = os.path.abspath(opts.config_path),
+            friendTrees = friendTrees,
+            outpath     = "/".join([outfilePath, outfileName]),
             )
     elif opts.mode == "Evaluation":
         karim.evaluate_model(
-            filename   = ntuple,
-            modelname  = opts.model,
-            configpath = os.path.abspath(opts.config_path),
-            outpath    = "/".join([outfilePath, outfileName])
+            filename        = ntuple,
+            modelconfigpath = opts.model,
+            configpath      = os.path.abspath(opts.config_path),
+            friendTrees     = friendTrees,
+            outpath         = "/".join([outfilePath, outfileName]),
+            apply_selection = opts.apply_selection,
+            write_input_vars= opts.write_input_vars
             )
     elif opts.mode == "Matching":
         karim.match_jets(
             filename    = ntuple,
             configpath  = os.path.abspath(opts.config_path),
+            friendTrees = friendTrees,
             threshold   = opts.threshold,
             signal_only = opts.signal_only,
             outpath     = "/".join([outfilePath, outfileName])
             )
     elif opts.mode == "Calculation":
         karim.calculate_variables(
-            filename   = ntuple,
-            configpath = os.path.abspath(opts.config_path),
-            outpath    = "/".join([outfilePath, outfileName])
+            filename    = ntuple,
+            configpath  = os.path.abspath(opts.config_path),
+            friendTrees = friendTrees,
+            outpath     = "/".join([outfilePath, outfileName])
             )
         

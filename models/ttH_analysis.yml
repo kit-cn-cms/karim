@@ -1,0 +1,36 @@
+sets:
+    "ttH_classification":
+        nodes:
+            - ttH
+            - ttbb
+            - tt2b
+            - ttcc
+            - ttlf
+            - tHq
+            - tHW
+        models:
+            ge4j_3t:
+                path: /nfs/dust/cms/user/swieland/ttH_legacy/theRealPlotscript/pyroot-plotscripts/configs/legacyAnalysis/DNN_14-05-2020/DNNInputData/ge4j_3t/1_classification/
+                selection: event.N_BTagsM==3
+            ge4j_ge4t:
+                path: /nfs/dust/cms/user/swieland/ttH_legacy/theRealPlotscript/pyroot-plotscripts/configs/legacyAnalysis/DNN_14-05-2020/DNNInputData/ge4j_ge4t/1_classification/
+                selection: event.N_BTagsM>=4
+        predicted_class: "predictedClass_classificationDNN"
+        name: "dnnOutput_$NODE_node__$IDX"
+                    
+    "ttH_STXS":
+        nodes:
+            - STXS_bin_0
+            - STXS_bin_1
+            - STXS_bin_2
+            - STXS_bin_3
+            - STXS_bin_4
+        models:
+            ge4j_3t:
+                path: /nfs/dust/cms/user/swieland/ttH_legacy/theRealPlotscript/pyroot-plotscripts/configs/legacyAnalysis/DNN_14-05-2020/DNNInputData/ge4j_3t/STXS/
+                selection: event.N_BTagsM==3
+            ge4j_ge4t:
+                path: /nfs/dust/cms/user/swieland/ttH_legacy/theRealPlotscript/pyroot-plotscripts/configs/legacyAnalysis/DNN_14-05-2020/DNNInputData/ge4j_ge4t/STXS/
+                selection: event.N_BTagsM>=4
+        predicted_class: "predictedClass_STXSDNN"
+        name: "dnnOutput_$NODE"

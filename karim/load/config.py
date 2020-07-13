@@ -3,7 +3,7 @@ import os
 import importlib
 
 class Config:
-    def __init__(self, configpath, mode):
+    def __init__(self, configpath, friendTrees, mode):
         # load config module
         dirname, basename = os.path.split(configpath)
         sys.path.append(dirname)
@@ -60,5 +60,27 @@ class Config:
             self.template = ""
     
         if mode == "Evaluation":
-            self.dnn_output_variables = config.get_dnn_outputs()
-            self.dnn_predicted_class  = config.get_dnn_predicted_class()   
+            print("mode - dnn evaluation")
+
+        # friend trees
+        self.friendTreeBasePaths = []
+        if len(friendTrees) > 0:
+            print("adding friend trees:")
+            self.friendTreeBasePaths = friendTrees
+
+    def getFriendTrees(self, filename):
+        '''
+        get correct friend tree files for one base filename
+        the strucutre of ntuples is
+        basepath/
+        ----/sample/
+        ----/----/file.root
+        '''
+        sampledir, treename = os.path.split(filename)
+        basedir, samplename = os.path.split(sampledir)
+
+        friendTrees = []
+        for ft in self.friendTreeBasePaths:
+            friendTrees.append("/".join([ft, samplename, treename]))
+
+        return friendTrees
