@@ -30,19 +30,24 @@ All of the above is automatically set for shell scripts submitted to the NAF bat
 #### `karim.py`
 All scripts that need to be executed are located in the `scripts` directory. Single ntuple files can be processes with `scripts/karim.py`. This requires some inputs:
 ```
-python karim.py -m MODEL -c CONFIG.py -o OUTPATH INFILES
+python karim.py -M Reconstuction -m MODEL -c CONFIG.py -o OUTPATH INFILES
 ```
+- `-M Reconstruction`: mode switch for reconstruction.
 - `-m MODEL`: path to a DNN model. currently it is only supported to evaulate one single model at the same time.
 - `-c CONFIG`: path to a config file in the config directory. how these config files need to be structured is explained further below.
 - `-o OUTPATH`: path to directory where new ntuple files should be created. the structures created in this output directory correspond exactly to the input structure
 - `INFILES`: paths to input ntuple files. give as many ntuple files as you want, they are processed sequentially.
+
+`karim.py` also supports matching of reconstructed objects to generator level objects. This can be activated with `-M Matching`. You also need to specify a matching threshold, e.g. `-t 0.4`, such that an object with `dR <= 0.4` is considered to be matched.
+With this mode two files are generated, one called `_sig` and one `_bkg`. This can be used for defining right and wrong jet combinations e.g. for training a reconstruction DNN. 
+The `_sig` files contain the assignment of reco objects to generator objects (if any was found). The `_bkg` files contain a random combination.
 
 
 
 #### `generateSubmitScripts.py`
 For convenience `scripts/generateSubmitScripts.py` to create multiple shell scripts that execute `scripts/karim.py`. These scripts can be submitted to the NAF batch system. This requires some inputs:
 ```
-python generateSubmitScripts.py -m MODEL -c CONFIG.py -o OUTPATH -s SHELLPATH [-r NAME -n NEVENTS] SAMPLES
+python generateSubmitScripts.py -M MODE -m MODEL -c CONFIG.py -o OUTPATH -s SHELLPATH [-r NAME -n NEVENTS] SAMPLES
 ```
 Some arguments are the same as for `karim.py`. Additionally required are
 - `-s SHELLPATH`: path where shellfiles are created, relative to `workdir`.
@@ -71,7 +76,7 @@ to submit all scripts found in `FOLDER`.
 #### `checkFiles.py`
 After all jobs have finished running on the batch system, make sure they have terminated successfully. For this purpose `scripts/checkFiles.py` can be used:
 ```
-python checkFiles.py -o OUTPATH -s SHELLPATH [-r NAME] SAMPLES
+python checkFiles.py -M MODE -o OUTPATH -s SHELLPATH [-r NAME] SAMPLES
 ```
 The arguments `OUTPATH` and `SHELLPATH` are relative or absolute paths to where the newly created ntuple files and the shellscripts, respectively, are located. As usual paths to all `SAMPLES` are required. This script creates textfiles in the `SHELLPATH` directory, containing all shell scripts that need to be resubmitted due to faulty or missing output ntuple files. Instructions on how to resubmit these files is printed at the end of the script.
 
@@ -118,6 +123,12 @@ def get_additional_variables():
         ]
     return variables
 
+def base_selection(event):
+    '''
+    base selection applied to all events
+    events where the base selection is not fulfilled are filled with dummy values
+    '''
+    return event.N_Jets>=2
 
 
 def calculate_variables(df):
@@ -135,3 +146,25 @@ name_OBJECT_FEATURE
 ```
 In the `get_additional_variables` function additional variables can be included that are branches of the input ntuple files.
 With `calculate_variables` additional variables can be calculated that are either needed for the evaluation of the DNNs or are supposed to be added to to the new ntuple files, e.g. variables derived from the jet assignments.
+
+For the mode **Matching** also the following functions are needed
+```
+def get_match_variables():
+    '''
+    list of variables (usually dR variables) that should be checked for matches
+    the matching threshold can be set via the -t argument
+    '''
+    variables = [
+        ]
+    return variables
+
+def get_random_index(df, bestIndex):
+    '''
+    return a random index for the definition of the background
+    the default implementation returns any index as long as it is not the correct assignment
+    '''
+    randomIndex = bestIndex
+    while randomIndex==bestIndex:
+        randomIndex = np.random.randint(0,df.shape[0])
+    return randomIndex
+```
