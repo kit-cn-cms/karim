@@ -17,8 +17,11 @@ export KERAS_BACKEND=tensorflow
 recoTemplate = """
 python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {files}
 """
+evalTemplate = """
+python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {files}
+"""
 matchTemplate = """
-python {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {files}
+python {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {sigOnly} {files}
 """
 
 def writeScripts(inputSample, scriptDir, options, basepath):
@@ -44,7 +47,18 @@ def writeScripts(inputSample, scriptDir, options, basepath):
 
         if entries>=int(options.nevents) or rf==rootfiles[-1]:
             if options.mode == "Reconstruction":
-                script = scriptTemplate+recoTemplate.format(
+                script = scriptTemplate+recoTemplate
+                script = script.format(
+                    cmssw    = os.environ['CMSSW_BASE'],
+                    basepath  = basepath,
+                    mode      = options.mode,
+                    dnnModel  = options.model,
+                    config    = options.config_path,
+                    outPath   = options.output,
+                    files     = " ".join(jobfiles))
+            elif options.mode == "Evaluation":
+                script = scriptTemplate+recoTemplate
+                script = script.format(
                     cmssw    = os.environ['CMSSW_BASE'],
                     basepath  = basepath,
                     mode      = options.mode,
@@ -53,13 +67,15 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     outPath   = options.output,
                     files     = " ".join(jobfiles))
             elif options.mode == "Matching":
-                script = scriptTemplate+matchTemplate.format(
+                script = scriptTemplate+matchTemplate
+                script = script.format(
                     cmssw    = os.environ['CMSSW_BASE'],
                     basepath  = basepath,
                     mode      = options.mode,
                     threshold = options.threshold,
                     config    = options.config_path,
                     outPath   = options.output,
+                    sigOnly   = "--signal-only" if options.signal_only else "",
                     files     = " ".join(jobfiles))
 
             outFile = scriptNameTemplate.format(idx = scriptID)

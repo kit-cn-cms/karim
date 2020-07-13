@@ -22,10 +22,10 @@ usage = ["",
 
  
 parser = optparse.OptionParser(usage = "\n".join(usage))
-parser.add_option("-M", "--mode", dest = "mode", choices = ["Reconstruction", "R", "Matching", "M"],
+parser.add_option("-M", "--mode", dest = "mode", choices = ["Reconstruction", "R", "Matching", "M", "Evaluation", "E"],
     help = "switch between reconstruction evaluation mode and gen level particle matching mode")
 
-recoOptions = optparse.OptionGroup(parser, "Reconstruction options")
+recoOptions = optparse.OptionGroup(parser, "Reconstruction/Evaluation options")
 recoOptions.add_option("-m", "--model", dest="model",default=None,
     help = "path to trained dnn model")
 parser.add_option_group(recoOptions)
@@ -33,6 +33,10 @@ parser.add_option_group(recoOptions)
 matchOptions = optparse.OptionGroup(parser, "Matching options")
 matchOptions.add_option("-t", "--threshold", dest = "threshold", default=0.2,
     help = "dR threshold for when a jet is considered matched to a gen object")
+matchOptions.add_option("--signal-only", dest = "signal_only", default = False, action = "store_true",
+    help = "activate to only write root files with correct (i.e. best) matches."
+           " Default is false - i.e. a file with wrong assignments is written."
+           " This can be for example be used as DNN training background definitions.")
 parser.add_option_group(matchOptions)
 
 submitOptions = optparse.OptionGroup(parser, "Submit options")
@@ -54,8 +58,11 @@ if opts.mode == "R":
     opts.mode = "Reconstruction"
 if opts.mode == "M":
     opts.mode = "Matching"
+if opts.mode == "E":
+    opts.mode = "Evaluation"
+
 # check arguments
-if opts.mode == "Reconstruction":
+if opts.mode == "Reconstruction" or opts.mode == "Evaluation":
     if opts.model is None:
         exit("need to specify a dnn model")
     opts.model = os.path.abspath(opts.model)
@@ -97,12 +104,16 @@ for sample in args:
         options     = opts,
         basepath    = base)
 
+shelldir = os.path.basename(shell_path)
 
 cmd = " ".join([
     "for f in *;",
     "do python {basedir}/karim/submit/condorSubmit.py",
-    "-f $f -o ../submit -M 4000 -r 120 -n $f;",
-    "done"]).format(basedir = base)
+    "-f $f -o ../submit_{name} -M 2000 -r 120 -n {mode}_$f;",
+    "done"]).format(
+        mode = "karim_"+opts.mode.lower(),
+        name = shelldir,
+        basedir = base)
 
 text = ["",
     "",

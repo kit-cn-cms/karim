@@ -22,6 +22,9 @@ usage = ["",
 
 
 parser = optparse.OptionParser(usage = "\n".join(usage))
+parser.add_option("-M", "--mode", dest = "mode", choices = ["Reconstruction", "R", "Matching", "M"],
+    help = "switch between reconstruction evaluation mode and gen level particle matching mode")
+
 parser.add_option("-r", "--requirement", dest="name_requirement",default="nominal",
     help = "naming requirement of root files to be submitted. default is 'nominal'")
 parser.add_option("-o", "--output", dest="output",default=None,
@@ -29,6 +32,11 @@ parser.add_option("-o", "--output", dest="output",default=None,
 parser.add_option("-s", "--shellpath", dest="shell_path",default=None,
     help = "output path for shell scripts")
 (opts, args) = parser.parse_args()
+
+if opts.mode == "R":
+    opts.mode = "Reconstruction"
+if opts.mode == "M":
+    opts.mode = "Matching"
 
 if opts.output is None:
     exit("need to specify an output directory")
@@ -48,17 +56,20 @@ for sample in args:
 
     nbroken = submit.checkFiles(
         sample          = os.path.abspath(sample),
+        mode            = opts.mode,
         nameRequirement = opts.name_requirement,
         shellPath       = opts.shell_path,
         outPath         = opts.output
         )
     totalBroken+=nbroken
 
+if totalBroken == 0:
+    exit()
 
 cmd = " ".join([
     "for f in resubmit*.txt;",
     "do python {basedir}/karim/submit/condorSubmit.py",
-    "--file $f -o ../resubmit -M 4000 -r 120 -n $f;",
+    "--file $f -o ../resubmit -M 2000 -r 120 -n $f;",
     "done"]).format(basedir = base)
 
 text = ["",
@@ -93,4 +104,4 @@ text = ["",
     ""
     ]
 print("\n".join(text))
-    
+

@@ -4,7 +4,7 @@ import ROOT
 
 from common import getEntries
 
-def checkFiles(sample, nameRequirement, shellPath, outPath):
+def checkFiles(sample, mode, nameRequirement, shellPath, outPath):
     '''
     collect all files in input directory
     check if same file exists in output directory
@@ -23,36 +23,45 @@ def checkFiles(sample, nameRequirement, shellPath, outPath):
     print("number of files: {}".format(len(inFiles)))
     sampleName = os.path.basename(sample)
 
+    expectedFiles = []
+    if mode == "Matching":
+        expectedFiles = ["sig", "bkg"]
+    elif mode == "Reconstruction":
+        expectedFiles = [""]
+
     missingFiles = []
     for f in inFiles:
         fName = os.path.basename(f)
+        for suffix in expectedFiles:
+            oName = fName.replace(".root", suffix+".root")
 
-        # check if cutflow exists
-        if not os.path.exists("/".join([outPath, sampleName, fName.replace(".root",".cutflow.txt")])):
-            print("file {} missing .cutflow.txt".format(fName))
-            missingFiles.append(fName)
-            continue
+            # check if cutflow exists
+            if not os.path.exists("/".join([outPath, sampleName, oName.replace(".root",".cutflow.txt")])):
+                print("file {} missing .cutflow.txt".format(oName))
+                missingFiles.append(fName)
+                continue
 
-        # check if output file exists
-        if not os.path.exists("/".join([outPath, sampleName, fName])):
-            print("output file {} missing".format(fName))
-            missingFiles.append(fName)
-            continue
+            # check if output file exists
+            if not os.path.exists("/".join([outPath, sampleName, oName])):
+                print("output file {} missing".format(oName))
+                missingFiles.append(fName)
+                continue
 
-        # check if root file can be opened
-        if not testFile("/".join([outPath, sampleName, fName])):
-            print("output file {} corrupted".format(fName))
-            missingFiles.append(fName)
-            continue
+            # check if root file can be opened
+            if not testFile("/".join([outPath, sampleName, oName])):
+                print("output file {} corrupted".format(oName))
+                missingFiles.append(fName)
+                continue
 
-        # check if entries in output file matches original root file
-        entries_infile = getEntries(f)
-        entries_outfile = getEntries("/".join([outPath, sampleName, fName]))
-        if not entries_infile == entries_outfile:
-            print("outout file {} ({} entries) not same as input ({} entries)".format(
-                fName, entries_outfile, entries_infile))
-            missingFiles.append(fName)
-
+            # check if entries in output file matches original root file
+            entries_infile = getEntries(f)
+            entries_outfile = getEntries("/".join([outPath, sampleName, oName]))
+            if not entries_infile == entries_outfile:
+                print("output file {} ({} entries) not same as input ({} entries)".format(
+                    oName, entries_outfile, entries_infile))
+                missingFiles.append(fName)
+    
+    missingFiles = list(set(missingFiles))
     print("\n{}/{} output files broken/missing.\n".format(len(missingFiles), len(inFiles)))
 
     resubmitFile = "/".join([shellPath, "resubmit_"+sampleName+".txt"])

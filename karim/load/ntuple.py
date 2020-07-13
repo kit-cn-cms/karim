@@ -26,7 +26,7 @@ class TreeIterator:
         
     yields: DataFrame of all jet assignment hypotheses
     '''
-    def __init__(self, tree, Hypotheses):
+    def __init__(self, tree, Hypotheses = None):
         self.tree = tree
         self.Hypotheses = Hypotheses
 
@@ -51,7 +51,12 @@ class TreeIterator:
         if self.idx < self.max:
             self.tree.GetEntry(self.idx)
             self.idx+=1
-            return self.Hypotheses.GetPermutations(self.tree, self.tree.N_Jets)
+
+            return self.tree
+            #if not self.Hypotheses is None:
+            #    return self.Hypotheses.GetPermutations(self.tree, self.tree.N_Jets)
+            #else:
+                
         else:
             raise StopIteration
  
@@ -87,9 +92,10 @@ class OutputFile(object):
         '''
         self.branchArrays = []
         for i, v in enumerate(variables):
+            outvar = v.replace("[","_").replace("]","")
             self.branchArrays.append(
                 array("f", [0.]))
-            self.tree.Branch(v, self.branchArrays[i], "{}/F".format(v))
+            self.tree.Branch(outvar, self.branchArrays[i], "{}/F".format(outvar))
 
     def FillTree(self, event):
         ''' 

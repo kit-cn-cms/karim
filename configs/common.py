@@ -98,3 +98,15 @@ class Vectors:
 def get_dPhi(phi1, phi2):
     dphi = abs(phi1-phi2)
     return dphi*(dphi<np.pi)+(2.*np.pi-dphi)*(dphi>=np.pi)
+
+
+def get_dEta(eta1, eta2):
+    deta = abs(eta1-eta2)
+    return deta
+
+def get_dR(eta1, phi1, eta2, phi2):
+    dphi = get_dPhi(phi1, phi2)
+    deta = get_dEta(eta1, eta2)
+    dr = np.sqrt(dphi**2 + deta**2)
+    return dr
+
