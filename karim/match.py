@@ -34,7 +34,7 @@ def match_jets(filename, configpath, friendTrees, threshold, signal_only, outpat
                 outputVariables = np.append(outputVariables, config.naming+"_matchable")
                 for v in outputVariables:
                     print(v)
-                
+
                 # setup empty array for event data storage
                 outputSig = np.zeros(shape = (ntuple.GetEntries(), len(outputVariables)))
                 if not signal_only:
@@ -42,24 +42,37 @@ def match_jets(filename, configpath, friendTrees, threshold, signal_only, outpat
 
                 first = False
 
+                # indices to fill basic variables regardless of matching status
+                loIdxVars = hypotheses.nBaseVariables
+                hiIdxVars = hypotheses.nAdditionalVariables
+
             if error:
                 # for some reason no hypotheses are viable
                 #   e.g. not enough jets
                 if not apply_selection:
-                    outputSig[fillIdx,:] = -99
+                    outputSig[fillIdx,:loIdxVars] = -99
+                    outputSig[fillIdx,loIdxVars:hiIdxVars] = entry.iloc[0].values[loIdxVars:hiIdxVars]
+                    outputSig[fillIdx,hiIdxVars:] = -99
                     if not signal_only:
-                        outputBkg[fillIdx,:] = -99
+                        outputBkg[fillIdx,:loIdxVars] = -99
+                        outputBkg[fillIdx,loIdxVars:hiIdxVars] = entry.iloc[0].values[loIdxVars:hiIdxVars]
+                        outputBkg[fillIdx,hiIdxVars:] = -99
                     fillIdx+=1
                 continue
 
 
             # get best permutation
             bestIndex = findBest(entry, threshold, config.match_variables)
+            # fill -1 if no match was found
             if bestIndex == -1:
                 if not apply_selection:
-                    outputSig[fillIdx,:] = -1.
+                    outputSig[fillIdx,:loIdxVars] = -1
+                    outputSig[fillIdx,loIdxVars:hiIdxVars] = entry.iloc[0].values[loIdxVars:hiIdxVars]
+                    outputSig[fillIdx,hiIdxVars:] = -1
                     if not signal_only:
-                        outputBkg[fillIdx,:] = -1.
+                        outputBkg[fillIdx,:loIdxVars] = -1
+                        outputBkg[fillIdx,loIdxVars:hiIdxVars] = entry.iloc[0].values[loIdxVars:hiIdxVars]
+                        outputBkg[fillIdx,hiIdxVars:] = -1
             else:
                 randIndex = config.get_random_index(entry, bestIndex)
                 outputSig[fillIdx,:-1] = entry.iloc[bestIndex].values
