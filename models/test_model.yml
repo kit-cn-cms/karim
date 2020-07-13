@@ -1,0 +1,16 @@
+sets:
+    # each set can contain multiple dnns
+    # the selection must be orthogonal
+    "ttbar":
+        nodes:
+            # list of output nodes in the correct order
+            - ttbb
+            - ttcc
+            - ttlf
+        models:
+            random_model_1:
+                path: "/nfs/dust/cms/user/vdlinden/karim_test_data/networks/classificationNN" # path to dnn model
+                selection: event.N_Jets>=4
+        predicted_class: "predictedClass_ttbar"
+        name: "nnOutput_$NODE_node__$IDX"
+    
