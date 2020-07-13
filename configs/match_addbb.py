@@ -38,7 +38,6 @@ def get_features():
         ]
     return features
 
-
 def get_additional_variables():
     '''
     get names of additional variables which are already defined in ntuples

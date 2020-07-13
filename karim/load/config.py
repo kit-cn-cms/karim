@@ -39,7 +39,8 @@ class Config:
         if mode == "Matching":
             self.naming     = config.get_naming()
             self.objects    = config.get_objects()
-            self.features   = config.get_features() 
+            self.features   = config.get_features()
+            self.additional_objects = {}
 
             self.template = "{name}_OBJECT_FEATURE".format(name = self.naming)
 
