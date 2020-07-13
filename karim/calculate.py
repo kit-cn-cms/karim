@@ -16,65 +16,27 @@ def calculate_variables(filename, configpath, friendTrees, outpath, apply_select
     
     # open input file
     with load.InputFile(filename, config.getFriendTrees(filename)) as ntuple:
+        # open output root file
+        with load.OutputFile(outpath) as outfile:
+            outfile.SetConfigBranches(config)
 
-        # load hypothesis module
-        entry_loader = load.Entry(config)
+            # start loop over ntuple entries
+            first = True
+            for i, event in enumerate(load.TreeIterator(ntuple)):
+                config.calculate_variables(event, outfile)
+                outfile.FillTree()
 
-        first = True
-        fillIdx = 0
-        # start loop over ntuple entries
-        for i, event in enumerate(load.TreeIterator(ntuple)):
-            entry, error = entry_loader.GetEntry(event)
-            if first:
-                # get list of all dataframe variables
-                inputVariables = config.additional_variables
-                # append output value to columns
-                print("input variables:")
-                for v in inputVariables:
-                    print(v)
-                
-                # setup empty array for event data storage
-                inputData = np.zeros(shape = (ntuple.GetEntries(), len(inputVariables)))
+                if first:
+                    print("writing variables to output tree:")
+                    for b in list(outfile.tree.GetListOfBranches()):
+                        print(b.GetName())
+                    first = False
 
-                first = False
-
-            if error:
-                #print("selection not fulfulled")
-                if not apply_selection:
-                    inputData[fillIdx,:] = -1
-                    fillIdx += 1
+                if i<=10:
+                    print(" === testevent ===")
+                    for b in list(outfile.tree.GetListOfBranches()):
+                        print(b.GetName(), ", ".join([str(entry) for entry in list(outfile.branchArrays[b.GetName()])]))
+                    print(" ================="+"\n")
+                outfile.ClearArrays()
                 continue
-            else:
-                # fill output data array
-                inputData[fillIdx,:] = entry[0]
-                fillIdx += 1
-
-    # cut outputData to filled length
-    if apply_selection:
-        print("events that fulfilled the selection: {}/{}".format(fillIdx, len(outputData)))
-        inputData = inputData[:fillIdx]
-
-    # convert information to h5 file
-    df = pd.DataFrame(inputData, columns = inputVariables)
-
-    # caluclate variables
-    df = config.calculate_variables(df)
-    outputVariables = df.columns.values
-    outputData = df.values
-    for i in range(10):
-        print("=== testevent ===")
-        for name in outputVariables:
-            print(name, df[name].values[i])
-        print("================="+"\n")
-
-    df.to_hdf(outpath.replace(".root",".h5"), key = "data", mode = "w")
-    del df            
-
-    # open output root file
-    with load.OutputFile(outpath) as outfile:
-        # initialize branches
-        outfile.SetBranches(outputVariables)
-        # loop over events and fill tree
-        for event in outputData:
-            outfile.FillTree(event)
-
+            

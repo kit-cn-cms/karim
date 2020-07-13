@@ -54,6 +54,7 @@ class Config:
 
         if mode == "Calculation":
             print("mode - calculation")
+            self.set_branches = config.set_branches
             self.objects    = []
             self.features   = []
             self.naming = ""
