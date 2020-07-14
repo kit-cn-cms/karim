@@ -25,7 +25,7 @@ def checkFiles(sample, mode, nameRequirement, shellPath, outPath):
 
     expectedFiles = []
     if mode == "Matching":
-        expectedFiles = ["sig", "bkg"]
+        expectedFiles = ["_sig", "_bkg"]
     elif mode == "Reconstruction":
         expectedFiles = [""]
 
