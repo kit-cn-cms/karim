@@ -38,7 +38,7 @@ class TreeIterator:
         self.idx = 0
         self.max = self.tree.GetEntries()
         self.pstep = 100
-        self.scale = 10000
+        self.scale = 100000
         # ToDo add branch address initialization?
         self.timer = ROOT.TStopwatch()
         self.timer.Start()
@@ -89,6 +89,7 @@ class OutputFile(object):
         self.file.Close()
         with open(self.name.replace(".root",".cutflow.txt"), "w") as cff:
             cff.write("entries : {}".format(nentries))
+        print("file {} written.".format(self.name))
         print("\n"+"="*50+"\n")
     
     def SetBranches(self, variables):
@@ -116,8 +117,8 @@ class OutputFile(object):
         config.set_branches(self)
 
     def SetIntVar(self, var):
-        self.branchArrays[var] = array("i", [0]) 
-        self.tree.Branch(var, self.branchArrays[var], "{}/I".format(var))
+        self.branchArrays[var] = array("l", [0]) 
+        self.tree.Branch(var, self.branchArrays[var], "{}/L".format(var))
 
     def SetFloatVar(self, var):
         self.branchArrays[var] = array("f", [0.]) 
