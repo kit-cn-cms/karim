@@ -77,6 +77,7 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     outPath   = options.output,
                     sigOnly   = "--signal-only" if options.signal_only else "",
                     files     = " ".join(jobfiles))
+
             outFile = scriptNameTemplate.format(idx = scriptID)
             with open(outFile, "w") as of:
                 of.write(script)
