@@ -93,17 +93,17 @@ def calculate_variables(df):
     df["GenZ_Z_openingAngle"] = genvecs.getOpeningAngle("B1", "B2")
 
     # kinematic features of Z constituents
-    #df[name+"_B1_Pt"]  = vectors.get("B1", "Pt")
-    #df[name+"_B1_Eta"] = vectors.get("B1", "Eta")
-    #df[name+"_B1_M"]   = vectors.get("B1", "M")
-    #df[name+"_B1_E"]   = vectors.get("B1", "E")
-    #df[name+"_B1_Phi"] = vectors.get("B1", "Phi")
+    df[name+"_B1_Pt"]  = vectors.get("B1", "Pt")
+    df[name+"_B1_Eta"] = vectors.get("B1", "Eta")
+    df[name+"_B1_M"]   = vectors.get("B1", "M")
+    df[name+"_B1_E"]   = vectors.get("B1", "E")
+    df[name+"_B1_Phi"] = vectors.get("B1", "Phi")
 
-    #df[name+"_B2_Pt"]  = vectors.get("B2", "Pt")
-    #df[name+"_B2_Eta"] = vectors.get("B2", "Eta")
-    #df[name+"_B2_M"]   = vectors.get("B2", "M")
-    #df[name+"_B2_E"]   = vectors.get("B2", "E")
-    #df[name+"_B2_Phi"] = vectors.get("B2", "Phi")
+    df[name+"_B2_Pt"]  = vectors.get("B2", "Pt")
+    df[name+"_B2_Eta"] = vectors.get("B2", "Eta")
+    df[name+"_B2_M"]   = vectors.get("B2", "M")
+    df[name+"_B2_E"]   = vectors.get("B2", "E")
+    df[name+"_B2_Phi"] = vectors.get("B2", "Phi")
 
     # get dR values of gen and reco top quarks
     df[name+"_dRGen_B1"] = common.get_dR(
