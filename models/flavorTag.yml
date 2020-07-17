@@ -1,0 +1,16 @@
+sets:
+    # each set can contain multiple dnns
+    # the selection must be orthogonal
+    "tagger":
+        nodes:
+            # list of output nodes in the correct order
+            - b
+            - c
+            - lf
+        models:
+            v1:
+                path: "/nfs/dust/cms/user/vdlinden/legacyTTZ/dnnSets/flavTag/v1" # path to dnn model
+                selection: "True"
+        predicted_class: "jetFlavorTag"
+        name: "jetFlavorTag_$NODE"
+    

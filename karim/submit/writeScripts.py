@@ -24,7 +24,7 @@ matchTemplate = """
 python {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {friendTrees} {sigOnly} {files}
 """
 calcTemplate = """
-python {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} {files}
+python {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} {split} {files}
 """
 
 def writeScripts(inputSample, scriptDir, options, basepath):
@@ -46,6 +46,7 @@ def writeScripts(inputSample, scriptDir, options, basepath):
     scriptNameTemplate = "/".join([scriptDir, sampleName+"_{idx}.sh"])
 
     friendTrees = "--friend-trees {}".format(options.friendTrees) if not options.friendTrees is None else ""
+    splitFeature = "--split {}".format(options.split_feature) if not options.split_feature is None else ""
     # collect rootfiles until number of events per job is reached
     entries = 0
     scriptID = 1
@@ -106,6 +107,7 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     config    = options.config_path,
                     outPath   = options.output,
                     friendTrees = friendTrees,
+                    split       = splitFeature,
                     files     = " ".join(jobfiles))
 
             outFile = scriptNameTemplate.format(idx = scriptID)
