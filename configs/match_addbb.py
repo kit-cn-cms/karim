@@ -31,7 +31,7 @@ def get_features():
     features = [
         "Eta", 
         "Phi",
-        "CSV",
+        "btagValue",
         "M",
         "E",
         "Pt",
@@ -92,10 +92,10 @@ def get_additional_variables():
         "Jet_Pt[2]",
         "Jet_Pt[3]",
         "TaggedJet_Pt[1]",
-        "CSV[0]",
-        "CSV[1]",
-        "CSV[2]",
-        "CSV[3]",
+        "btagValue[0]",
+        "btagValue[1]",
+        "btagValue[2]",
+        "btagValue[3]",
         "GenEvt_I_TTPlusBB",
         ######    
 
@@ -103,7 +103,7 @@ def get_additional_variables():
         "N_Jets",
         "N_BTagsM",
         "Weight_XS",
-        "Weight_CSV",
+        "Weight_btagSF",
         "Weight_GEN_nom",
         "Evt_ID",
         "Evt_Run",

@@ -25,7 +25,7 @@ def get_features():
     define a list of features applicable for all objects defined in get_objects()
     '''
     features = [
-        "CSV", 
+        "btagValue", 
         "Pt", 
         "M", 
         "E", 

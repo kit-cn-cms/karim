@@ -27,7 +27,7 @@ def get_features():
     features = [
         "Eta", 
         "Phi",
-        "CSV",
+        "btagValue",
         "M",
         "E",
         "Pt",
@@ -54,7 +54,7 @@ def get_additional_variables():
         "N_Jets",
         "N_BTagsM",
         "Weight_XS",
-        "Weight_CSV",
+        "Weight_btagSF",
         "Weight_GEN_nom",
         "Evt_ID",
         "Evt_Run",
