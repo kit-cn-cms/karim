@@ -46,6 +46,12 @@ matchOptions.add_option("--signal-only", dest = "signal_only", default = False, 
            " This can be for example be used as DNN training background definitions.")
 parser.add_option_group(matchOptions)
 
+calcOptions = optparse.OptionGroup(parser, "Calculation options")
+calcOptions.add_option("--split", dest="split_feature", default = None,
+    help = "define variable upon which to split events and corresponding event vectors."
+            "e.g. 'N_Jets' creates a single ntuple entry for each jet in each event")
+parser.add_option_group(calcOptions)
+
 parser.add_option("-c", "--config", dest = "config_path", default=None,
     help = "module for defining objects and variables in config directory")
 parser.add_option("-o", "--output", dest="output",default=None,
@@ -124,9 +130,10 @@ for ntuple in args:
             )
     elif opts.mode == "Calculation":
         karim.calculate_variables(
-            filename    = ntuple,
-            configpath  = os.path.abspath(opts.config_path),
-            friendTrees = friendTrees,
-            outpath     = "/".join([outfilePath, outfileName])
+            filename        = ntuple,
+            configpath      = os.path.abspath(opts.config_path),
+            friendTrees     = friendTrees,
+            outpath         = "/".join([outfilePath, outfileName]),
+            split_feature   = opts.split_feature,
             )
         
