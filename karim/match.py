@@ -104,12 +104,10 @@ def match_jets(filename, configpath, friendTrees, threshold, signal_only, outpat
         if not signal_only:
             outputBkg = outputBkg[:fillIdx]
 
-    # open output root file
+    # open output root file 
+    sigpath = outpath
     if not signal_only:
-        sigpath = outpath.replace(".root","_sig.root")
         bkgpath = outpath.replace(".root","_bkg.root")
-    else:
-        sigpath = outpath
 
     with load.OutputFile(sigpath) as outfile:
         # initialize branches
