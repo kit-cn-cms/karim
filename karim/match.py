@@ -60,9 +60,12 @@ def match_jets(filename, configpath, threshold, signal_only, outpath, apply_sele
                     fillIdx+=1
                 continue
 
-
+            # apply signal selection
+            sig_selection = config.def_signal_selection
+            entry_signal_selection = entry_selection(entry, sig_selection)
             # get best permutation
-            bestIndex = findBest(entry, threshold, config.match_variables)
+            # bestIndex = findBest(entry, threshold, config.match_variables)
+            bestIndex = findBest(entry_signal_selection, threshold, config.match_variables)
             # fill -1 if no match was found
             if bestIndex == -1:
                 if not apply_selection:
@@ -74,12 +77,29 @@ def match_jets(filename, configpath, threshold, signal_only, outpath, apply_sele
                         outputBkg[fillIdx,loIdxVars:hiIdxVars] = entry.iloc[0].values[loIdxVars:hiIdxVars]
                         outputBkg[fillIdx,hiIdxVars:] = -1
             else:
-                randIndex = config.get_random_index(entry, bestIndex)
+                # randIndex = config.get_random_index(entry, bestIndex)
                 outputSig[fillIdx,:-1] = entry.iloc[bestIndex].values
                 outputSig[fillIdx, -1] = 1
                 if not signal_only:
-                    outputBkg[fillIdx,:-1] = entry.iloc[randIndex].values
-                    outputBkg[fillIdx, -1] = 1
+                    bkg_selection = config.def_background_selection
+                    entry_background_selection = entry_selection(entry, bkg_selection)
+                    # print entry_background_selection
+                    # print entry_background_selection.shape[0]
+                    fill = True
+                    if entry_background_selection.shape[0] == 1:
+                        if entry_background_selection.index[0] == bestIndex:
+                            fill = False
+                    if entry_background_selection.shape[0] == 0:
+                        fill = False
+                    if not fill:
+                        if not apply_selection:
+                            outputBkg[fillIdx,:loIdxVars] = -99
+                            outputBkg[fillIdx,loIdxVars:hiIdxVars] = entry.iloc[0].values[loIdxVars:hiIdxVars]
+                            outputBkg[fillIdx,hiIdxVars:] = -99
+                    else:
+                        randIndex = config.get_random_index(entry_background_selection, bestIndex)
+                        outputBkg[fillIdx,:-1] = entry.iloc[randIndex].values
+                        outputBkg[fillIdx, -1] = 1
                 
             if fillIdx<=10:
                 print("=== testevent ===")
@@ -128,16 +148,36 @@ def match_jets(filename, configpath, threshold, signal_only, outpath, apply_sele
 
 
 def findBest(entry, threshold, match_variables):
+    # print(list(entry.columns))
+    # entry = entry.query("bbfromttbar_HadTopB_CSV>0.277")
+    # entry = entry.query("bbfromttbar_LepTopB_CSV>0.277")
+    # print(entry)
+    # print(match_variables)
     for v in match_variables:
         entry = entry.query(v+"<="+threshold)
 
     bestIndex = -1
     if entry.shape[0]>=1:
         bestIndex =  entry.index.values[0]
-
     return bestIndex
-    
 
+def entry_selection(entry, selection):
+    # print (sig_selection)
+    for i in selection:
+        entry = entry.query(i)
+    return entry
+
+# def signal_selection(entry, sig_selection):
+#     # print (sig_selection)
+#     for i in sig_selection:
+#         entry = entry.query(i)
+#     return entry
+
+# def background_selection(entry, bkg_selection):
+#     # print (bkg_selection)
+#     for i in bkg_selection:
+#         entry = entry.query(i)
+#     return entry
 
 
 
