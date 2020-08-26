@@ -38,6 +38,35 @@ class Model:
             
         self.model.summary()
 
+
+    ##############################################################################
+    def setNodeIndex(self,outputNode):
+        '''
+        compare given dnn output node with samples in the net_config.json file
+        return index of this output node
+        '''
+        if outputNode is None:
+        	self.node_index = 0
+        	print("No dnn output node specified. Set output node index to zero.")
+        	return
+
+        evtCls = self.config["eventClasses"]
+        node_names = []
+        for i,c in enumerate(evtCls):
+        	node_names.append(c["sampleLabel"])
+        	if c["sampleLabel"] == outputNode:
+        		self.node_index = i
+        		print("Found output node at index {}".format(i))
+        		return
+
+        print("Did not find output node {}".format(outputNode))
+        print("Possible sample names: {}".format(node_names))
+        sys.exit()
+        
+    ###############################################################################
+
+
+
     
     def setVariables(self):
         '''
@@ -67,8 +96,8 @@ class Model:
             matrix[:,idx]/=row["std"] 
             idx+=1
         predictions = self.model.predict(matrix)
-        bestIndex = np.argmax(predictions[:,0])
-        return bestIndex, predictions[bestIndex][0]
+        bestIndex = np.argmax(predictions[:,self.node_index])
+        return bestIndex, predictions[bestIndex][self.node_index]
 
     
     def evaluate(self, entry):

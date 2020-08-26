@@ -7,7 +7,7 @@ import pandas as pd
 from karim import load as load
 from hypotheses import Hypotheses
 
-def evaluate_reconstruction(filename, modelname, configpath, friendTrees, outpath, apply_selection = False):
+def evaluate_reconstruction(filename, modelname, outputNode, configpath, friendTrees, outpath, apply_selection = False):
     print(" ===== EVALUATING FILE ===== ")
     print(filename)
     print(" =========================== ")
@@ -17,6 +17,8 @@ def evaluate_reconstruction(filename, modelname, configpath, friendTrees, outpat
     
     # set variables needed for dnn training
     model.setVariables()
+
+    model.setNodeIndex(outputNode)
 
     config = load.Config(configpath, friendTrees, "Reconstruction")
 
@@ -34,6 +36,7 @@ def evaluate_reconstruction(filename, modelname, configpath, friendTrees, outpat
         # start loop over ntuple entries
         for i, event in enumerate(load.TreeIterator(ntuple)):
             entry, error = hypotheses.GetEntry(event, event.N_Jets)
+
 
             if first:
                 # check if all variables for DNN evaluation are present in dataframe

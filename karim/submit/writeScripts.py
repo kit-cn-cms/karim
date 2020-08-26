@@ -15,7 +15,7 @@ cd -
 export KERAS_BACKEND=tensorflow
 """
 recoTemplate = """
-python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {friendTrees} {files}
+python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {friendTrees} {dnnOutputNode} {files}
 """
 evalTemplate = """
 python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {friendTrees} {applySelection} {writeInputVars} {files}
@@ -46,6 +46,9 @@ def writeScripts(inputSample, scriptDir, options, basepath):
     scriptNameTemplate = "/".join([scriptDir, sampleName+"_{idx}.sh"])
 
     friendTrees = "--friend-trees {}".format(options.friendTrees) if not options.friendTrees is None else ""
+
+    outputNode = "-x {}".format(options.dnn_output_node) if not options.dnn_output_node is None else ""
+
     # collect rootfiles until number of events per job is reached
     entries = 0
     scriptID = 1
@@ -65,6 +68,7 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     config    = options.config_path,
                     outPath   = options.output,
                     friendTrees = friendTrees,
+                    dnnOutputNode = outputNode,
                     files     = " ".join(jobfiles)
                     )
 

@@ -35,6 +35,11 @@ recoOptions.add_option("-m", "--model", dest="model",default=None,
 recoOptions.add_option("--write-input-vars", dest = "write_input_vars",default=False,action="store_true",
     help = "by default only the DNN outputs are written to the new trees, activate"
            " this option to write input features as well")
+#####################################################################
+recoOptions.add_option("-x", dest = "dnn_output_node",default=None,
+    help = "by default the zeroth output node of the reconstruction dnn is evaluated."
+           "Give sample name of the output node (e.g. sig_Z) to evaluate a specific node")
+#####################################################################
 parser.add_option_group(recoOptions)
 
 matchOptions = optparse.OptionGroup(parser, "Matching options")
@@ -99,6 +104,7 @@ for ntuple in args:
         karim.evaluate_reconstruction(
             filename    = ntuple,
             modelname   = opts.model,
+            outputNode  = opts.dnn_output_node,
             configpath  = os.path.abspath(opts.config_path),
             friendTrees = friendTrees,
             outpath     = "/".join([outfilePath, outfileName]),
