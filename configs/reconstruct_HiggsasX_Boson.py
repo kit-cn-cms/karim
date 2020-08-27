@@ -52,13 +52,35 @@ def get_additional_variables():
     which are needed for the dnn inputs
     '''
     variables = [
-        "N_BTagsM",
+
+        "Evt_Odd",
         "N_Jets",
+        "N_BTagsM",
+        "Weight_XS",
+        "Weight_btagSF",
+        "Weight_GEN_nom",
+        "Evt_ID",
+        "Evt_Run",
+        "Evt_Lumi",
+
 
         "GenHiggs_B1_Phi",
         "GenHiggs_B2_Phi",
         "GenHiggs_B1_Eta",
         "GenHiggs_B2_Eta",
+        "GenHiggs_B1_E",
+        "GenHiggs_B2_E",
+        "GenHiggs_B1_Pt",
+        "GenHiggs_B2_Pt",
+
+
+        #add lepton variables
+        "TightLepton_E[0]",
+        "TightLepton_Eta[0]",
+        "TightLepton_M[0]",
+        "TightLepton_Phi[0]",
+        "TightLepton_Pt[0]",
+
 
         ]
     return variables
@@ -71,6 +93,16 @@ def calculate_variables(df):
     '''
     calculate additional variables needed for DNN input
     '''
+
+    #Rename lepton variables
+    #Otherwise the generateSubmitScript wouldnt find the variables!!
+    df["TightLepton_E_0"] = df["TightLepton_E[0]"].values
+    df["TightLepton_Eta_0"] = df["TightLepton_Eta[0]"].values
+    df["TightLepton_M_0"] = df["TightLepton_M[0]"].values
+    df["TightLepton_Phi_0"] = df["TightLepton_Phi[0]"].values
+    df["TightLepton_Pt_0"] = df["TightLepton_Pt[0]"].values
+
+
 
     # angular differences
     df[name+"_X_dPhi"]  = common.get_dPhi(df[name+"_B1_Phi"].values, df[name+"_B2_Phi"].values)
@@ -89,6 +121,7 @@ def calculate_variables(df):
     df[name+"_X_Eta"] = vectors.get("X", "Eta")
     df[name+"_X_M"]   = vectors.get("X", "M")
     df[name+"_X_E"]   = vectors.get("X", "E")
+    df[name+"_X_Phi"]   = vectors.get("X", "Phi")
 
     # log values
     for obj in ["B1", "B2", "X"]:
@@ -140,5 +173,44 @@ def calculate_variables(df):
         phi1 = df["GenHiggs_B2_Phi"].values,
         eta2 = df[name+"_B1_Eta"].values,
         phi2 = df[name+"_B1_Phi"].values)
+
+
+
+    #get delta variables of lepton and b-jets
+    df[name+"_B1_dEta_lept"] = common.get_dEta(df["TightLepton_Eta[0]"].values,df[name+"_B1_Eta"].values)
+    df[name+"_B2_dEta_lept"] = common.get_dEta(df["TightLepton_Eta[0]"].values,df[name+"_B2_Eta"].values)
+    df[name+"_B1_dPhi_lept"] = common.get_dPhi(df["TightLepton_Phi[0]"].values,df[name+"_B1_Phi"].values)
+    df[name+"_B2_dPhi_lept"] = common.get_dPhi(df["TightLepton_Phi[0]"].values,df[name+"_B2_Phi"].values)
+
+    df[name+"_B1_dR_lept"] = common.get_dR(
+         df["TightLepton_Eta[0]"].values,
+         df["TightLepton_Phi[0]"].values,
+         df[name+"_B1_Eta"].values,
+         df[name+"_B1_Phi"].values)
+
+    df[name+"_B2_dR_lept"] = common.get_dR(
+         df["TightLepton_Eta[0]"].values,
+         df["TightLepton_Phi[0]"].values,
+         df[name+"_B2_Eta"].values,
+         df[name+"_B2_Phi"].values)
+
+
+    #get delta variables of lepton and X-boson
+    df[name+"_X_dEta_lept"] = common.get_dEta(df["TightLepton_Eta[0]"].values,df[name+"_X_Eta"].values)
+    df[name+"_X_dPhi_lept"] = common.get_dPhi(df["TightLepton_Phi[0]"].values,df[name+"_X_Phi"].values)
+
+    df[name+"_X_dR_lept"] = common.get_dR(
+         df["TightLepton_Eta[0]"].values,
+         df["TightLepton_Phi[0]"].values,
+         df[name+"_X_Eta"].values,
+         df[name+"_X_Phi"].values)
+
+
+
+    #get average of btag-values of the two b-jets
+    df[name+"_X_btagAverage"] = (df[name+"_B1_btagValue"].values + df[name+"_B2_btagValue"].values) / 2.
+
+
+
     return df
 

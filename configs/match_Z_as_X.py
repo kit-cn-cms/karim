@@ -58,7 +58,15 @@ def get_additional_variables():
         "Weight_GEN_nom",
         "Evt_ID",
         "Evt_Run",
-        "Evt_Lumi"
+        "Evt_Lumi",
+
+        #add lepton variables
+        "TightLepton_Pt[0]",
+        "TightLepton_Eta[0]",
+        "TightLepton_Phi[0]",
+        "TightLepton_E[0]",
+        "TightLepton_M[0]",
+
         ]
     return variables
 
@@ -84,6 +92,7 @@ def calculate_variables(df):
     df[name+"_X_Eta"] = vectors.get("X", "Eta")
     df[name+"_X_M"]   = vectors.get("X", "M")
     df[name+"_X_E"]   = vectors.get("X", "E")
+    df[name+"_X_Phi"]   = vectors.get("X", "Phi")
     
     # correction for X mass
     df["GenZ_Z_massCorrection"] = df["GenZ_Z_M"].values/(df[name+"_X_M"].values+1e-10)
@@ -118,12 +127,45 @@ def calculate_variables(df):
         eta2 = df["GenZ_B2_Eta"].values,
         phi2 = df["GenZ_B2_Phi"].values)
 
+
+    #get delta variables of lepton and b-jets
+    df[name+"_B1_dEta_lept"] = common.get_dEta(df["TightLepton_Eta[0]"].values,df[name+"_B1_Eta"].values)
+    df[name+"_B2_dEta_lept"] = common.get_dEta(df["TightLepton_Eta[0]"].values,df[name+"_B2_Eta"].values)
+    df[name+"_B1_dPhi_lept"] = common.get_dPhi(df["TightLepton_Phi[0]"].values,df[name+"_B1_Phi"].values)
+    df[name+"_B2_dPhi_lept"] = common.get_dPhi(df["TightLepton_Phi[0]"].values,df[name+"_B2_Phi"].values)
+
+    df[name+"_B1_dR_lept"] = common.get_dR(
+         df["TightLepton_Eta[0]"].values,
+         df["TightLepton_Phi[0]"].values,
+         df[name+"_B1_Eta"].values,
+         df[name+"_B1_Phi"].values)
+
+    df[name+"_B2_dR_lept"] = common.get_dR(
+         df["TightLepton_Eta[0]"].values,
+         df["TightLepton_Phi[0]"].values,
+         df[name+"_B2_Eta"].values,
+         df[name+"_B2_Phi"].values)
+
+    #get delta variables of lepton and X-boson
+    df[name+"_X_dEta_lept"] = common.get_dEta(df["TightLepton_Eta[0]"].values,df[name+"_X_Eta"].values)
+    df[name+"_X_dPhi_lept"] = common.get_dPhi(df["TightLepton_Phi[0]"].values,df[name+"_X_Phi"].values)
+
+    df[name+"_X_dR_lept"] = common.get_dR(
+         df["TightLepton_Eta[0]"].values,
+         df["TightLepton_Phi[0]"].values,
+         df[name+"_X_Eta"].values,
+         df[name+"_X_Phi"].values)
+
+
+    #get average of btag-values of the two b-jets
+    df[name+"_X_btagAverage"] = (df[name+"_B1_btagValue"].values + df[name+"_B2_btagValue"].values) / 2.
+
     
     # ttbar kinematic differences
     df[name+"_X_dPhi"] = common.get_dPhi(
         df[name+"_B1_Phi"].values,
         df[name+"_B2_Phi"].values)
-    df[name+"_X_dEta"] = common.get_dPhi(
+    df[name+"_X_dEta"] = common.get_dEta(
         df[name+"_B1_Eta"].values,
         df[name+"_B2_Eta"].values)
     df[name+"_X_dPt"] = abs(

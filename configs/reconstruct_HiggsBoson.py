@@ -35,6 +35,18 @@ def get_features():
     return features
 
 
+def get_additional_objects():
+    '''
+    define dictionary of objects that are identified based on the reconstructed objects
+    dictionary entries define the order by which the objects are defined.
+    e.g. objects['Pt'] = [O1, O2] defiles O1 as the object with the highest Pt that is
+    not part of the default reconstructed objects
+    '''
+    objects = {}
+    return objects
+
+
+
 def get_additional_variables():
     '''
     get names of additional variables which are already defined in ntuples
