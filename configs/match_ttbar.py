@@ -37,6 +37,29 @@ def get_features():
     return features
 
 
+def get_additional_objects():
+    '''
+    define dictionary of objects that are identified based on the reconstructed objects
+    dictionary entries define the order by which the objects are defined.
+    e.g. objects['Pt'] = [O1, O2] defiles O1 as the object with the highest Pt that is
+    not part of the default reconstructed objects
+    '''
+    objects = {}
+    objects["CSV"] = [
+        "addB1_csv_ordered",
+        "addB2_csv_ordered",
+        ]
+    objects["Pt"] = [
+        "addB1_pt_ordered",
+        "addB2_pt_ordered",
+        ]
+    objects["Pt_btag"] = [
+        "addB1_pt_ordered_req_CSV_>_0.277",
+        "addB2_pt_ordered_req_CSV_>_0.277",
+        ]
+    return objects
+
+
 def get_additional_variables():
     '''
     get names of additional variables which are already defined in ntuples
@@ -199,8 +222,30 @@ def get_match_variables():
         ]
     return variables
 
+def def_signal_selection():
+    sig_selection = [
+    "ttbarReco_HadTopB_CSV>0.277",
+    "ttbarReco_LepTopB_CSV>0.277",
+    ]
+    return sig_selection
+
+def def_background_selection():
+    bkg_selection = [
+    "ttbarReco_HadTopB_CSV>0.277",
+    "ttbarReco_LepTopB_CSV>0.277",
+    ]
+    return bkg_selection
+
+def def_dnn_reco_selection():
+    dnn_reco_selection = [
+    "ttbarReco_HadTopB_CSV>0.277",
+    "ttbarReco_LepTopB_CSV>0.277",
+    ]
+    return dnn_reco_selection
+
 def get_random_index(df, bestIndex):
     randomIndex = bestIndex
     while randomIndex==bestIndex:
-        randomIndex = np.random.randint(0,df.shape[0])
+        # randomIndex = np.random.randint(0,df.shape[0])
+        randomIndex = df.index[np.random.randint(0,df.shape[0])]
     return randomIndex
