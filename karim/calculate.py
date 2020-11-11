@@ -24,12 +24,12 @@ def calculate_variables(filename, configpath, friendTrees, outpath, apply_select
             first = True
             for i, event in enumerate(load.TreeIterator(ntuple)):
                 if split_feature is None:
-                    config.calculate_variables(event, outfile)
+                    config.calculate_variables(event, outfile, outfile.sampleName)
                     outfile.FillTree()
                 else:
                     loopSize = getattr(event, split_feature)
                     for idx in range(loopSize):
-                        config.calculate_variables(event, outfile, idx)
+                        config.calculate_variables(event, outfile, outfile.sampleName, idx)
                         outfile.FillTree()
                         outfile.ClearArrays()
 
