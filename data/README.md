@@ -1,4 +1,4 @@
-## Scalefactors and weights for CMS analyses
+## Scale factors and weights for CMS ttX analyses
 
 The different scale factors and weights collected in this directory are summarized below. 
 Some are official POG weights and scale factors which have been collected here for convenience. 
@@ -17,7 +17,7 @@ The files are copied without changes from the [official POG TWiki pages](https:/
 | legacy 2018 | |
 |  |  |
 | UL 2017 | | 
-| -- | -- |
+| | |
 
 
 These b-tagging SFs can be read with a dedicated class in `configs/weightModules.py`
@@ -103,7 +103,7 @@ The trigger scale factors can be read with a dedicated class in `configs/weightM
 | legacy 2018 | | |
 |  |  |  |
 | UL 2017 | | |
-| -- | -- | -- |
+|  | |  |
 
 ```python
 elTrigSFs = weightModules.LeptonSFs(csv = FILE, sfName = SFNAME)
@@ -122,7 +122,7 @@ for el in electrons:
 | legacy 2018 | | |
 |  |  |  |
 | UL 2017 | | |
-| -- | -- | -- |
+|  | | |
 
 ```python
 muTrigSFs = weightModules.LeptonSFs(csv = FILE, sfName = SFNAME)
@@ -149,7 +149,7 @@ The lepton scale factors can be read with a dedicated class in `configs/weightMo
 | legacy 2018 | | |
 |  |  |  |
 | UL 2017 | | |
-| -- | -- | -- |
+|  |  |  |
 
 ```python
 elIDSFs = weightModules.LeptonSFs(csv = FILE, sfName = SFNAME)
@@ -168,7 +168,7 @@ for el in electrons:
 | legacy 2018 | | |
 |  |  |  |
 | UL 2017 | | |
-| -- | -- | -- |
+|  |  |  |
 
 ```python
 muIDSFs = weightModules.LeptonSFs(csv = FILE, sfName = SFNAME)
@@ -187,7 +187,7 @@ for mu in muons:
 | legacy 2018 | | |
 |  |  |  |
 | UL 2017 | | |
-| -- | -- | -- |
+|  |  |  |
 
 ```python
 elRecoSFs = weightModules.LeptonSFs(csv = FILE, sfName = SFNAME)
@@ -205,7 +205,7 @@ for el in electrons:
 | legacy 2018 | | |
 |  |  |  |
 | UL 2017 | | |
-| -- | -- | -- |
+|  |  |  |
 
 ```python
 muISOSFs = weightModules.LeptonSFs(csv = FILE, sfName = SFNAME)
