@@ -8,12 +8,12 @@ Some are privately produced weights and scale factors for MC-to-data corrections
 
 Currently included are b-tagging scale factors for the deepJet tagger and its corresponding uncertainties.
 The files contain fixed working point scale factors as well as iterative fit scale factors for the correction of the b-tagging shape (only use them if you are actually using the shape of the b-tagging distribution anywhere in your analysis).
-The files are copied without changes from the !(https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation)[official POG TWiki pages].
+The files are copied without changes from the [official POG TWiki pages](https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation).
 
 |data period | SF file |
 | -- | -- |
 | legacy 2016 | |
-| legacy 2017 | !(https://twiki.cern.ch/twiki/pub/CMS/BtagRecommendation94X/DeepFlavour_94XSF_V4_B_F.csv)[DeepFlavour_94XSF_V4_B_F.csv] |
+| legacy 2017 | [DeepFlavour_94XSF_V4_B_F.csv](https://twiki.cern.ch/twiki/pub/CMS/BtagRecommendation94X/DeepFlavour_94XSF_V4_B_F.csv) |
 | legacy 2018 | |
 |  |  |
 | UL 2017 | | 
@@ -90,8 +90,8 @@ WIP: hdamp, pdf and UE variations not yet validated
 ### Lepton Trigger scale factors
 
 For electons and muons separate trigger scale factors are used. 
-The muon trigger scale factors are provided by the POG as root files on the !(https://twiki.cern.ch/twiki/bin/view/CMS/MuonPOG)[official Muon POG TWiki pages].
-The electron trigger scale factors are derived as a part of the ttHbb analysis and are provided in !(https://gitlab.cern.ch/ttH/reference/-/tree/master/scale_factors/triggers)[this gitlab repository].
+The muon trigger scale factors are provided by the POG as root files on the [official Muon POG TWiki pages](https://twiki.cern.ch/twiki/bin/view/CMS/MuonPOG).
+The electron trigger scale factors are derived as a part of the ttHbb analysis and are provided in [this gitlab repository](https://gitlab.cern.ch/ttH/reference/-/tree/master/scale_factors/triggers).
 These root files has been converted to csv files with the scripts in `data/util` without changing the content.
 The trigger scale factors can be read with a dedicated class in `configs/weightModules.py`
 
@@ -99,7 +99,7 @@ The trigger scale factors can be read with a dedicated class in `configs/weightM
 |data period | SF file | SF name |
 | -- | -- | -- |
 | legacy 2016 | | |
-| legacy 2017 | !(https://gitlab.cern.ch/ttH/reference/-/blob/master/scale_factors/triggers/SingleEG_JetHT_Trigger_Scale_Factors_ttHbb2017_v3.root)[SingleEG_JetHT_Trigger_Scale_Factors_ttHbb2017_v3.root ] | `ele28_ht150_OR_ele32_ele_pt_ele_sceta` |
+| legacy 2017 | [SingleEG_JetHT_Trigger_Scale_Factors_ttHbb2017_v3.root](https://gitlab.cern.ch/ttH/reference/-/blob/master/scale_factors/triggers/SingleEG_JetHT_Trigger_Scale_Factors_ttHbb2017_v3.root) | `ele28_ht150_OR_ele32_ele_pt_ele_sceta` |
 | legacy 2018 | | |
 |  |  |  |
 | UL 2017 | | |
@@ -118,7 +118,7 @@ for el in electrons:
 |data period | SF file | SF name |
 | -- | -- | -- |
 | legacy 2016 | | |
-| legacy 2017 | !(http://kplee.web.cern.ch/kplee/TagProbe/94X/v20180202_MergingHighPtBins/EfficienciesAndSF_RunBtoF_Nov17Nov2017.root)[EfficienciesAndSF_RunBtoF_Nov17Nov2017.root] | `IsoMu27_PtEtaBins` |
+| legacy 2017 | [EfficienciesAndSF_RunBtoF_Nov17Nov2017.root](http://kplee.web.cern.ch/kplee/TagProbe/94X/v20180202_MergingHighPtBins/EfficienciesAndSF_RunBtoF_Nov17Nov2017.root) | `IsoMu27_PtEtaBins` |
 | legacy 2018 | | |
 |  |  |  |
 | UL 2017 | | |
@@ -137,7 +137,7 @@ for mu in muons:
 ### Lepton ID/RECO/ISO scale factors
 
 For electrons and muons separate official POG identification and reconstruction scale factors are used.
-The POGs provide these scale factors as ROOT histograms on the !(https://twiki.cern.ch/twiki/bin/view/CMS/EgammaRunIIRecommendations)[official EGamma POG TWiki pages] and !(https://twiki.cern.ch/twiki/bin/view/CMS/MuonPOG)[official Muon POG TWiki pages].
+The POGs provide these scale factors as ROOT histograms on the [official EGamma POG TWiki pages](https://twiki.cern.ch/twiki/bin/view/CMS/EgammaRunIIRecommendations) and [official Muon POG TWiki pages](https://twiki.cern.ch/twiki/bin/view/CMS/MuonPOG).
 These root files has been converted to csv files with the scripts in `data/util` without changing the content.
 The lepton scale factors can be read with a dedicated class in `configs/weightModules.py`
 
@@ -145,7 +145,7 @@ The lepton scale factors can be read with a dedicated class in `configs/weightMo
 |data period | SF file | SF name |
 | -- | -- | -- |
 | legacy 2016 | | |
-| legacy 2017 | !(https://twiki.cern.ch/twiki/pub/CMS/EgammaIDRecipesRun2/2017_ElectronTight.root)[2017_ElectronTight.root] | `tightElectronID` |
+| legacy 2017 | [2017_ElectronTight.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaIDRecipesRun2/2017_ElectronTight.root) | `tightElectronID` |
 | legacy 2018 | | |
 |  |  |  |
 | UL 2017 | | |
@@ -164,7 +164,7 @@ for el in electrons:
 |data period | SF file | SF name |
 | -- | -- | -- |
 | legacy 2016 | | |
-| legacy 2017 | !(https://twiki.cern.ch/twiki/pub/CMS/MuonReferenceEffs2017/RunBCDEF_SF_ID.root)[RunBCDEF_SF_ID.root] | `NUM_TightID_DEN_genTracks_pt_abseta` |
+| legacy 2017 | [RunBCDEF_SF_ID.root](https://twiki.cern.ch/twiki/pub/CMS/MuonReferenceEffs2017/RunBCDEF_SF_ID.root) | `NUM_TightID_DEN_genTracks_pt_abseta` |
 | legacy 2018 | | |
 |  |  |  |
 | UL 2017 | | |
@@ -183,7 +183,7 @@ for mu in muons:
 |data period | SF file | SF name |
 | -- | -- | -- |
 | legacy 2016 | | |
-| legacy 2017 | !(https://twiki.cern.ch/twiki/pub/CMS/Egamma2017DataRecommendations/egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root)[egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root] | `electronReco` |
+| legacy 2017 | [egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root](https://twiki.cern.ch/twiki/pub/CMS/Egamma2017DataRecommendations/egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root) | `electronReco` |
 | legacy 2018 | | |
 |  |  |  |
 | UL 2017 | | |
@@ -201,7 +201,7 @@ for el in electrons:
 |data period | SF file | SF name |
 | -- | -- | -- |
 | legacy 2016 | | |
-| legacy 2017 | !(https://twiki.cern.ch/twiki/pub/CMS/MuonReferenceEffs2017/RunBCDEF_SF_ISO.root)[RunBCDEF_SF_ISO.root] | `NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta` |
+| legacy 2017 | [RunBCDEF_SF_ISO.root](https://twiki.cern.ch/twiki/pub/CMS/MuonReferenceEffs2017/RunBCDEF_SF_ISO.root) | `NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta` |
 | legacy 2018 | | |
 |  |  |  |
 | UL 2017 | | |
