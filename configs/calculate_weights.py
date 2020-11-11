@@ -2,12 +2,16 @@ import numpy as np
 import common
 import weightModules
 from array import array
+import os
+filepath = os.path.abspath(__file__)
+karimpath = os.path.dirname(os.path.dirname(filepath))
+sfDir = os.path.join(karimpath, "data", "legacy_2017")
 
 # initialize rate factor buisness
-rateFactors = weightModules.RateFactors("/nfs/dust/cms/user/vdlinden/legacyTTZ/plotscript/data/rateFactors/ratefactors_new_plotscript_2017.csv")
+rateFactors = weightModules.RateFactors(os.path.join(sfDir, "ratefactors_2017.csv"))
 
 # initialize iterative fit b-tagging sfs
-btaggingSFs = weightModules.BTaggingScaleFactors("/nfs/dust/cms/user/vdlinden/legacyTTZ/deepJet_2017.csv")
+btaggingSFs = weightModules.BTaggingScaleFactors(os.path.join(sfDir, "btaggingSF_deepJet_2017.csv"))
 uncs = [
     "hfstats2",
     "hfstats1",
@@ -24,32 +28,30 @@ btaggingSFs.removeUnusedSys(keep =
     ["central"] + btagSF_uncs)
 
 # initialize b-tagging SF correction
-sfPatch = weightModules.SFPatches("/nfs/dust/cms/user/vdlinden/legacyTTZ/plotscript/data/btagSFCorrection/sfPatch_2017.csv")
+sfPatch = weightModules.SFPatches(os.path.join(sfDir, "btaggingSF_patches_2017.csv"))
 
-
-sfPath = "/nfs/dust/cms/user/vdlinden/legacyTTZ/scaleFactors"
 # initialize lepton trigger scale factors
 elTrigSFs = weightModules.LeptonSFs(
-    csv     = sfPath+"/electron/2017_ElectronTrigger.csv", 
+    csv     = os.path.join(sfDir, "electron_triggerSF_2017.csv"), 
     sfName  = "ele28_ht150_OR_ele32_ele_pt_ele_sceta")
 muTrigSFs = weightModules.LeptonSFs(
-    csv     = sfPath+"/muon/2017_RunBtoF_Trigger.csv",
+    csv     = os.path.join(sfDir, "muon_triggerSF_2017.csv"),
     sfName  = "IsoMu27_PtEtaBins")
 
 # initialize lepton ID scale factors
 elIDSFs = weightModules.LeptonSFs(
-    csv     = sfPath+"/electron/2017_ElectronTight.csv",
+    csv     = os.path.join(sfDir, "electron_idSF_2017.csv"),
     sfName  = "tightElectronID")
 muIDSFs = weightModules.LeptonSFs(
-    csv     = sfPath+"/muon/2017_RunBCDEF_SF_ID.csv",
+    csv     = os.path.join(sfDir, "muon_idSF_2017.csv"),
     sfName  = "NUM_TightID_DEN_genTracks_pt_abseta")
 
 # initialize lepton Reco/Iso scale factors
 elRecoSFs = weightModules.LeptonSFs(
-    csv     = sfPath+"/electron/2017_egammaEffi_RECO.csv",
+    csv     = os.path.join(sfDir, "electron_recoSF_2017.csv"),
     sfName  = "electronReco")
 muIsoSFs  = weightModules.LeptonSFs(
-    csv     = sfPath+"/muon/2017_RunBCDEF_SF_ISO.csv",
+    csv     = os.path.join(sfDir, "muon_isoSF_2017.csv"),
     sfName  = "NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta")
 
 def get_additional_variables():
