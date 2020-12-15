@@ -6,8 +6,8 @@ class InputFile(object):
     open input file and return MVATree
     '''
     def __init__(self, filename, friendTrees = []):
-        self.file = ROOT.TFile(filename)
-        self.tree = self.file.Get("MVATree")
+        self.file = ROOT.TFile.Open(filename)
+        self.tree = self.file.Get("Events")
         
         print("\nloading tree with {nentries} entries\n".format(
             nentries = self.tree.GetEntries()))
@@ -74,7 +74,7 @@ class OutputFile(object):
     '''
     def __init__(self, filename):
         self.name = filename
-        self.file = ROOT.TFile(self.name, "RECREATE")
+        self.file = ROOT.TFile.Open(self.name, "RECREATE")
         self.tree = ROOT.TTree("MVATree","RecoTree")
         print("\nwriting info to file {}\n".format(self.name))
 
@@ -125,7 +125,7 @@ class OutputFile(object):
         self.tree.Branch(var, self.branchArrays[var], "{}/F".format(var))
 
     def SetFloatVarArray(self, var, idx):
-        self.branchArrays[var] = array("f", [0.]*20)
+        self.branchArrays[var] = array("f", [0.]*40)
         self.tree.Branch(var, self.branchArrays[var], "{}[{}]/F".format(var, idx))
 
     def ClearArrays(self):

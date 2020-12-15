@@ -23,15 +23,17 @@ def calculate_variables(filename, configpath, friendTrees, outpath, apply_select
             # start loop over ntuple entries
             first = True
             for i, event in enumerate(load.TreeIterator(ntuple)):
-                if split_feature is None:
-                    config.calculate_variables(event, outfile)
-                    outfile.FillTree()
-                else:
-                    loopSize = getattr(event, split_feature)
-                    for idx in range(loopSize):
-                        config.calculate_variables(event, outfile, idx)
+                is_selected = config.base_selection(event)
+                if (apply_selection and is_selected) or not apply_selection:
+                    if split_feature is None:
+                        config.calculate_variables(event, outfile)
                         outfile.FillTree()
-                        outfile.ClearArrays()
+                    else:
+                        loopSize = getattr(event, split_feature)
+                        for idx in range(loopSize):
+                            config.calculate_variables(event, outfile, idx)
+                            outfile.FillTree()
+                            outfile.ClearArrays()
 
                 if first:
                     print("writing variables to output tree:")
@@ -46,4 +48,4 @@ def calculate_variables(filename, configpath, friendTrees, outpath, apply_select
                         print(b.GetName(), ", ".join([str(entry) for entry in list(outfile.branchArrays[b.GetName()])]))
                     print(" ================="+"\n")
                 outfile.ClearArrays()
-                continue
+                # continue

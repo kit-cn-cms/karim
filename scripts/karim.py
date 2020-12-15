@@ -7,7 +7,7 @@ import optparse
 import karim
 
 usage = ["",
-    "python karim.py -m path/to/dnn/model -c path/to/config -o output/path FILE1 FILE2",
+    "python %prog -m path/to/dnn/model -c path/to/config -o output/path FILE1 FILE2",
     "files should be in the usual ntuple file structure",
     "basepath/",
     "----/sampleA",
@@ -134,6 +134,7 @@ for ntuple in args:
             configpath      = os.path.abspath(opts.config_path),
             friendTrees     = friendTrees,
             outpath         = "/".join([outfilePath, outfileName]),
+            apply_selection = opts.apply_selection,
             split_feature   = opts.split_feature,
             )
         

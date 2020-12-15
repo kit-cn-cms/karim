@@ -4,8 +4,9 @@ def getEntries(filepath):
     '''
     get entries of rootfile
     '''
-    f = TFile(filepath)
-    t = f.Get("MVATree")
+    print("loading filepath '{}'".format(filepath))
+    f = TFile.Open(filepath)
+    t = f.Get("Events")
     entries = t.GetEntries()
     f.Close()
     return entries

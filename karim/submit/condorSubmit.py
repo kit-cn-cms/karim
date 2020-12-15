@@ -104,7 +104,7 @@ def writeSubmitScript(workdir, arrayScript, nScripts, memory_, disk_, runtime_, 
 
     if use_proxy:
         code+="""
-environment = X509_USER_PROXY={proxy_dir}
+environment = "X509_USER_PROXY={proxy_dir}"
 getenv = True
 use_x509userproxy = True
 x509userproxy = {proxy_dir}""".format(proxy_dir = proxy_dir_)
@@ -247,8 +247,13 @@ if __name__ == "__main__":
     (opts, args) = parser.parse_args()
 
     if opts.useproxy and not opts.vomsproxy:
-        parser.error('If flag to use proxy is set, a path to the proxy file has to be provided')
-    
+        p = subprocess.Popen(["voms-proxy-info", "-p"], stdout = subprocess.PIPE)
+        out, err = p.communicate()
+        print("Will use '{}' as voms proxy path".format(out))
+        opts.vomsproxy = out
+        if not opts.vomsproxy:
+            parser.error('If flag to use proxy is set, a path to the proxy file has to be provided')
+        
     # get files to submit
     if opts.folder:
         filepath = opts.folder+"/*.sh"

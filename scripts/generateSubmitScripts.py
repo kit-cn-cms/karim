@@ -67,6 +67,10 @@ parser.add_option("--apply-selection", dest="apply_selection",default=False,acti
     help = "by default, default values are written for variables in events where"
            " base selection or other criteria are not fulfilled. Activate this"
            " option to skip these events. this is not usable as friendtree anymore.")
+parser.add_option("--overwrite-sample-name", dest = "sample_name", type = "str",
+    help = "by default, the sample name is extracted from the input directories you provide."
+            " use this option to overwrite the sample name with what you choose, e.g. "
+            "if you provide root files in the first place")
 parser.add_option("--friend-trees", "-f", dest = "friendTrees", default = None,
     help = "add friend trees as additional source of input information. comma separated list.")
 (opts, args) = parser.parse_args()
@@ -112,17 +116,22 @@ if not os.path.exists(shell_path):
 print("set max events per job to {}".format(opts.nevents))
 
 for sample in args:
-    sampleName = os.path.basename(sample)
+    if sample.endswith(".root"):
+        #if input is root file, use sample_name option for overwrite
+        sampleName = opts.sample_name
+    if os.path.isdir(sample):
+        sampleName = os.path.basename(sample)
     outfilePath = "/".join([shell_path, sampleName])
 
     if not os.path.exists(outfilePath):
         os.makedirs(outfilePath)
 
     submit.writeScripts(
-        inputSample = os.path.abspath(sample),
+        inputSample = os.path.abspath(sample) if not "://" in sample else sample,
         scriptDir   = outfilePath,
         options     = opts,
-        basepath    = base)
+        basepath    = base,
+        sample_name = sampleName)
 
 shelldir = os.path.basename(shell_path)
 
