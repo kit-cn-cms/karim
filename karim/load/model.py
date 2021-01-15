@@ -62,12 +62,9 @@ class Model:
         print("Did not find output node {}".format(outputNode))
         print("Possible sample names: {}".format(node_names))
         sys.exit()
-        
     ###############################################################################
 
 
-
-    
     def setVariables(self):
         '''
         read list of variables used for DNN evaluation

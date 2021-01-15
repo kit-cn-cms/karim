@@ -45,7 +45,7 @@ class Hypotheses:
 
     def initPermutations(self):
         '''
-        save permutations in a dictionary so is doesnt have to be created for every event
+        save permutations in a dictionary so it doesnt have to be created for every event
         all permutations for njets = [min required - max jets] are created
         '''
         self.permutations = {}

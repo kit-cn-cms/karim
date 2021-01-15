@@ -49,6 +49,22 @@ matchOptions.add_option("--signal-only", dest = "signal_only", default = False, 
     help = "activate to only write root files with correct (i.e. best) matches."
            " Default is false - i.e. a file with wrong assignments is written."
            " This can be for example be used as DNN training background definitions.")
+
+#########################################################################
+matchOptions.add_option("-b", dest = "n_bkg_combis", default=1,
+    help = "Give number of random di-jet combinations to be considered as background."
+            "By default only one random combination is considered.")
+#########################################################################
+
+#########################################################################
+#news Lukas, 14.01.2021
+#########################################################################
+matchOptions.add_option("-a", dest = "assignment_method", default=None,
+    help = "Give method for jet assignemnt, enter c for chi^2 method,"
+            "or t for threshold-based method, respectively."
+            "By default the threshold-based method is applied.")
+#########################################################################
+
 parser.add_option_group(matchOptions)
 
 parser.add_option("-c", "--config", dest = "config_path", default=None,
@@ -124,6 +140,8 @@ for ntuple in args:
             filename    = ntuple,
             configpath  = os.path.abspath(opts.config_path),
             friendTrees = friendTrees,
+            n_bkg_combis = opts.n_bkg_combis,
+            assignment_method = opts.assignment_method,
             threshold   = opts.threshold,
             signal_only = opts.signal_only,
             outpath     = "/".join([outfilePath, outfileName])

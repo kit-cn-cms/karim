@@ -11,7 +11,7 @@ def calculate_variables(filename, configpath, friendTrees, outpath, apply_select
     print(filename)
     print(" =========================== ")
 
-    config = load.Config(configpath, friendTrees, "Calculation")
+    config = load.Config(configpath, friendTrees, "Calculation", assignment_method)
 
     
     # open input file

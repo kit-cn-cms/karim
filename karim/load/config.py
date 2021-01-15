@@ -3,7 +3,7 @@ import os
 import importlib
 
 class Config:
-    def __init__(self, configpath, friendTrees, mode):
+    def __init__(self, configpath, friendTrees, mode, assignment_method):
         # load config module
         dirname, basename = os.path.split(configpath)
         sys.path.append(dirname)
@@ -52,10 +52,38 @@ class Config:
 
             self.def_signal_selection = config.def_signal_selection()
             self.def_background_selection = config.def_background_selection()
-            self.get_random_index = config.get_random_index
+            #self.get_random_index = config.get_random_index
+
+            '''
+            # previous version #
             self.match_variables  = config.get_match_variables()
-            print("list of variables to be matched:")
-            print("\n".join(self.match_variables))
+            '''
+            ##################################################################
+            #  news  Lukas, 14.01.2021
+            ##################################################################
+            if assignment_method == "threshold-based":
+                #print type(config.get_match_variables())
+                if len(config.get_match_variables()) == 3:
+                    self.match_variables = config.get_match_variables()[:-1]
+                    print("list of variables to be matched:")
+                    print("\n".join(self.match_variables))
+                else:
+                    print("\033[1;31mSomething is wrong with the list in match_variables.\033[0m")
+                    print("\033[1;31mPlease check if the list contains exactly 3 variables (jet1, jet2, chi^2).\033[0m")
+                    sys.exit()
+            elif assignment_method == "chi2":
+                if len(config.get_match_variables()) == 3:
+                    self.match_variables = config.get_match_variables()[-1]
+                    print("list of variables to be matched:")
+                    print(self.match_variables)
+                    print(type(self.match_variables))
+                else:
+                    print("\033[1;31mSomething is wrong with the list in match_variables.\033[0m")
+                    print("\033[1;31mPlease check if the list contains exactly 3 variables (jet1, jet2, chi^2).\033[0m")
+                    sys.exit()
+            ##################################################################
+            #print("list of variables to be matched:")
+            #print("\n".join(self.match_variables))
 
         if mode == "Calculation":
             print("mode - calculation")

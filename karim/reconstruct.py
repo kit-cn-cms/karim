@@ -20,7 +20,7 @@ def evaluate_reconstruction(filename, modelname, outputNode, configpath, friendT
 
     model.setNodeIndex(outputNode)
 
-    config = load.Config(configpath, friendTrees, "Reconstruction")
+    config = load.Config(configpath, friendTrees, "Reconstruction", assignment_method)
 
     # open input file
     with load.InputFile(filename, config.getFriendTrees(filename)) as ntuple:

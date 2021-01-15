@@ -21,7 +21,7 @@ evalTemplate = """
 python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {friendTrees} {applySelection} {writeInputVars} {files}
 """
 matchTemplate = """
-python {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {friendTrees} {sigOnly} {files}
+python {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {friendTrees} -b {n_bkg_combis} {assignment_method} {sigOnly} {files}
 """
 calcTemplate = """
 python {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} {files}
@@ -48,6 +48,10 @@ def writeScripts(inputSample, scriptDir, options, basepath):
     friendTrees = "--friend-trees {}".format(options.friendTrees) if not options.friendTrees is None else ""
 
     outputNode = "-x {}".format(options.dnn_output_node) if not options.dnn_output_node is None else ""
+
+    assignment_method = "-a {}".format(options.assignment_method) if not options.assignment_method is None else ""
+
+    #bkg_combis = "-b {}".format(options.n_bkg_combis) if not options.n_bkg_combis is None else ""
 
     # collect rootfiles until number of events per job is reached
     entries = 0
@@ -97,6 +101,8 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     config    = options.config_path,
                     outPath   = options.output,
                     friendTrees = friendTrees,
+                    n_bkg_combis = options.n_bkg_combis,
+                    assignment_method = assignment_method,
                     sigOnly   = "--signal-only" if options.signal_only else "",
                     files     = " ".join(jobfiles))
 

@@ -16,6 +16,8 @@ def get_objects():
     objects = [
         "jet1",
         "jet2",
+        # "HadTopQ1",
+        # "HadTopQ2"
         ]
     return objects
 
@@ -41,20 +43,28 @@ def get_features():
     return features
 
 
+def get_additional_objects():
+    '''
+    define dictionary of objects that are identified based on the reconstructed objects
+    dictionary entries define the order by which the objects are defined.
+    e.g. objects['Pt'] = [O1, O2] defiles O1 as the object with the highest Pt that is
+    not part of the default reconstructed objects
+    '''
+    objects = {}
+    return objects
+
+
 def get_additional_variables():
     '''
     get names of additional variables which are already defined in ntuples
     which are needed for the dnn inputs
     '''
     variables = [
-        "GenHiggs_B1_Phi",
-        "GenHiggs_B2_Phi",
-        "GenHiggs_B1_E",
-        "GenHiggs_B2_E",
-        "GenHiggs_B1_Eta",
-        "GenHiggs_B2_Eta",
-        "GenHiggs_B1_Pt",
-        "GenHiggs_B2_Pt",
+        "TightLepton_Pt[0]",
+        "TightLepton_Eta[0]",
+        "TightLepton_Phi[0]",
+        "TightLepton_E[0]",
+        "TightLepton_M[0]",
 
         "Evt_Odd",
         "N_Jets",
@@ -65,16 +75,6 @@ def get_additional_variables():
         "Evt_ID",
         "Evt_Run",
         "Evt_Lumi",
-	    "N_AdditionalGenBJets",
-
-
-        #add lepton variables
-        "TightLepton_E[0]",
-        "TightLepton_Eta[0]",
-        "TightLepton_M[0]",
-        "TightLepton_Phi[0]",
-        "TightLepton_Pt[0]",
-
 
         #variables added from Thomas Hsu
         'Evt_Deta_JetsAverage',
@@ -148,82 +148,30 @@ def get_additional_variables():
         'N_BTagsL',
         'N_BTagsT',
         'N_LooseJets',
-        #'btagValue[0]',
-        #'btagValue[1]',
-        #'btagValue[2]',
-        #'btagValue[3]',
-        #'btagValue[4]',
-        #'btagValue[5]',
-        #'Jet_M[0]',
-        #'Jet_M[1]',
-        #'Jet_M[2]',
-        #'Jet_M[3]',
-        #'Jet_M[4]',
-        #'Jet_M[5]',
-        #'Jet_Phi[0]',
-        #'Jet_Phi[1]',
-        #'Jet_Phi[2]',
-        #'Jet_Phi[3]',
-        #'Jet_Phi[4]',
-        #'Jet_Phi[5]',
-        #'Jet_Pt[0]',
-        #'Jet_Pt[1]',
-        #'Jet_Pt[2]',
-        #'Jet_Pt[3]',
-        #'Jet_Pt[4]',
-        #'Jet_Pt[5]',
-        #'TaggedJet_E[0]',
-        #'TaggedJet_E[1]',
-        #'TaggedJet_E[2]',
-        #'TaggedJet_E[3]',
-        #'TaggedJet_Eta[0]',
-        #'TaggedJet_Eta[1]',
-        #'TaggedJet_Eta[2]',
-        #'TaggedJet_Eta[3]',
-        #'TaggedJet_M[0]',
-        #'TaggedJet_M[1]',
-        #'TaggedJet_M[2]',
-        #'TaggedJet_M[3]',
-        #'TaggedJet_Phi[0]',
-        #'TaggedJet_Phi[1]',
-        #'TaggedJet_Phi[2]',
-        #'TaggedJet_Phi[3]',
-        #'TaggedJet_Pt[0]',
-        #'TaggedJet_Pt[1]',
-        #'TaggedJet_Pt[2]',
-        #'TaggedJet_Pt[3]',
-        #'Jet_E[0]',
-        #'Jet_E[1]',
-        #'Jet_E[2]',
-        #'Jet_E[3]',
-        #'Jet_E[4]',
-        #'Jet_E[5]',
-        #'Jet_Eta[0]',
-        #'Jet_Eta[1]',
-        #'Jet_Eta[2]',
-        #'Jet_Eta[3]',
-        #'Jet_Eta[4]',
-        #'Jet_Eta[5]',
-
         ]
     return variables
 
 def base_selection(event):
-    return event.N_Jets>=2
+    return event.N_Jets >= 2
 
 def calculate_variables(df):
     '''
     calculate additional variables needed
     '''
 
-    # genX vectors
-    genvecs = common.Vectors(df, "GenHiggs", ["B1", "B2"])
-    genvecs.add(["B1","B2"], out = "H")
-    df["GenHiggs_H_M"] = genvecs.get("H","M")
+    #Rename lepton variables
+    #Otherwise the generateSubmitScript wouldnt find the variables!!
+    df["TightLepton_E_0"] = df["TightLepton_E[0]"].values
+    df["TightLepton_Eta_0"] = df["TightLepton_Eta[0]"].values
+    df["TightLepton_M_0"] = df["TightLepton_M[0]"].values
+    df["TightLepton_Phi_0"] = df["TightLepton_Phi[0]"].values
+    df["TightLepton_Pt_0"] = df["TightLepton_Pt[0]"].values
 
-    # recoX vectors
-    vectors = common.Vectors(df, name, ["jet1", "jet2"])
-    vectors.add(["jet1","jet2"], out = "X")
+
+    # get vectors to build top quarks
+    vectors = common.Vectors(df, name, ["jet1", "jet2"]) # new
+    vectors.add(["jet1", "jet2"], out = "X")
+
 
     # recoX variables to df
     df[name+"_X_Pt"]  = vectors.get("X", "Pt")
@@ -231,16 +179,11 @@ def calculate_variables(df):
     df[name+"_X_M"]   = vectors.get("X", "M")
     df[name+"_X_E"]   = vectors.get("X", "E")
     df[name+"_X_Phi"]   = vectors.get("X", "Phi")
-
-    # Chi^2 with mass of higgs boson = 125.10 GeV  (Quelle: PDGLive)
-    df[name+"_X_Chi2"] = (df[name+"_X_M"].values - 125.1)**2
-    
-    # correction for X mass
-    df["GenHiggs_H_massCorrection"] = df["GenHiggs_H_M"].values/(df[name+"_X_M"].values+1e-10)
-
-    # generator X opening angle
     df[name+"_X_openingAngle"] = vectors.getOpeningAngle("jet1", "jet2")
-    df["GenHiggs_H_openingAngle"] = genvecs.getOpeningAngle("B1", "B2")
+
+    #get average of btag-values of the two b-jets
+    df[name+"_X_btagAverage"] = (df[name+"_jet1_btagValue"].values + df[name+"_jet2_btagValue"].values) / 2.
+    
 
     # kinematic features of X constituents
     df[name+"_jet1_Pt"]  = vectors.get("jet1", "Pt")
@@ -255,18 +198,30 @@ def calculate_variables(df):
     df[name+"_jet2_E"]   = vectors.get("jet2", "E")
     df[name+"_jet2_Phi"] = vectors.get("jet2", "Phi")
 
-    # get dR values of gen and reco top quarks
-    df[name+"_dRGen_jet1"] = common.get_dR(
-        eta1 = df[name+"_jet1_Eta"].values,
-        phi1 = df[name+"_jet1_Phi"].values,
-        eta2 = df["GenHiggs_B1_Eta"].values,
-        phi2 = df["GenHiggs_B1_Phi"].values)
 
-    df[name+"_dRGen_jet2"] = common.get_dR(
-        eta1 = df[name+"_jet2_Eta"].values,
-        phi1 = df[name+"_jet2_Phi"].values,
-        eta2 = df["GenHiggs_B2_Eta"].values,
-        phi2 = df["GenHiggs_B2_Phi"].values)
+    # log values
+    for obj in ["jet1", "jet2", "X"]:
+        df[name+"_"+obj+"_logPt"] = np.log(df[name+"_"+obj+"_Pt"].values)
+        df[name+"_"+obj+"_logM"] = np.log(df[name+"_"+obj+"_M"].values)
+        df[name+"_"+obj+"_logE"] = np.log(df[name+"_"+obj+"_E"].values)
+
+    # boost
+    vectors.boost(["jet1", "jet2", "X"], frame = "X")
+
+    # add boosted variables
+    for obj in ["jet1", "jet2", "X"]:
+        df[name+"_"+obj+"_Pt_boosted"] = vectors.get(obj, "Pt", boostFrame = "X")
+        df[name+"_"+obj+"_M_boosted"] = vectors.get(obj, "M", boostFrame = "X")
+        df[name+"_"+obj+"_E_boosted"] = vectors.get(obj, "E", boostFrame = "X")
+        df[name+"_"+obj+"_Eta_boosted"] = vectors.get(obj, "Eta", boostFrame = "X")
+        df[name+"_"+obj+"_Phi_boosted"] = vectors.get(obj, "Phi", boostFrame = "X")
+
+        df[name+"_"+obj+"_logPt_boosted"] = np.log(df[name+"_"+obj+"_Pt_boosted"])
+
+    # boosted angular differences
+    df[name+"_dPhi_boosted"] = common.get_dPhi(df[name+"_jet1_Phi_boosted"].values, df[name+"_jet2_Phi_boosted"].values)
+    df[name+"_dEta_boosted"] = abs(df[name+"_jet1_Eta_boosted"].values - df[name+"_jet2_Eta_boosted"].values)
+    df[name+"_dR_boosted"] = np.sqrt(df[name+"_dEta_boosted"].values**2 + df[name+"_dPhi_boosted"].values**2)
 
 
     #get delta variables of lepton and b-jets
@@ -287,6 +242,7 @@ def calculate_variables(df):
          df[name+"_jet2_Eta"].values,
          df[name+"_jet2_Phi"].values)
 
+
     #get delta variables of lepton and X-boson
     df[name+"_X_dEta_lept"] = common.get_dEta(df["TightLepton_Eta[0]"].values,df[name+"_X_Eta"].values)
     df[name+"_X_dPhi_lept"] = common.get_dPhi(df["TightLepton_Phi[0]"].values,df[name+"_X_Phi"].values)
@@ -298,12 +254,16 @@ def calculate_variables(df):
          df[name+"_X_Phi"].values)
 
 
-    #get average of btag-values of the two b-jets
-    df[name+"_X_btagAverage"] = (df[name+"_jet1_btagValue"].values + df[name+"_jet2_btagValue"].values) / 2.
+
+    vectors.initIndexedVector(df, "TightLepton", 0)
+    vectors.add(["TightLepton_0", "jet2"], out = "LepTopBTightLepton")
+    vectors.add(["TightLepton_0", "jet1"], out = "HadTopBTightLepton")
+
+    df[name+"_jet2_M_lept"]   = vectors.get("LepTopBTightLepton", "M")
+    df[name+"_jet1_M_lept"]   = vectors.get("HadTopBTightLepton", "M")
 
 
-    
-    # ttbar kinematic differences
+
     df[name+"_X_dPhi"] = common.get_dPhi(
         df[name+"_jet1_Phi"].values,
         df[name+"_jet2_Phi"].values)
@@ -337,18 +297,14 @@ def calculate_variables(df):
 
     return df
 
-
 def get_match_variables():
-    # CAUTION!!!!
-    # Order of the variables is important!!!!
-    # Always give the jet-variables first, and the chi2-variable last!!!
     variables = [
         name+"_dRGen_jet1",
+        # name+"_dRGen_HadTopQ1",
+        # name+"_dRGen_HadTopQ2",
         name+"_dRGen_jet2",
-        name+"_X_Chi2"
         ]
     return variables
-
 
 def def_signal_selection():
     sig_selection = [
@@ -370,4 +326,3 @@ def def_dnn_reco_selection():
     #name+"_jet2_btagValue>0.3033",
     ]
     return dnn_reco_selection
-

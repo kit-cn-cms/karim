@@ -15,7 +15,7 @@ def evaluate_model(filename, modelconfigpath, configpath, friendTrees, outpath, 
     
     model_variables = modelconfig.getAllVariables()
 
-    config = load.Config(configpath, friendTrees, "Evaluation")
+    config = load.Config(configpath, friendTrees, "Evaluation", assignment_method)
     additional_variables = []
     for v in config.additional_variables:
         if not v in model_variables:
