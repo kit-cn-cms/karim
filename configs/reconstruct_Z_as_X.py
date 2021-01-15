@@ -190,6 +190,9 @@ def calculate_variables(df):
     df[name+"_X_E"]   = vectors.get("X", "E")
     df[name+"_X_Phi"]   = vectors.get("X", "Phi")
 
+    # Chi^2 with mass of Z boson = 91.1876 GeV    (Quelle: PDGLive)
+    df[name+"_X_Chi2"] = (df[name+"_X_M"].values - 91.1876)**2
+
 
     # kinematic features of X constituents
     df[name+"_jet1_Pt"]  = vectors.get("jet1", "Pt")
