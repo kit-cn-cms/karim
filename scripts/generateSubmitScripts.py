@@ -29,6 +29,9 @@ parser.add_option("-M", "--mode", dest = "mode",
 recoOptions = optparse.OptionGroup(parser, "Reconstruction/Evaluation options")
 recoOptions.add_option("-m", "--model", dest="model",default=None,
     help = "path to yml file with information about trained dnn model(s).")
+recoOptions.add_option("--chi2",dest="chi2evaluation",default=False,action="store_true",
+    help = "instead of evaluating a DNN model, evaluate the chi2 variable given with the 'get_chi2_variable' function.")
+
 recoOptions.add_option("--write-input-vars", dest = "write_input_vars",default=False,action="store_true",
     help = "by default only the DNN outputs are written to the new trees, activate"
            " this option to write input features as well")
@@ -98,7 +101,7 @@ if opts.mode == "C":
     opts.mode = "Calculation"
 
 # check arguments
-if opts.mode == "Reconstruction" or opts.mode == "Evaluation":
+if (opts.mode == "Reconstruction" or opts.mode == "Evaluation") and not opts.chi2evaluation:
     if opts.model is None:
         exit("need to specify a dnn model")
     opts.model = os.path.abspath(opts.model)

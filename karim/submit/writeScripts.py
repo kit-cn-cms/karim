@@ -15,7 +15,7 @@ cd -
 export KERAS_BACKEND=tensorflow
 """
 recoTemplate = """
-python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {friendTrees} {dnnOutputNode} {files}
+python {basepath}/scripts/karim.py -M {mode} {dnnModel} {chisq} -c {config} -o {outPath} {friendTrees} {dnnOutputNode} {files}
 """
 evalTemplate = """
 python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {friendTrees} {applySelection} {writeInputVars} {files}
@@ -64,11 +64,20 @@ def writeScripts(inputSample, scriptDir, options, basepath):
         if entries>=int(options.nevents) or rf==rootfiles[-1]:
             if options.mode == "Reconstruction":
                 script = scriptTemplate+recoTemplate
+
+                model = ""
+                chi2  = ""
+                if options.chi2evaluation:
+                    chi2  = "--chi2"
+                else:
+                    model = "-m "+options.model
+
                 script = script.format(
                     cmssw    = os.environ['CMSSW_BASE'],
                     basepath  = basepath,
                     mode      = options.mode,
-                    dnnModel  = options.model,
+                    dnnModel  = model,
+                    chisq     = chi2,
                     config    = options.config_path,
                     outPath   = options.output,
                     friendTrees = friendTrees,
