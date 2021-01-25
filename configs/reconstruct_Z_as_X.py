@@ -314,6 +314,7 @@ def get_match_variables():
     variables = [
         name+"_dRGen_jet1",
         name+"_dRGen_jet2",
+        name+"_X_Chi2",
         ]
     return variables
 

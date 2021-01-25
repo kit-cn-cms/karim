@@ -63,23 +63,23 @@ class Config:
             ##################################################################
             if assignment_method == "threshold-based":
                 #print type(config.get_match_variables())
-                if len(config.get_match_variables()) == 3:
+                if len(config.get_match_variables()) == len(self.objects)+1:
                     self.match_variables = config.get_match_variables()[:-1]
                     print("list of variables to be matched:")
                     print("\n".join(self.match_variables))
                 else:
                     print("\033[1;31mSomething is wrong with the list in match_variables.\033[0m")
-                    print("\033[1;31mPlease check if the list contains exactly 3 variables (jet1, jet2, chi^2).\033[0m")
+                    print("\033[1;31mPlease check if the list contains exactly {n_vars} variables (jet1, jet2, ..., chi^2).\033[0m".format(n_vars = len(self.objects)))
                     sys.exit()
             elif assignment_method == "chi2":
-                if len(config.get_match_variables()) == 3:
+                if len(config.get_match_variables()) == len(self.objects)+1:
                     self.match_variables = config.get_match_variables()[-1]
                     print("list of variables to be matched:")
                     print(self.match_variables)
                     print(type(self.match_variables))
                 else:
                     print("\033[1;31mSomething is wrong with the list in match_variables.\033[0m")
-                    print("\033[1;31mPlease check if the list contains exactly 3 variables (jet1, jet2, chi^2).\033[0m")
+                    print("\033[1;31mPlease check if the list contains exactly {n_vars} variables (jet1, jet2, ..., chi^2).\033[0m".format(n_vars = len(self.objects)))
                     sys.exit()
             ##################################################################
             #print("list of variables to be matched:")

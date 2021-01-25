@@ -217,7 +217,7 @@ def calculate_variables(df):
         df[name+"_"+obj+"_logM"] = np.log(df[name+"_"+obj+"_M"].values)
         df[name+"_"+obj+"_logE"] = np.log(df[name+"_"+obj+"_E"].values)
 
-e   # 3D opening angle
+   # 3D opening angle
     df[name+"_X_openingAngle"] = vectors.getOpeningAngle("jet1", "jet2")
 
     # boost
@@ -318,6 +318,7 @@ def get_match_variables():
     variables = [
         name+"_dRGen_jet1",
         name+"_dRGen_jet2",
+        name+"_X_Chi2",
         ]
     return variables
 
