@@ -3,7 +3,7 @@ import os
 import importlib
 
 class Config:
-    def __init__(self, configpath, friendTrees, mode, assignment_method):
+    def __init__(self, configpath, friendTrees, mode, assignment_method = None):
         # load config module
         dirname, basename = os.path.split(configpath)
         sys.path.append(dirname)
@@ -38,6 +38,9 @@ class Config:
 
             self.def_sig_selection = {}
             self.def_background_selection = {}
+    
+            if hasattr(config, "get_chi2_variable"):
+                self.chi2_variable = config.get_chi2_variable()
             
         if mode == "Matching":
             self.naming     = config.get_naming()

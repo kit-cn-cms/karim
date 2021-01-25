@@ -86,82 +86,6 @@ def get_additional_variables():
         "TightLepton_M[0]",
         "TightLepton_Phi[0]",
         "TightLepton_Pt[0]",
-
-
-        #variables added from Thomas Hsu
-        'Evt_Deta_JetsAverage',
-        'Evt_Deta_TaggedJetsAverage',
-        'Evt_Deta_maxDetaJetJet',
-        'Evt_Deta_maxDetaJetTag',
-        'Evt_Deta_maxDetaTagTag',
-        'Evt_Dr_JetsAverage',
-        'Evt_Dr_TaggedJetsAverage',
-        'Evt_Dr_closestTo91TaggedJets',
-        'Evt_Dr_maxDrJets',
-        'Evt_Dr_maxDrTaggedJets',
-        'Evt_Dr_minDrJets',
-        'Evt_Dr_minDrLepJet',
-        'Evt_Dr_minDrLepTag',
-        'Evt_Dr_minDrTaggedJets',
-        'Evt_E_JetsAverage',
-        'Evt_E_TaggedJetsAverage',
-        'Evt_Eta_JetsAverage',
-        'Evt_Eta_TaggedJetsAverage',
-        'Evt_HT',
-        'Evt_HT_jets',
-        'Evt_HT_tags',
-        'Evt_HT_wo_MET',
-        'Evt_JetPt_over_JetE',
-        'Evt_M2_JetsAverage',
-        'Evt_M2_TaggedJetsAverage',
-        'Evt_M2_closestTo125TaggedJets',
-        'Evt_M2_closestTo91TaggedJets',
-        'Evt_M2_minDrJets',
-        'Evt_M2_minDrTaggedJets',
-        'Evt_M3',
-        'Evt_MET',
-        'Evt_MET_Phi',
-        'Evt_MET_Pt',
-        'Evt_MHT',
-        'Evt_MTW',
-        'Evt_M_JetsAverage',
-        'Evt_M_TaggedJetsAverage',
-        'Evt_M_Total',
-        'Evt_M_minDrLepJet',
-        'Evt_M_minDrLepTag',
-        'Evt_Pt_JetsAverage',
-        'Evt_Pt_TaggedJetsAverage',
-        'Evt_Pt_minDrJets',
-        'Evt_Pt_minDrTaggedJets',
-        'Evt_TaggedJetPt_over_TaggedJetE',
-        'Evt_aplanarity',
-        'Evt_aplanarity_jets',
-        'Evt_aplanarity_tags',
-        'Evt_blr',
-        'Evt_blr_transformed',
-        'Evt_btagValue_avg',
-        'Evt_btagValue_avg_tagged',
-        'Evt_btagValue_dev',
-        'Evt_btagValue_dev_tagged',
-        'Evt_btagValue_min',
-        'Evt_btagValue_min_tagged',
-        'Evt_h0',
-        'Evt_h1',
-        'Evt_h2',
-        'Evt_h3',
-        'Evt_sphericity',
-        'Evt_sphericity_jets',
-        'Evt_sphericity_tags',
-        'Evt_transverse_sphericity',
-        'Evt_transverse_sphericity_jets',
-        'Evt_transverse_sphericity_tags',
-
-
-        'N_BTagsL',
-        'N_BTagsT',
-        'N_LooseJets',
-
-
         ]
     return variables
 
@@ -353,4 +277,5 @@ def def_dnn_reco_selection():
 #        randomIndex = df.index[np.random.randint(0,df.shape[0])]
 #    return randomIndex
 
-
+def get_chi2_variable():
+    return name+"_X_Chi2"

@@ -7,20 +7,21 @@ import pandas as pd
 from karim import load as load
 from hypotheses import Hypotheses
 
-def evaluate_reconstruction(filename, modelname, outputNode, configpath, friendTrees, outpath, apply_selection = False):
+def evaluate_reconstruction(filename, modelname, outputNode, configpath, friendTrees, outpath, apply_selection = False, chi2eval = False):
     print(" ===== EVALUATING FILE ===== ")
     print(filename)
     print(" =========================== ")
 
-    # load the DNN model
-    model = load.Model(modelname)
-    
-    # set variables needed for dnn training
-    model.setVariables()
+    if not chi2eval:
+        # load the DNN model
+        model = load.Model(modelname)
+        
+        # set variables needed for dnn training
+        model.setVariables()
 
-    model.setNodeIndex(outputNode)
+        model.setNodeIndex(outputNode)
 
-    config = load.Config(configpath, friendTrees, "Reconstruction", assignment_method)
+    config = load.Config(configpath, friendTrees, "Reconstruction")
 
     # open input file
     with load.InputFile(filename, config.getFriendTrees(filename)) as ntuple:
@@ -39,18 +40,29 @@ def evaluate_reconstruction(filename, modelname, outputNode, configpath, friendT
 
 
             if first:
-                # check if all variables for DNN evaluation are present in dataframe
-                check_entry(entry, model.variables)
+                if not chi2eval:
+                    # check if all variables for DNN evaluation are present in dataframe
+                    check_entry(entry, model.variables)
 
                 # get list of all dataframe variables
                 outputVariables = entry.columns.values
-                # append output value to columns
-                outputVariables = np.append(outputVariables, 
-                    config.naming+"_DNNOutput")
-                outputVariables = np.append(outputVariables, 
-                    config.naming+"_squaredDNNOutput")
-                outputVariables = np.append(outputVariables, 
-                    config.naming+"_transformedDNNOutput")
+
+                if not chi2eval:
+                    # append output value to columns
+                    outputVariables = np.append(outputVariables, 
+                        config.naming+"_DNNOutput")
+                    outputVariables = np.append(outputVariables, 
+                        config.naming+"_squaredDNNOutput")
+                    outputVariables = np.append(outputVariables, 
+                        config.naming+"_transformedDNNOutput")
+                else:
+                    # append output value to columns
+                    outputVariables = np.append(outputVariables, 
+                        config.naming+"_chi2")
+                    outputVariables = np.append(outputVariables, 
+                        config.naming+"_chi2log")
+                    outputVariables = np.append(outputVariables, 
+                        config.naming+"_chi2transformed")
                 for v in outputVariables:
                     print(v)
                 
@@ -72,14 +84,24 @@ def evaluate_reconstruction(filename, modelname, outputNode, configpath, friendT
                     fillIdx+=1
                 continue
             else:
-                # get best permutation
-                bestIndex, outputValue = model.findBest(entry)
-                # fill output data array
-                outputData[fillIdx,:-3] = entry.iloc[bestIndex].values
-                # fill output values of DNN
-                outputData[fillIdx, -3] = outputValue
-                outputData[fillIdx, -2] = outputValue**2
-                outputData[fillIdx, -1] = np.log(outputValue/(1.-outputValue))
+                if not chi2eval:
+                    # get best permutation
+                    bestIndex, outputValue = model.findBest(entry)
+                    # fill output data array
+                    outputData[fillIdx,:-3] = entry.iloc[bestIndex].values
+                    # fill output values of DNN
+                    outputData[fillIdx, -3] = outputValue
+                    outputData[fillIdx, -2] = outputValue**2
+                    outputData[fillIdx, -1] = np.log(outputValue/(1.-outputValue))
+                else:
+                    # get best permutation
+                    bestIndex, outputValue = findBestChi2(entry, config.chi2_variable)
+                    # fill output data array
+                    outputData[fillIdx,:-3] = entry.iloc[bestIndex].values
+                    # fill output values of DNN
+                    outputData[fillIdx, -3] = outputValue
+                    outputData[fillIdx, -2] = np.log(outputValue)
+                    outputData[fillIdx, -1] = np.exp(-outputValue)
                 
                 if fillIdx<=10:
                     print("=== testevent ===")
@@ -123,6 +145,10 @@ def check_entry(entry, variables):
                 print("{var} missing".format(var = v))
         exit()
 
+
+def findBestChi2(entry, chi2variable):
+    bestIndex = np.argmin(entry[chi2variable].values)
+    return bestIndex, entry[chi2variable].iloc[bestIndex]
 
 
 

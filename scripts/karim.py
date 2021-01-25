@@ -32,6 +32,8 @@ parser.add_option("-M", "--mode", dest = "mode", choices = [
 recoOptions = optparse.OptionGroup(parser, "Reconstruction/Evaluate options")
 recoOptions.add_option("-m", "--model", dest="model",default=None,
     help = "path to trained dnn model")
+recoOptions.add_option("--chi2",dest="chi2evaluation",default=False,action="store_true",
+    help = "instead of evaluating a DNN model, evaluate the chi2 variable given with the 'get_chi2_variable' function.")
 recoOptions.add_option("--write-input-vars", dest = "write_input_vars",default=False,action="store_true",
     help = "by default only the DNN outputs are written to the new trees, activate"
            " this option to write input features as well")
@@ -91,7 +93,7 @@ if opts.mode == "C":
     opts.mode = "Calculation"
 
 # check arguments
-if opts.model is None and opts.mode == "Reconstruction":
+if (opts.model is None and not opts.chi2evaluation) and opts.mode == "Reconstruction":
     exit("need to specify a dnn model")
 if opts.model is None and opts.mode == "Evaluation":
     exit("need to specify a dnn model")
@@ -119,6 +121,7 @@ for ntuple in args:
     if opts.mode == "Reconstruction":
         karim.evaluate_reconstruction(
             filename    = ntuple,
+            chi2eval    = opts.chi2evaluation,
             modelname   = opts.model,
             outputNode  = opts.dnn_output_node,
             configpath  = os.path.abspath(opts.config_path),
