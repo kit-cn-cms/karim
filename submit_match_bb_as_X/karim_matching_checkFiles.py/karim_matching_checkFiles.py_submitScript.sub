@@ -1,0 +1,16 @@
+
+universe = vanilla
+executable = /bin/zsh
+arguments = /nfs/dust/cms/user/larmbrus/combined_ttZ_ttH/karim/submit_match_bb_as_X/karim_matching_checkFiles.py/karim_matching_checkFiles.py_arraySubmit.sh
+error  = /nfs/dust/cms/user/larmbrus/combined_ttZ_ttH/karim/submit_match_bb_as_X/karim_matching_checkFiles.py/logs/karim_matching_checkFiles.pysubmitScript.$(Cluster)_$(ProcId).err
+log    = /nfs/dust/cms/user/larmbrus/combined_ttZ_ttH/karim/submit_match_bb_as_X/karim_matching_checkFiles.py/logs/karim_matching_checkFiles.pysubmitScript.$(Cluster)_$(ProcId).log
+output = /nfs/dust/cms/user/larmbrus/combined_ttZ_ttH/karim/submit_match_bb_as_X/karim_matching_checkFiles.py/logs/karim_matching_checkFiles.pysubmitScript.$(Cluster)_$(ProcId).out
+run_as_owner = true
+Requirements = ( OpSysAndVer == "CentOS7" )
+RequestMemory = 2000
+RequestDisk = 2000000
++RequestRuntime = 7200
+JobBatchName = karim_matching_checkFiles.py
+
+Queue Environment From (
+)
