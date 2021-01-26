@@ -1,4 +1,5 @@
 import ROOT
+import os
 from array import array
 
 class InputFile(object):
@@ -74,6 +75,7 @@ class OutputFile(object):
     '''
     def __init__(self, filename):
         self.name = filename
+        self.setSampleName()
         self.file = ROOT.TFile(self.name, "RECREATE")
         self.tree = ROOT.TTree("MVATree","RecoTree")
         print("\nwriting info to file {}\n".format(self.name))
@@ -91,7 +93,13 @@ class OutputFile(object):
             cff.write("entries : {}".format(nentries))
         print("file {} written.".format(self.name))
         print("\n"+"="*50+"\n")
-    
+  
+    def setSampleName(self):
+        treeName = os.path.basename(self.name)
+        treeName = treeName.replace("_Tree.root","")
+        split = treeName.split("_")
+        self.sampleName = "_".join(split[:-2])
+
     def SetBranches(self, variables):
         '''
         initialize branches for tree
