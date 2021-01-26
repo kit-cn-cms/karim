@@ -35,6 +35,10 @@ class Config:
                 for order in self.additional_objects:
                     print("ordered by {}:".format(order))
                     print("\n".join(self.additional_objects[order]))
+
+            self.def_sig_selection = {}
+            self.def_background_selection = {}
+            self.def_dnn_reco_selection = config.def_dnn_reco_selection()
             
         if mode == "Matching":
             self.naming     = config.get_naming()
@@ -47,6 +51,9 @@ class Config:
             print("name template:")
             print(self.template)
 
+            self.def_signal_selection = config.def_signal_selection()
+            self.def_background_selection = config.def_background_selection()
+            self.def_dnn_reco_selection = {}
             self.get_random_index = config.get_random_index
             self.match_variables  = config.get_match_variables()
             print("list of variables to be matched:")

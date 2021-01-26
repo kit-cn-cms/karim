@@ -70,9 +70,22 @@ def evaluate_reconstruction(filename, modelname, configpath, friendTrees, outpat
                 continue
             else:
                 # get best permutation
-                bestIndex, outputValue = model.findBest(entry)
+                reco_selection = config.def_dnn_reco_selection
+                entry_reco_selection = entry_selection(entry, reco_selection)
+                if entry_reco_selection.shape[0] == 0:
+                    outputData[fillIdx,:-3] = entry.iloc[0].values
+                    # fill dummy output values of DNN
+                    outputData[fillIdx, -3] = -9.
+                    outputData[fillIdx, -2] = -9.
+                    outputData[fillIdx, -1] = -9.
+                    fillIdx+=1
+                    continue
+                # print entry_reco_selection
+                bestIndex, outputValue = model.findBest(entry_reco_selection)
+                # bestIndex, outputValue = model.findBest(entry)
                 # fill output data array
-                outputData[fillIdx,:-3] = entry.iloc[bestIndex].values
+                outputData[fillIdx,:-3] = entry_reco_selection.iloc[bestIndex].values
+                # outputData[fillIdx,:-3] = entry.iloc[bestIndex].values
                 # fill output values of DNN
                 outputData[fillIdx, -3] = outputValue
                 outputData[fillIdx, -2] = outputValue**2
@@ -208,3 +221,7 @@ def evaluate_reco(files, opts):
         canvas.Clear()
         legend.Clear()
         
+def entry_selection(entry, selection):
+    for i in selection:
+        entry = entry.query(i)
+    return entry

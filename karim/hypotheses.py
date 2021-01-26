@@ -92,11 +92,26 @@ class Hypotheses:
             used_indices = np.zeros(shape = (len(self.permutations[nJets]), self.hypothesisJets))
             assigned_indices = {}
             for order in self.config.additional_objects:
+                print "order", order
                 values = np.zeros(shape = nJets)
-                variable = getattr(event, "Jet_{}".format(order))
+                variable = getattr(event, "Jet_{}".format((order.split("_"))[0]))
+                parsed_req = (self.config.additional_objects[order][0]).split("_")
+                cut = 0
                 for idx in range(nJets):
-                    values[idx] = variable[idx]
+                    if self.config.additional_objects[order][0].find("req") > 0:
+                        if float(getattr(event, "Jet_{}".format(parsed_req[4]))[idx]) > float(parsed_req[6]):
+                            values[idx] = variable[idx]
+                        else:
+                            values[idx] = -1337
+                            cut += 1
+                    else:
+                        values[idx] = variable[idx]
                 ordered_indices[order] = np.argsort(values)[::-1]
+                print "cut", cut
+                print "ordered_indices[order] bef", ordered_indices[order]
+                if self.config.additional_objects[order][0].find("req") > 0:
+                    ordered_indices[order] = (ordered_indices[order])[:-cut]
+                print "ordered_indices[order] aft", ordered_indices[order]
                 assigned_indices[order] = np.zeros(shape = 
                     (len(self.permutations[nJets]), len(self.config.additional_objects[order])))
 
@@ -120,17 +135,17 @@ class Hypotheses:
                 used = used_indices[idx]
                 for order in self.config.additional_objects:
                     for iobj in range(len(self.config.additional_objects[order])):
-                        if (iobj+1)+self.hypothesisJets > nJets:
+                        # if (iobj+1)+self.hypothesisJets > nJets:
+                        # only consider indices that are in ordered_incices[order] and used lists
+                        if (iobj+1)+len(set(used).intersection(ordered_indices[order])) > len(ordered_indices[order]): #length is shorter than nJets due to "req" option
                             assigned_indices[order][idx, iobj] = -1
                             continue
 
                         used_here = np.concatenate((used, assigned_indices[order][idx, :iobj]))
-
                         freeIndex = 0
                         while ordered_indices[order][freeIndex] in used_here:
                             freeIndex += 1
                         assigned_indices[order][idx, iobj] = ordered_indices[order][freeIndex]
-                    
 
             # if available add additional objects
             for order in self.config.additional_objects:

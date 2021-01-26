@@ -37,29 +37,6 @@ def get_features():
     return features
 
 
-def get_additional_objects():
-    '''
-    define dictionary of objects that are identified based on the reconstructed objects
-    dictionary entries define the order by which the objects are defined.
-    e.g. objects['Pt'] = [O1, O2] defiles O1 as the object with the highest Pt that is
-    not part of the default reconstructed objects
-    '''
-    objects = {}
-    objects["CSV"] = [
-        "addB1_csv_ordered",
-        "addB2_csv_ordered",
-        ]
-    objects["Pt"] = [
-        "addB1_pt_ordered",
-        "addB2_pt_ordered",
-        ]
-    objects["Pt_btag"] = [
-        "addB1_pt_ordered_req_CSV_>_0.277",
-        "addB2_pt_ordered_req_CSV_>_0.277",
-        ]
-    return objects
-
-
 def get_additional_variables():
     '''
     get names of additional variables which are already defined in ntuples
@@ -89,6 +66,17 @@ def get_additional_variables():
         "TightLepton_E[0]",
         "Evt_MET_Pt",
         "Evt_MET_Phi",
+
+        # addbb system
+        "AdditionalGenBJet_Phi[0]",
+        "AdditionalGenBJet_Eta[0]",
+        "AdditionalGenBJet_Pt[0]",
+        "AdditionalGenBJet_E[0]",
+        "N_AdditionalGenBJets",
+        "AdditionalGenBJet_Phi[1]",
+        "AdditionalGenBJet_Eta[1]",
+        "AdditionalGenBJet_Pt[1]",
+        "AdditionalGenBJet_E[1]",
 
         "Evt_Odd",
         "N_Jets",
@@ -189,6 +177,7 @@ def calculate_variables(df):
         eta2 = df["GenTopHad_Q2_Eta[0]"].values,
         phi2 = df["GenTopHad_Q2_Phi[0]"].values)
 
+    
     # ttbar kinematic differences
     df[name+"_ttbar_dPhi"] = common.get_dPhi(
         df[name+"_LepTop_Phi"].values,
@@ -211,6 +200,48 @@ def calculate_variables(df):
         (df[name+"_ttbar_dEta"].values/(5.))**2 + \
         (df[name+"_ttbar_dPt"].values/(1000.))**2)
 
+    #addbb system
+    df[name+"_dPhiGen_0"]  = common.get_dPhi(df[name+"_AddB1_Phi"].values, df["AdditionalGenBJet_Phi[0]"].values)
+    df[name+"_dPhiGen_1"]  = common.get_dPhi(df[name+"_AddB2_Phi"].values, df["AdditionalGenBJet_Phi[1]"].values)
+    df[name+"_dEtaGen_0"]  = abs(df[name+"_AddB1_Eta"].values - df["AdditionalGenBJet_Eta[0]"].values)
+    df[name+"_dEtaGen_1"]  = abs(df[name+"_AddB2_Eta"].values - df["AdditionalGenBJet_Eta[1]"].values)
+    df[name+"_dRGen_0"] = np.sqrt(df[name+"_dPhiGen_0"].values**2 + df[name+"_dEtaGen_0"].values**2)
+    df[name+"_dRGen_1"] = np.sqrt(df[name+"_dPhiGen_1"].values**2 + df[name+"_dEtaGen_1"].values**2)
+
+
+    df[name+"_bb_dPhi"] = common.get_dPhi(df[name+"_AddB1_Phi"].values, df[name+"_AddB2_Phi"])
+    df[name+"_bb_dEta"] = abs(df[name+"_AddB1_Eta"].values - df[name+"_AddB2_Eta"])
+    df[name+"_bb_dPt"] = abs(df[name+"_AddB1_Pt"].values - df[name+"_AddB2_Pt"])
+    df[name+"_bb_dR"]   = np.sqrt(df[name+"_bb_dPhi"].values**2 + df[name+"_bb_dEta"].values**2)
+    df[name+"_bb_dKin"] = np.sqrt( (df[name+"_bb_dPhi"].values/(2.*np.pi))**2 + \
+                                   (df[name+"_bb_dEta"].values/5.)**2 + \
+                                   (df[name+"_bb_dPt"].values/1000.)**2 )
+
+    vectors = common.Vectors(df, name, ["AddB1", "AddB2"])
+    vectors.add(["AddB1", "AddB2"], out = "bb")
+
+    df[name+"_bb_Pt"]  = vectors.get("bb", "Pt")
+    df[name+"_bb_Eta"] = vectors.get("bb", "Eta")
+    df[name+"_bb_M"]   = vectors.get("bb", "M")
+    df[name+"_bb_E"]   = vectors.get("bb", "E")
+
+    vectors.initIndexedVector(df, "AdditionalGenBJet", 0)
+    vectors.initIndexedVector(df, "AdditionalGenBJet", 1)
+    vectors.add(["AdditionalGenBJet_0", "AdditionalGenBJet_1"], out = "genbb")
+
+    df[name+"_genbb_Pt"]  = vectors.get("genbb", "Pt")
+    df[name+"_genbb_Eta"] = vectors.get("genbb", "Eta")
+    df[name+"_genbb_M"]   = vectors.get("genbb", "M")
+    df[name+"_genbb_E"]   = vectors.get("genbb", "E")
+
+    df[name+"_genbb_dPhi"] = common.get_dPhi(df["AdditionalGenBJet_Phi[0]"].values, df["AdditionalGenBJet_Phi[1]"].values)
+    df[name+"_genbb_dEta"] = abs(df["AdditionalGenBJet_Eta[0]"].values - df["AdditionalGenBJet_Eta[1]"].values)
+    df[name+"_genbb_dPt"] = abs(df["AdditionalGenBJet_Pt[0]"].values - df["AdditionalGenBJet_Pt[1]"])
+    df[name+"_genbb_dR"]   = np.sqrt(df[name+"_genbb_dPhi"].values**2 + df[name+"_genbb_dEta"].values**2)
+    df[name+"_genbb_dKin"] = np.sqrt( (df[name+"_genbb_dPhi"].values/(2.*np.pi))**2 + \
+                                   (df[name+"_genbb_dEta"].values/5.)**2 + \
+                                   (df[name+"_genbb_dPt"].values/1000.)**2 )
+
     return df
 
 def get_match_variables():
@@ -222,30 +253,8 @@ def get_match_variables():
         ]
     return variables
 
-def def_signal_selection():
-    sig_selection = [
-    "ttbarReco_HadTopB_CSV>0.277",
-    "ttbarReco_LepTopB_CSV>0.277",
-    ]
-    return sig_selection
-
-def def_background_selection():
-    bkg_selection = [
-    "ttbarReco_HadTopB_CSV>0.277",
-    "ttbarReco_LepTopB_CSV>0.277",
-    ]
-    return bkg_selection
-
-def def_dnn_reco_selection():
-    dnn_reco_selection = [
-    "ttbarReco_HadTopB_CSV>0.277",
-    "ttbarReco_LepTopB_CSV>0.277",
-    ]
-    return dnn_reco_selection
-
 def get_random_index(df, bestIndex):
     randomIndex = bestIndex
     while randomIndex==bestIndex:
-        # randomIndex = np.random.randint(0,df.shape[0])
-        randomIndex = df.index[np.random.randint(0,df.shape[0])]
+        randomIndex = np.random.randint(0,df.shape[0])
     return randomIndex
