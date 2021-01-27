@@ -100,6 +100,17 @@ class OutputFile(object):
         split = treeName.split("_")
         self.sampleName = "_".join(split[:-2])
 
+    def SetBranchList(self, variables):
+        '''
+        initialize branches for tree
+        currently all trees are of datatype float
+        '''
+        for i, v in enumerate(variables):
+            outvar = v.replace("[","_").replace("]","")
+            if outvar in self.branchArrays: continue
+            self.branchArrays[outvar] = array("f", [0.])
+            self.tree.Branch(outvar, self.branchArrays[outvar], "{}/F".format(outvar))
+
     def SetBranches(self, variables):
         '''
         initialize branches for tree
@@ -140,6 +151,6 @@ class OutputFile(object):
         for key in self.branchArrays:
             for i in range(len(self.branchArrays[key])):
                 if type(self.branchArrays[key][i]) == int:
-                    self.branchArrays[key][i] = 0
+                    self.branchArrays[key][i] = -9.
                 else:
-                    self.branchArrays[key][i] = 0.
+                    self.branchArrays[key][i] = -9.

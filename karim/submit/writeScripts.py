@@ -26,6 +26,9 @@ python {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outP
 calcTemplate = """
 python {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} {split} {files}
 """
+databaseTemplate = """
+python {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} -d {database} {files}
+"""
 
 def writeScripts(inputSample, scriptDir, options, basepath):
     ''' 
@@ -110,6 +113,19 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     split       = splitFeature,
                     files     = " ".join(jobfiles))
 
+            elif options.mode == "Database":
+                script = scriptTemplate+databaseTemplate
+                script = script.format(
+                    cmssw    = os.environ['CMSSW_BASE'],
+                    basepath  = basepath,
+                    mode      = options.mode,
+                    config    = options.config_path,
+                    outPath   = options.output,
+                    friendTrees = friendTrees,
+                    database  = options.database,
+                    files     = " ".join(jobfiles))
+
+                    
             outFile = scriptNameTemplate.format(idx = scriptID)
             with open(outFile, "w") as of:
                 of.write(script)

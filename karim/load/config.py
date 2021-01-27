@@ -1,6 +1,7 @@
 import sys
 import os
 import importlib
+import glob 
 
 class Config:
     def __init__(self, configpath, friendTrees, mode):
@@ -66,7 +67,12 @@ class Config:
             self.features   = []
             self.naming = ""
             self.template = ""
-    
+ 
+        if mode == "Database":
+            print("mode - database converter")
+            self.run, self.lumi, self.evtid = config.get_db_ids()
+            self.treename = config.get_db_tree()
+
         if mode == "Evaluation":
             print("mode - dnn evaluation")
 
@@ -92,3 +98,33 @@ class Config:
             friendTrees.append("/".join([ft, samplename, treename]))
 
         return friendTrees
+
+    def getDataBase(self, filename, database):
+        '''
+        get correct database files for one sample
+        the strucutre of databases is
+        basepath/
+        ----/sample/
+        ----/----/DBFILE_db.root
+
+        there have to be all events of this sample in 
+        one file to function as a database.
+
+        Additionally a file DBFILE_idx.h5 has to exists
+        Where the event indices of the database are stored
+        This can for example be created with the 
+        scripts/create_idx_file.py script
+        '''
+        sampledir, treename = os.path.split(filename)
+        basedir, samplename = os.path.split(sampledir)
+    
+        database_files = glob.glob(os.path.join(database, samplename, "*_db.root"))
+        if len(database_files)!= 1: 
+            sys.exit("more than one/no database files found at {}".format(
+                os.path.join(database, samplename, "*_db.root")))
+        db  = database_files[0]
+        idx = db.replace("_db.root", "_idx.h5")
+        if not os.path.exists(idx):
+            sys.exit("index file does not exist {}".format(idx))
+        return db, idx
+        
