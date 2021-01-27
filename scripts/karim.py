@@ -26,8 +26,9 @@ parser.add_option("-M", "--mode", dest = "mode", choices = [
     "Reconstruction", "R", 
     "Matching", "M", 
     "Evaluation", "E", 
-    "Calculation", "C"],
-    help = "switch between reconstruction evaluation mode and gen level particle matching mode")
+    "Calculation", "C",
+    "Database", "DB"],
+    help = "switch between modes")
 
 recoOptions = optparse.OptionGroup(parser, "Reconstruction/Evaluate options")
 recoOptions.add_option("-m", "--model", dest="model",default=None,
@@ -52,6 +53,16 @@ calcOptions.add_option("--split", dest="split_feature", default = None,
             "e.g. 'N_Jets' creates a single ntuple entry for each jet in each event")
 parser.add_option_group(calcOptions)
 
+dbOptions = optparse.OptionGroup(parser, "Database options", 
+    "Requires single database file '_db.root' in the path given with -d"
+    " following the same structure as the friend trees."
+    " Additionally need '_idx.h5' which consists of the indices"
+    " of the db root file in the same order. This can be created"
+    " with the create_idx_file.py script")
+dbOptions.add_option("--database", "-d", dest = "database", default = None,
+    help = "specify base path to unordered database to convert into friend trees.")
+parser.add_option_group(dbOptions)
+
 parser.add_option("-c", "--config", dest = "config_path", default=None,
     help = "module for defining objects and variables in config directory")
 parser.add_option("-o", "--output", dest="output",default=None,
@@ -74,6 +85,8 @@ if opts.mode == "E":
     opts.mode = "Evaluation"
 if opts.mode == "C":
     opts.mode = "Calculation"
+if opts.mode == "DB":
+    opts.mode = "Database"
 
 # check arguments
 if opts.model is None and opts.mode == "Reconstruction":
@@ -136,4 +149,12 @@ for ntuple in args:
             outpath         = "/".join([outfilePath, outfileName]),
             split_feature   = opts.split_feature,
             )
-        
+
+    elif opts.mode == "Database":
+        karim.convert_database(
+            filename        = ntuple,
+            configpath      = os.path.abspath(opts.config_path),
+            friendTrees     = friendTrees,
+            database        = opts.database,
+            outpath         = "/".join([outfilePath, outfileName])
+            )        

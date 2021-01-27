@@ -23,7 +23,7 @@ usage = ["",
  
 parser = optparse.OptionParser(usage = "\n".join(usage))
 parser.add_option("-M", "--mode", dest = "mode", 
-    choices = ["Reconstruction", "R", "Matching", "M", "Evaluation", "E", "Calculation", "C"],
+    choices = ["Reconstruction", "R", "Matching", "M", "Evaluation", "E", "Calculation", "C", "Database", "DB"],
     help = "switch between reconstruction evaluation mode and gen level particle matching mode")
 
 recoOptions = optparse.OptionGroup(parser, "Reconstruction/Evaluation options")
@@ -42,6 +42,16 @@ matchOptions.add_option("--signal-only", dest = "signal_only", default = False, 
            " Default is false - i.e. a file with wrong assignments is written."
            " This can be for example be used as DNN training background definitions.")
 parser.add_option_group(matchOptions)
+
+dbOptions = optparse.OptionGroup(parser, "Database options",
+    "Requires single database file '_db.root' in the path given with -d"
+    " following the same structure as the friend trees."
+    " Additionally need '_idx.h5' which consists of the indices"
+    " of the db root file in the same order. This can be created"
+    " with the create_idx_file.py script")
+dbOptions.add_option("--database", "-d", dest = "database", default = None,
+    help = "specify base path to unordered database to convert into friend trees.")
+parser.add_option_group(dbOptions)
 
 calcOptions = optparse.OptionGroup(parser, "Calculation options")
 calcOptions.add_option("--split", dest="split_feature", default = None,
@@ -80,6 +90,8 @@ if opts.mode == "E":
     opts.mode = "Evaluation"
 if opts.mode == "C":
     opts.mode = "Calculation"
+if opts.mode == "DB":
+    opts.mode = "Database"
 
 # check arguments
 if opts.mode == "Reconstruction" or opts.mode == "Evaluation":
