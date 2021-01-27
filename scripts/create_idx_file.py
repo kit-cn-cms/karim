@@ -6,6 +6,8 @@ import numpy as np
 import sys
 import os
 inf = sys.argv[1]
+if not inf.endswith("_db.root"):
+    sys.exit("not a valid name for database file, should end with '_db.root'")
 f = ROOT.TFile(inf)
 t = f.Get("Events")
 branches = list([b.GetName() for b in t.GetListOfBranches()])
