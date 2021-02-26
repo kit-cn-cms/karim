@@ -2,19 +2,34 @@ import ROOT
 import numpy as np
 
 class Vectors:
-    def __init__(self, df, name, objList):
+    def __init__(self, event, name = "", objList = []):
         self.vectors = {}
-        for obj in objList:
-            self.vectors[obj] = np.array([ROOT.TLorentzVector() for _ in range(df.shape[0])])
+        self.isTree = True
+        self.length = 1
+        if type(event) != ROOT.TTree:
+            self.isTree = False
+            self.length = event.shape[0]
 
-        for i, entry in df.iterrows():
+        for obj in objList:
+            self.vectors[obj] = np.array([ROOT.TLorentzVector() for _ in range(self.length)])
+
+        if self.isTree:
             for obj in objList:
-                self.vectors[obj][i].SetPtEtaPhiE( 
-                    entry[name+"_"+obj+"_Pt"], 
-                    entry[name+"_"+obj+"_Eta"], 
-                    entry[name+"_"+obj+"_Phi"], 
-                    entry[name+"_"+obj+"_E"] 
-                    ) 
+                self.vectors[obj][0].SetPtEtaPhiE(
+                    eval("event."+name+"_"+obj+"_Pt"),
+                    eval("event."+name+"_"+obj+"_Eta"),
+                    eval("event."+name+"_"+obj+"_Phi"),
+                    eval("event."+name+"_"+obj+"_E")
+                    )
+        else:
+            for i, entry in event.iterrows():
+                for obj in objList:
+                    self.vectors[obj][i].SetPtEtaPhiE( 
+                        entry[name+"_"+obj+"_Pt"], 
+                        entry[name+"_"+obj+"_Eta"], 
+                        entry[name+"_"+obj+"_Phi"], 
+                        entry[name+"_"+obj+"_E"] 
+                        ) 
 
     def add(self, objList, out):
         if not len(objList)>=2: exit("cannot add only one object vector")
@@ -57,27 +72,35 @@ class Vectors:
         vectors2 = self.vectors[obj2]
         return [vectors1[i].Angle(vectors2[i].Vect()) for i in range(len(vectors1))]
 
-    def initIndexedVector(self, df, obj, idx):
-        self.vectors[obj+"_"+str(idx)] = np.array([ROOT.TLorentzVector() for _ in range(df.shape[0])])
-        for i, entry in df.iterrows():
-            self.vectors[obj+"_"+str(idx)][i].SetPtEtaPhiE(
-                entry[obj+"_Pt[{}]".format(idx)],
-                entry[obj+"_Eta[{}]".format(idx)],
-                entry[obj+"_Phi[{}]".format(idx)],
-                entry[obj+"_E[{}]".format(idx)]
+    def initIndexedVector(self, event, obj, idx):
+        self.vectors[obj+"_"+str(idx)] = np.array([ROOT.TLorentzVector() for _ in range(self.length)])
+        if self.isTree:
+            self.vectors[obj+"_"+str(idx)][0].SetPtEtaPhiE(
+                eval("event."+obj+"_Pt[{}]".format(idx)),
+                eval("event."+obj+"_Eta[{}]".format(idx)),
+                eval("event."+obj+"_Phi[{}]".format(idx)),
+                eval("event."+obj+"_E[{}]".format(idx))
                 )
+        else:
+            for i, entry in event.iterrows():
+                self.vectors[obj+"_"+str(idx)][i].SetPtEtaPhiE(
+                    entry[obj+"_Pt[{}]".format(idx)],
+                    entry[obj+"_Eta[{}]".format(idx)],
+                    entry[obj+"_Phi[{}]".format(idx)],
+                    entry[obj+"_E[{}]".format(idx)]
+                    )
 
-    def addNeutrino(self, df, metPt, metPhi, lepName):
-        self.vectors["nu"] = np.array([ROOT.TLorentzVector() for _ in range(df.shape[0])])
-        nu_px = df[metPt].values*np.cos(df[metPhi].values)
-        nu_py = df[metPt].values*np.sin(df[metPhi].values)
+    def addNeutrino(self, event, metPt, metPhi, lepName):
+        self.vectors["nu"] = np.array([ROOT.TLorentzVector() for _ in range(event.shape[0])])
+        nu_px = event[metPt].values*np.cos(event[metPhi].values)
+        nu_py = event[metPt].values*np.sin(event[metPhi].values)
         
         mu = (80.4**2/2.) + self.get(lepName, "Px")*nu_px + self.get(lepName, "Py")*nu_py
         a  = (mu * self.get(lepName, "Pz"))/(np.power(self.get(lepName, "Pt"),2))
         a2 = a**2
-        b  = (np.power(self.get(lepName, "E"),2)*np.power(df[metPt].values,2) - mu**2)/(np.power(self.get(lepName, "Pt"),2)) 
+        b  = (np.power(self.get(lepName, "E"),2)*np.power(event[metPt].values,2) - mu**2)/(np.power(self.get(lepName, "Pt"),2)) 
 
-        for i, entry in df.iterrows():
+        for i, entry in event.iterrows():
             if a2[i] < b[i]:
                 pz = a[i]
             else:
