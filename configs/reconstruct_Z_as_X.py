@@ -339,3 +339,6 @@ def def_dnn_reco_selection():
     #name+"_jet2_btagValue>0.3033",
     ]
     return dnn_reco_selection
+
+def get_chi2_variable():
+    return name+"_X_Chi2"
