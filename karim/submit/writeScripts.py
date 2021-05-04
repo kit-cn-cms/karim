@@ -35,7 +35,7 @@ def writeScripts(inputSample, scriptDir, options, basepath):
     split input sample in chunks according to maximum number of events per job
     create shell script to submit job
     '''
-    rootfiles = glob.glob("/".join([inputSample, "*{}*.root".format(options.name_requirement)]))
+    rootfiles = glob.glob("/".join([inputSample, "tree*{}*.root".format(options.name_requirement)]))
     print(" ===== SAMPLE ===== ")
     print(inputSample)
     print(" ================== ")

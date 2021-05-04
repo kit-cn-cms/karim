@@ -32,23 +32,27 @@ class BTaggingScaleFactors:
     read b-tagging sfs from csv files
     WIP: jes variations and fixedWP
     '''
-    def __init__(self, csv, measurementType = "iterativefit", workingPoint = 3, wpName = "DeepFlavour;OperatingPoint", sysTypes = []):
+    def __init__(self, csv, measurementType = "iterativefit", workingPoint = 3, wpName = "OperatingPoint", sysTypes = []):
         # load dataframe
         data = pd.read_csv(csv, index_col = ["measurementType", wpName, "sysType", "jetFlavor"], delimiter = ", ", engine = "python")
         data = data.sort_index()
-
         # select only the chosen type
-        self.data = data.loc[(measurementType, str(workingPoint), )]
+        self.data = data.loc[(measurementType, workingPoint, )]
 
         # error book keeping
         self.errors = 0
 
-    def removeUnusedSys(self, keep):
+    def removeUnusedSys(self, keep, jec = None):
         '''
         prune csv table to variations that are actually used
         improves runtime substantially
         '''
-        self.data = self.data[self.data.index.get_level_values("sysType").isin(keep)]
+        data = self.data[self.data.index.get_level_values("sysType").isin(keep)]
+        self.jecData = {}
+        if not jec is None:
+            for j in jec:
+                self.jecData[j] = self.data[self.data.index.get_level_values("sysType").isin([j])]
+        self.data = data
 
     def getSF(self, sys, flav, eta, pt, x):
         '''
@@ -67,12 +71,15 @@ class BTaggingScaleFactors:
         # evaluate formula
         return eval(func["formula"].iloc[0])
 
-    def getSFs(self, flav, eta, pt, x):
+    def getSFs(self, flav, eta, pt, x, jec = "nom"):
         '''
         get scale factors for one flavor, eta, pt and b-tag value combination
         '''
-        # search jet flavor entries
-        sfs = self.data[self.data.index.get_level_values("jetFlavor") == flav]
+        if jec == "nom":
+            # search jet flavor entries
+            sfs = self.data[self.data.index.get_level_values("jetFlavor") == flav]
+        else:
+            sfs = self.jecData[jec][self.jecData[jec].index.get_level_values("jetFlavor") == flav]
         sfs.index = sfs.index.droplevel("jetFlavor")
 
         # find sf bin
@@ -96,7 +103,7 @@ class SFPatches:
         # error book keeping
         self.errors = 0
 
-    def getPatchValue(self, sample, bbID, ccID, nJets, HT):
+    def getPatchValue(self, sample, ttID, nJets, HT):
         if sample.startswith("ttH") or sample.startswith("TTH"):
             proc = "ttH"
         elif sample.startswith("TTZ"):
@@ -104,9 +111,9 @@ class SFPatches:
         elif sample.startswith("TTbb"):
             proc = "ttbb"
         elif sample.startswith("TTTo"):
-            if   bbID > 0:  proc = "ttbb_5FS"
-            elif ccID > 0:  proc = "ttcc"
-            else:           proc = "ttlf"
+            if   ttID >= 50: proc = "ttbb_5FS"
+            elif ttID >= 40: proc = "ttcc"
+            else:            proc = "ttlf"
         else:
             if self.errors < 100:
                 print("no dedicated SF found - applying {} instead".format(self.applyToMissing))
@@ -141,3 +148,17 @@ class LeptonSFs:
         '''
         # find sf bin
         return self.data.loc[(self.data["ptMin"]<=pt) & (self.data["ptMax"]>pt) & (self.data["etaMin"]<=eta) & (self.data["etaMax"]>eta)]["factor"]
+
+class PileupSFs:
+    '''
+    read pileup reweighting scale factors from csv files
+    '''
+    def __init__(self, csv):
+        data = pd.read_csv(csv, index_col = ["nPU"])
+        data = data.sort_index()
+        
+        self.data = data
+
+    def getSF(self, pu, name = "central"):
+        if pu > 98: pu = 98
+        return self.data.loc[pu][name]

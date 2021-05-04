@@ -65,8 +65,8 @@ class Config:
             self.set_branches = config.set_branches
             self.objects    = []
             self.features   = []
-            self.naming = ""
-            self.template = ""
+            self.naming     = ""
+            self.template   = ""
  
         if mode == "Database":
             print("mode - database converter")

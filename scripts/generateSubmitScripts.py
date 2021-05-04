@@ -64,7 +64,7 @@ submitOptions.add_option("-c", "--config", dest = "config_path", default=None,
     help = "module for defining objects and variables in config directory")
 submitOptions.add_option("-o", "--output", dest="output",default=None,
     help = "output path for new ntuples. ")
-submitOptions.add_option("-r", "--requirement", dest="name_requirement",default="nominal",
+submitOptions.add_option("-r", "--requirement", dest="name_requirement",default="",
     help = "naming requirement of root files to be submitted. default is 'nominal'")
 submitOptions.add_option("-s", "--shellpath", dest="shell_path",default=None,
     help = "output path for shell scripts (relative to workdir or absolute)")

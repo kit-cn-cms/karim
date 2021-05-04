@@ -13,25 +13,30 @@ def calculate_variables(filename, configpath, friendTrees, outpath, apply_select
 
     config = load.Config(configpath, friendTrees, "Calculation")
 
+    genWeights = load.GenWeights(filename)
     
     # open input file
     with load.InputFile(filename, config.getFriendTrees(filename)) as ntuple:
+        jecs = load.getSystematics(ntuple)
+
         # open output root file
         with load.OutputFile(outpath) as outfile:
-            outfile.SetConfigBranches(config)
+            outfile.SetConfigBranches(config, jecs)
 
             # start loop over ntuple entries
             first = True
             for i, event in enumerate(load.TreeIterator(ntuple)):
                 if split_feature is None:
-                    config.calculate_variables(event, outfile, outfile.sampleName)
+                    for jec in jecs:
+                        config.calculate_variables(event, outfile, outfile.sampleName, jec, genWeights)
                     outfile.FillTree()
                 else:
-                    loopSize = getattr(event, split_feature)
-                    for idx in range(loopSize):
-                        config.calculate_variables(event, outfile, outfile.sampleName, idx)
-                        outfile.FillTree()
-                        outfile.ClearArrays()
+                    for jec in jecs:
+                        loopSize = getattr(event, split_feature+"_"+jec)
+                        for idx in range(loopSize):
+                            config.calculate_variables(event, outfile, outfile.sampleName, idx, jec)
+                            outfile.FillTree()
+                            outfile.ClearArrays()
 
                 if first:
                     print("writing variables to output tree:")

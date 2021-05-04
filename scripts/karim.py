@@ -24,10 +24,10 @@ usage = ["",
 parser = optparse.OptionParser(usage = "\n".join(usage))
 parser.add_option("-M", "--mode", dest = "mode", choices = [
     "Reconstruction", "R", 
-    "Matching", "M", 
-    "Evaluation", "E", 
-    "Calculation", "C",
-    "Database", "DB"],
+    "Matching",       "M", 
+    "Evaluation",     "E", 
+    "Calculation",    "C",
+    "Database",       "DB"],
     help = "switch between modes")
 
 recoOptions = optparse.OptionGroup(parser, "Reconstruction/Evaluate options")

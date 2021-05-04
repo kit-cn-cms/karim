@@ -4,11 +4,11 @@ from array import array
 
 class InputFile(object):
     '''
-    open input file and return MVATree
+    open input file and return tree
     '''
-    def __init__(self, filename, friendTrees = []):
+    def __init__(self, filename, friendTrees = [], treeName = "Events"):
         self.file = ROOT.TFile(filename)
-        self.tree = self.file.Get("MVATree")
+        self.tree = self.file.Get(treeName)
         
         print("\nloading tree with {nentries} entries\n".format(
             nentries = self.tree.GetEntries()))
@@ -16,12 +16,27 @@ class InputFile(object):
         for ft in friendTrees:
             print("adding friendTree {}".format(ft))
             self.tree.AddFriend("MVATree", ft)        
-
+    
     def __enter__(self):
         return self.tree
 
     def __exit__(self, ctx_type, ctx_value, ctx_traceback):
         self.file.Close()
+
+
+def getSystematics(tree):
+    branches = [b.GetName() for b in tree.GetListOfBranches()]
+    postfix  = []
+    for b in branches:
+        if not b.split("_")[-1].startswith("201"):
+            postfix.append(b.split("_")[-1])
+        else:
+            postfix.append(b.split("_")[-2]+"_"+b.split("_")[-1])
+    jecs     = list(set(postfix))
+    print("\tfound the following JECs in the input file")
+    for j in jecs: 
+        print("\t{}".format(j))
+    return jecs
 
 
 
@@ -73,11 +88,11 @@ class OutputFile(object):
     recreate output file and initialize new MVATree
     write rootfile, and cutflow file upon exit
     '''
-    def __init__(self, filename):
+    def __init__(self, filename, treeName = "Events"):
         self.name = filename
         self.setSampleName()
         self.file = ROOT.TFile(self.name, "RECREATE")
-        self.tree = ROOT.TTree("MVATree","RecoTree")
+        self.tree = ROOT.TTree(treeName,"KarimTree")
         print("\nwriting info to file {}\n".format(self.name))
 
         self.branchArrays = {}
@@ -95,10 +110,7 @@ class OutputFile(object):
         print("\n"+"="*50+"\n")
   
     def setSampleName(self):
-        treeName = os.path.basename(self.name)
-        treeName = treeName.replace("_Tree.root","")
-        split = treeName.split("_")
-        self.sampleName = "_".join(split[:-2])
+        self.sampleName = os.path.basename(os.path.dirname(self.name))
 
     def SetBranchList(self, variables):
         '''
@@ -132,8 +144,9 @@ class OutputFile(object):
                 self.branchArrays[i][0] = val
         self.tree.Fill()
 
-    def SetConfigBranches(self, config):
-        config.set_branches(self)
+    def SetConfigBranches(self, config, jecs):
+        for jec in jecs:
+            config.set_branches(self, jec)
 
     def SetIntVar(self, var):
         self.branchArrays[var] = array("l", [0]) 
@@ -151,6 +164,79 @@ class OutputFile(object):
         for key in self.branchArrays:
             for i in range(len(self.branchArrays[key])):
                 if type(self.branchArrays[key][i]) == int:
-                    self.branchArrays[key][i] = -9.
+                    self.branchArrays[key][i] = -9
                 else:
                     self.branchArrays[key][i] = -9.
+
+class GenWeights:
+    def __init__(self, treepath):
+        samplepath = os.path.dirname(treepath)
+        ntuplepath = os.path.dirname(samplepath)
+        samplename = os.path.basename(samplepath)
+        self.filename = os.path.join(ntuplepath, samplename+"_genWeights.root")
+        if not os.path.exists(self.filename):
+            print("sample does not have genWeights file")
+            self.isInitialized = False
+            return
+    
+        print("loading genWeight file {}".format(self.filename))
+
+        self.file = ROOT.TFile.Open(self.filename)
+        self.branches = [b.GetName() for b in self.file.GetListOfKeys()]
+        
+        self.getProcessFractions()
+        self.setRateFactors()
+        self.isInitialized = True
+
+    def getProcessFractions(self):
+        # extract gen weight branches
+        genWeights = [b for b in self.branches if b.startswith("genWeight")]
+        self.weightTypes = [b.replace("genWeight_", "") for b in genWeights]
+
+        if not "incl" in self.weightTypes:
+            print("ERROR: could not find 'incl' gen weight in genWeight file")
+            sys.exit()
+
+        self.genFractions = {}
+        self.xsNorms = {}
+        print("process fractions:")
+        inclh = self.file.Get("genWeight_incl")
+        for w in self.weightTypes:
+            genh = self.file.Get("genWeight_"+w)
+            self.genFractions[w] = genh.GetMean()*genh.GetEntries()/(inclh.GetMean()*inclh.GetEntries())
+            # XS usually given in pb, lumi in fb-1
+            # -> expect 1000 events for a XS of 1 [pb] in 1 [fb-1] of data if all events are selected
+            # -> multiply with XS number in plotscript later on
+            self.xsNorms[w] = 1000./(genh.GetMean()*genh.GetEntries())
+            print("\t{}: {} (XS norm: {})".format(w, self.genFractions[w], self.xsNorms[w]))
+        print("="*50)
+
+    def setRateFactors(self):
+        self.rateFactors  = {}
+        print("rateFactors:")
+        for b in self.branches:
+            h = self.file.Get(b)
+            self.rateFactors[b] = h.GetMean()
+            print("{}: {}".format(b, self.rateFactors[b]))
+        print("="*50)                 
+
+
+    
+    def getRF(self, w):
+        if not self.isInitialized:
+            return 1.
+        if not w in self.rateFactors:
+            sys.exit("could not access ratefactor {}".format(w))
+        return self.rateFactors[w]
+
+    
+    def getXS(self, t = "incl"):
+        if not self.isInitialized:
+            return 1.
+        if not t in self.xsNorms:
+            sys.exit("could not access norm type {}".format(t))
+        return self.xsNorms[t]
+
+
+
+
