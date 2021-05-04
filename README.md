@@ -2,6 +2,12 @@
 
 A framework using **K**eras to **A**ssign **R**econstruction **I**nformation to **M**VATrees
 
+# ATTENTION
+
+The rework to adjust to the new ntuple structure is currently work in progress.
+At the moment the following applications are working:
+- calculation
+
 ## What is this framework good for?
 With this framework a multitude of friend trees for existing ntuples and nanoAOD files can be created.
 Various modes enable the user to create various types of friend trees, or just new flat root trees.
