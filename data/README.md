@@ -232,7 +232,7 @@ pileupCalc.py -i LUMIJSON --inputLumiJSON PUFILE --calcMode true --minBiasXsec 6
 
 ```
 
-This needs to be executed once with the nominal minimum bias cross section (69.2 mb) and one per 4-4% variation of this cross section (i.e. 66.017 mb for down and 72.383 mb for up).
+This needs to be executed once with the nominal minimum bias cross section (69.2 mb) and one per 4.6% variation of this cross section (i.e. 66.017 mb for down and 72.383 mb for up).
 
 The resulting four files can be combined into one pandas dataframe with the scripts in `data/util`.
 
