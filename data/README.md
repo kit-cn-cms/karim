@@ -120,8 +120,7 @@ for el in electrons:
 | -- | -- | -- |
 | legacy 2016 | | |
 | legacy 2017 | [EfficienciesAndSF_RunBtoF_Nov17Nov2017.root](http://kplee.web.cern.ch/kplee/TagProbe/94X/v20180202_MergingHighPtBins/EfficienciesAndSF_RunBtoF_Nov17Nov2017.root) | `IsoMu27_PtEtaBins` |
-| legacy 2018 | [EfficienciesAndSF_2018Data_BeforeMuonHLTUpdate.root](https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2018_trigger/EfficienciesAndSF_2018Data_BeforeMuonHLTUpdate.root) 8950.82 /pb | `IsoMu24_PtEtaBins` |
-| | [EfficienciesAndSF_2018Data_AfterMuonHLTUpdate.root](https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2018_trigger/EfficienciesAndSF_2018Data_BeforeMuonHLTUpdate.root) 50789.75 /pb | |
+| legacy 2018 | [EfficienciesAndSF_2018Data_BeforeMuonHLTUpdate.root](https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2018_trigger/EfficienciesAndSF_2018Data_BeforeMuonHLTUpdate.root) 8950.82 /pb   [EfficienciesAndSF_2018Data_AfterMuonHLTUpdate.root](https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2018_trigger/EfficienciesAndSF_2018Data_BeforeMuonHLTUpdate.root) 50789.75 /pb  | `IsoMu24_PtEtaBins` |
 |  |  |  |
 | UL 2017 | | |
 |  | | |
