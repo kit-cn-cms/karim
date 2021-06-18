@@ -139,18 +139,29 @@ for mu in muons:
 
 For electrons and muons separate official POG identification and reconstruction scale factors are used.
 The POGs provide these scale factors as ROOT histograms on the [official EGamma POG TWiki pages](https://twiki.cern.ch/twiki/bin/view/CMS/EgammaRunIIRecommendations) and [official Muon POG TWiki pages](https://twiki.cern.ch/twiki/bin/view/CMS/MuonPOG).
+The relevant pages for UL are:
+*  https://twiki.cern.ch/twiki/bin/view/CMS/EgammaUL2016To2018
+*  https://twiki.cern.ch/twiki/bin/view/CMS/MuonUL2018
+*  https://twiki.cern.ch/twiki/bin/view/CMS/MuonUL2017
+*  https://twiki.cern.ch/twiki/bin/view/CMS/MuonUL2016
+
 These root files has been converted to csv files with the scripts in `data/util` without changing the content.
 The lepton scale factors can be read with a dedicated class in `configs/weightModules.py`
 
 #### Electron ID SFs
-|data period | official SF file | SF name |
-| -- | -- | -- |
-| legacy 2016 | | |
-| legacy 2017 | [2017_ElectronTight.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaIDRecipesRun2/2017_ElectronTight.root) | `tightElectronID` |
-| legacy 2018 | [2018_ElectronTight.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaIDRecipesRun2/2018_ElectronTight.root) | `tightElectronID` |
+|data period | official SF file | SF name | csv file name |
+| -- | -- | -- | -- |
+| legacy 2016 | | | |
+| legacy 2017 | [2017_ElectronTight.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaIDRecipesRun2/2017_ElectronTight.root) | `tightElectronID` | |
+| legacy 2018 | [2018_ElectronTight.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaIDRecipesRun2/2018_ElectronTight.root) | `tightElectronID` | |
 |  |  |  |
-| UL 2017 | | |
+| UL 2017 | | | |
+| UL 2018 | [egammaEffi.txt_Ele_Tight_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Tight_EGM2D.root) | `tightElectronID` | Ele_Tight_EGM2D.csv |
+| UL 2018 | [egammaEffi.txt_Ele_Medium_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Medium_EGM2D.root) | `mediumElectronID` | Ele_Medium_EGM2D.csv |
+| UL 2018 | [egammaEffi.txt_Ele_Loose_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Loose_EGM2D.root) | `looseElectronID` | Ele_Loose_EGM2D.csv |
+| UL 2018 | [egammaEffi.txt_Ele_Veto_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Veto_EGM2D.root) | `vetoElectronID` | Ele_Veto_EGM2D.csv |
 |  |  |  |
+
 
 ```python
 elIDSFs = weightModules.LeptonSFs(csv = FILE, sfName = SFNAME)
@@ -169,6 +180,7 @@ for el in electrons:
 | legacy 2018 | [RunABCD_SF_ID.root](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/blob/master/Run2/preUL/2018/2018_Jpsi/RunABCD_SF_ID.root) | `NUM_TightID_DEN_genTracks_pt_abseta` |
 |  |  |  |
 | UL 2017 | | |
+| UL 2018 | [Efficiencies_muon_generalTracks_Z_Run2018_UL_ID.root](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/raw/master/Run2/UL/2018/2018_Z/Efficiencies_muon_generalTracks_Z_Run2018_UL_ID.root) | `NUM_{Loose,Medium,Tight}ID_DEN_TrackerMuons_abseta_pt` |
 |  |  |  |
 
 ```python
@@ -181,14 +193,15 @@ for mu in muons:
 ```
 
 #### Electron RECO SFs
-|data period | official SF file | SF name |
-| -- | -- | -- |
-| legacy 2016 | | |
-| legacy 2017 | [egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root](https://twiki.cern.ch/twiki/pub/CMS/Egamma2017DataRecommendations/egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root) | `electronReco` |
-| legacy 2018 | [egammaEffi.txt_EGM2D_updatedAll.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaIDRecipesRun2/egammaEffi.txt_EGM2D_updatedAll.root) | `electronReco` |
-|  |  |  |
-| UL 2017 | | |
-|  |  |  |
+|data period | official SF file | SF name | csv file name |
+| -- | -- | -- | -- |
+| legacy 2016 | | | |
+| legacy 2017 | [egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root](https://twiki.cern.ch/twiki/pub/CMS/Egamma2017DataRecommendations/egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root) | `electronReco` | |
+| legacy 2018 | [egammaEffi.txt_EGM2D_updatedAll.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaIDRecipesRun2/egammaEffi.txt_EGM2D_updatedAll.root) | `electronReco` | |
+|  |  |  | |
+| UL 2017 | | | |
+| UL 2018 | [egammaEffi_ptAbove20.txt_EGM2D_UL2018.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi_ptAbove20.txt_EGM2D_UL2018.root) | `electronReco` | Ele_Reco_EGM2D_UL2018.csv |
+|  |  |  | |
 
 ```python
 elRecoSFs = weightModules.LeptonSFs(csv = FILE, sfName = SFNAME)
@@ -206,6 +219,7 @@ for el in electrons:
 | legacy 2018 | [RunABCD_SF_ISO.root](https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2018/rootfiles/RunABCD_SF_ISO.root)| `NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta` |
 |  |  |  |
 | UL 2017 | | |
+| legacy 2018 | [Efficiencies_muon_generalTracks_Z_Run2018_UL_ISO.root](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/raw/master/Run2/UL/2018/2018_Z/Efficiencies_muon_generalTracks_Z_Run2018_UL_ISO.root)| `NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt`,`NUM_LooseRelIso_DEN_LooseID_abseta_pt`  |
 |  |  |  |
 
 ```python
@@ -219,6 +233,8 @@ for mu in muons:
 
 
 ## Pileup reweighting
+
+### PreUL (might be outdated..)
 
 Pileup weights are calculated as fractions between the pileup distribution measured in data and the number of true interaction distribution with which the MC samples are generated.
 For this purpose the number of true interaction distribution can be taken from [this](https://github.com/cms-sw/cmssw/blob/CMSSW_12_0_X/SimGeneral/MixingModule/python/mix_2017_25ns_WinterMC_PUScenarioV1_PoissonOOTPU_cfi.py) CMSSW config or from the [miniAODHelper](https://github.com/cms-ttH/MiniAOD/tree/Legacy_2016_2017_2018_Devel/MiniAODHelper/data/puweights/MC).
@@ -235,7 +251,32 @@ This needs to be executed once with the nominal minimum bias cross section (69.2
 
 The resulting four files can be combined into one pandas dataframe with the scripts in `data/util`.
 
-| data period | pileup json | lumi json |
+
+### UL
+[TWIKI](https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJSONFileforData)
+
+For UL campaigns, the data histograms are provided directly under
+
+*  2018: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/PileUp/UltraLegacy/
+*  2017: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/PileUp/UltraLegacy/
+*  2016: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/PileUp/UltraLegacy/
+
+citing:
+```
+In all those directories you will find (as indicated in the file name) histograms corresponding to the following values of the pp inelastic cross section: 69200 ub (recommended central value), 66000 ub (central value - 4.6%), 72400 ub (central value + 4.6%), 80000 ub (conventional value used for the public plots, agreed with ATLAS years ago).
+```
+
+According to [HN](https://hypernews.cern.ch/HyperNews/CMS/get/physics-validation/3689/1/1.html) the MC pileup distributions can be taken from https://github.com/CMS-LUMI-POG/PileupTools/tree/master/Results<YEAR>UL
+
+Using these two ingredients the PU weight (as a function of Pileup_nTrueInt in nanoAOD) can be calculated via
+```
+data_histo[xbin]/MC_histo[ (x - 1)bin ]
+```
+
+This calculation is done in `data/util/make_pileup_csv_UL.py` and stored as a csv file to be used by karim.
+
+
+| data period | pileup json/histo | lumi json |
 | -- | -- | -- |
 | legacy 2016 | | | 
 | legacy 2017 | | | 

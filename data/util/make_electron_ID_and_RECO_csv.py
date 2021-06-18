@@ -2,10 +2,18 @@ import ROOT
 import sys
 inf = sys.argv[1]
 f = ROOT.TFile(inf)
-if "ElectronTight" in inf:
+if "Ele_Tight" in inf:
     sfType = "tightElectronID"
-elif "egammaEffi" in inf:
+elif "Ele_Medium" in inf:
+    sfType = "mediumElectronID"
+elif "Ele_Loose" in inf:
+    sfType = "looseElectronID"
+elif "Ele_Veto" in inf:
+    sfType = "vetoElectronID"
+
+if "ptAbove" in inf:
     sfType = "electronReco"
+
 data = {}
 data["sfType"] = []
 data["sysType"] = []
