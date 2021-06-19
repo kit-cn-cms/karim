@@ -25,8 +25,8 @@ parser = optparse.OptionParser(usage = "\n".join(usage))
 parser.add_option("-M", "--mode", dest = "mode", choices = ["Reconstruction", "R", "Matching", "M"],
     help = "switch between reconstruction evaluation mode and gen level particle matching mode")
 
-parser.add_option("-r", "--requirement", dest="name_requirement",default="nominal",
-    help = "naming requirement of root files to be submitted. default is 'nominal'")
+parser.add_option("-r", "--requirement", dest="name_requirement",default="",
+    help = "naming requirement of root files to be submitted.")
 parser.add_option("-o", "--output", dest="output",default=None,
     help = "output path for new ntuples. ")
 parser.add_option("-s", "--shellpath", dest="shell_path",default=None,
