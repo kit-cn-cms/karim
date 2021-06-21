@@ -94,7 +94,7 @@ def testFile(path):
     elif rf.TestBit(ROOT.TFile.kRecovered):
         return False
     else:
-        tree = rf.Get("MVATree")
+        tree = rf.Get("Events")
         if tree is None:
             return False
         else:

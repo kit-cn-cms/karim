@@ -22,7 +22,6 @@ uncs = [
     "lf"
     ]
 jecs = [
-    "jer",
     "jes",
     "jesAbsolute_2018",
     "jesHF_2018",
@@ -40,17 +39,19 @@ jecs = [
 btagSF_uncs = ["up_"+u   for u in uncs] + \
               ["down_"+u for u in uncs]
 btagSF_jec  = ["up_"+u   for u in jecs] + \
-              ["down_"+u for u in jecs]
+              ["down_"+u for u in jecs] + \
+              ["central"]
 btaggingSFs.removeUnusedSys(
     keep = ["central"] + btagSF_uncs,
     jec  = btagSF_jec)
 
+# translate the BTV jes name to the official Jet name
 btagJECs = {
     "nom": "nom",
     "jesTotalUp": "up_jes",
     "jesTotalDown": "down_jes",
-    "jerUp": "nom",
-    "jerDown": "nom",
+    "jerUp": "central",   # no SFs for jer
+    "jerDown": "central", # no SFs for jer
     }
 for j in jecs:
     if (j == "jer" or j == "jes"):
@@ -59,7 +60,15 @@ for j in jecs:
     btagJECs[j+"Down"] = "down_"+j
         
 
-
+# translate jetFlavor into btv flavor definition
+flavTranslator = {
+    5: 0, # b jets
+    4: 1, # c jets
+    3: 2, # lf jets
+    2: 2, # lf jets
+    1: 2, # lf jets
+    0: 2, # lf jets
+    }
 
 # initialize b-tagging SF correction
 sfPatch = weightModules.SFPatches(os.path.join(sfDir, "btaggingSF_patches_"+year+".csv"))
@@ -103,6 +112,8 @@ def calculate_variables(event, wrapper, sample, jec, genWeights = None):
     '''
 
     suffix = "_"+jec
+    btvJECname = btagJECs[jec]
+
     if getattr(event, "isRecoSelected"+suffix) < 1. and getattr(event,  "isGenSelected"+suffix) < 1.: 
         return event
 
@@ -129,26 +140,20 @@ def calculate_variables(event, wrapper, sample, jec, genWeights = None):
 
     for idx in range(getattr(event, "nJets"+suffix)):
         # determine jet flavor
-        if   getattr(event, "Jet_Flav"+suffix)[idx] == 5: 
-            flav = 0
-        elif getattr(event, "Jet_Flav"+suffix)[idx] == 4: 
-            flav = 1
-        elif getattr(event, "Jet_Flav"+suffix)[idx] <= 3: 
-            flav = 2
-        else: sys.exit("jet flavor not supported")
+        flav = flavTranslator[getattr(event, "Jet_Flav"+suffix)[idx]]
 
         # load scale factors for eta, pt, btagValue bin
         sfs = btaggingSFs.getSFs(flav, 
-                    abs(getattr(event, "Jet_Eta"+suffix)[idx]), 
-                    getattr(event, "Jet_Pt"+suffix)[idx], 
-                    getattr(event, "Jet_btagValue"+suffix)[idx],
-                    btagJECs[jec])
+            abs(getattr(event, "Jet_Eta"+suffix)[idx]), 
+            getattr(event, "Jet_Pt"+suffix)[idx], 
+            getattr(event, "Jet_btagValue"+suffix)[idx],
+            btvJECname)
 
         # nominal scale factor
-        if btagJECs[jec] == "nom":
+        if btvJECname == "nom":
             btagSF*= sfs.loc["central"]
         else:
-            btagSF*= sfs.loc[btagJECs[jec]]
+            btagSF*= sfs.loc[btvJECname]
         # scale factor per jet
         #wrapper.branchArrays["Jet_btagSF"+suffix][idx] = sfs.loc[btagJEC]
 
