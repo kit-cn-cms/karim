@@ -45,79 +45,70 @@ def get_additional_variables():
 def base_selection(event):
     return True
 
-def set_branches(wrapper, jec):
-    suffix = "_"+jec
-    wrapper.SetIntVar("event"+suffix)   
-    wrapper.SetIntVar("run"+suffix)   
-    wrapper.SetIntVar("lumi"+suffix)   
+def set_branches(wrapper, jec = None):
+    wrapper.SetIntVar("event")   
+    wrapper.SetIntVar("run")   
+    wrapper.SetIntVar("lumi")   
 
     # lepton trigger
-    wrapper.SetFloatVar("muTrigSF"+suffix)
-    if jec == "nom":
-        wrapper.SetFloatVar("muTrigSF_up"+suffix)
-        wrapper.SetFloatVar("muTrigSF_up_rel"+suffix)
-        wrapper.SetFloatVar("muTrigSF_down"+suffix)
-        wrapper.SetFloatVar("muTrigSF_down_rel"+suffix)
+    wrapper.SetFloatVar("muTrigSF")
+    wrapper.SetFloatVar("muTrigSF_up")
+    wrapper.SetFloatVar("muTrigSF_up_rel")
+    wrapper.SetFloatVar("muTrigSF_down")
+    wrapper.SetFloatVar("muTrigSF_down_rel")
 
-    wrapper.SetFloatVar("elTrigSF"+suffix)
-    if jec == "nom":
-        wrapper.SetFloatVar("elTrigSF_up"+suffix)
-        wrapper.SetFloatVar("elTrigSF_up_rel"+suffix)
-        wrapper.SetFloatVar("elTrigSF_down"+suffix)
-        wrapper.SetFloatVar("elTrigSF_down_rel"+suffix)
+    wrapper.SetFloatVar("elTrigSF")
+    wrapper.SetFloatVar("elTrigSF_up")
+    wrapper.SetFloatVar("elTrigSF_up_rel")
+    wrapper.SetFloatVar("elTrigSF_down")
+    wrapper.SetFloatVar("elTrigSF_down_rel")
 
     # lepton scale factor
-    wrapper.SetFloatVar("muIDSF"+suffix)
-    if jec == "nom":
-        wrapper.SetFloatVar("muIDSF_up"+suffix)
-        wrapper.SetFloatVar("muIDSF_down"+suffix)
-    wrapper.SetFloatVar("elIDSF"+suffix)
-    if jec == "nom":
-        wrapper.SetFloatVar("elIDSF_up"+suffix)
-        wrapper.SetFloatVar("elIDSF_down"+suffix)
+    wrapper.SetFloatVar("muIDSF")
+    wrapper.SetFloatVar("muIDSF_up")
+    wrapper.SetFloatVar("muIDSF_down")
+    wrapper.SetFloatVar("elIDSF")
+    wrapper.SetFloatVar("elIDSF_up")
+    wrapper.SetFloatVar("elIDSF_down")
 
-    wrapper.SetFloatVar("muIsoSF"+suffix)
-    if jec == "nom":
-        wrapper.SetFloatVar("muIsoSF_up"+suffix)
-        wrapper.SetFloatVar("muIsoSF_down"+suffix)
-    wrapper.SetFloatVar("elRecoSF"+suffix)
-    if jec == "nom":
-        wrapper.SetFloatVar("elRecoSF_up"+suffix)
-        wrapper.SetFloatVar("elRecoSF_down"+suffix)
+    wrapper.SetFloatVar("muIsoSF")
+    wrapper.SetFloatVar("muIsoSF_up")
+    wrapper.SetFloatVar("muIsoSF_down")
+    wrapper.SetFloatVar("elRecoSF")
+    wrapper.SetFloatVar("elRecoSF_up")
+    wrapper.SetFloatVar("elRecoSF_down")
 
-    wrapper.SetFloatVar("muSF"+suffix)
-    if jec == "nom":
-        wrapper.SetFloatVar("muSF_up_rel"+suffix)
-        wrapper.SetFloatVar("muSF_down_rel"+suffix)
+    wrapper.SetFloatVar("muSF")
+    wrapper.SetFloatVar("muSF_up_rel")
+    wrapper.SetFloatVar("muSF_down_rel")
 
-    wrapper.SetFloatVar("elSF"+suffix)
-    if jec == "nom":
-        wrapper.SetFloatVar("elSF_up_rel"+suffix)
-        wrapper.SetFloatVar("elSF_down_rel"+suffix)
+    wrapper.SetFloatVar("elSF")
+    wrapper.SetFloatVar("elSF_up_rel")
+    wrapper.SetFloatVar("elSF_down_rel")
  
     # additional relative weights
-    #wrapper.SetFloatVar("L1ECALPrefire"+suffix)
-    #wrapper.SetFloatVar("L1ECALPrefire_up_rel"+suffix)
-    #wrapper.SetFloatVar("L1ECALPrefire_down_rel"+suffix)
+    #wrapper.SetFloatVar("L1ECALPrefire")
+    #wrapper.SetFloatVar("L1ECALPrefire_up_rel")
+    #wrapper.SetFloatVar("L1ECALPrefire_down_rel")
 
 
-def calculate_variables(event, wrapper, sample, jec, genWeights = None):
+def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
     '''
     calculate weights
     '''
 
-    suffix = "_"+jec
-    if getattr(event, "isRecoSelected"+suffix) < 1. and getattr(event,  "isGenSelected"+suffix) < 1.: 
+    if getattr(event, "isRecoSelected") < 1. and getattr(event,  "isGenSelected") < 1.: 
         return event
+
     # add basic information for friend trees
-    wrapper.branchArrays["event"+suffix][0] = getattr(event, "event"+suffix)
-    wrapper.branchArrays["run"+suffix][0]   = getattr(event, "run"+suffix)
-    wrapper.branchArrays["lumi"+suffix][0]  = getattr(event, "lumi"+suffix)
+    wrapper.branchArrays["event"][0] = getattr(event, "event")
+    wrapper.branchArrays["run"][0]   = getattr(event, "run")
+    wrapper.branchArrays["lumi"][0]  = getattr(event, "lumi")
     
     # additional relative weights
-    #wrapper.branchArrays["L1ECALPrefire"+suffix][0]          = getattr(event, "Weight_L1ECALPrefire"+suffix)
-    #wrapper.branchArrays["L1ECALPrefire_up_rel"+suffix][0]   = getattr(event, "Weight_L1ECALPrefireUp"+suffix)/getattr(event, "Weight_L1ECALPrefire"+suffix)
-    #wrapper.branchArrays["L1ECALPrefire_down_rel"+suffix][0] = getattr(event, "Weight_L1ECALPrefireDown"+suffix)/getattr(event, "Weight_L1ECALPrefire"+suffix)
+    #wrapper.branchArrays["L1ECALPrefire"][0]          = getattr(event, "Weight_L1ECALPrefire")
+    #wrapper.branchArrays["L1ECALPrefire_up_rel"][0]   = getattr(event, "Weight_L1ECALPrefireUp")/getattr(event, "Weight_L1ECALPrefire")
+    #wrapper.branchArrays["L1ECALPrefire_down_rel"][0] = getattr(event, "Weight_L1ECALPrefireDown")/getattr(event, "Weight_L1ECALPrefire")
     
     # electron scale factors
     elTrigSF = 1.
@@ -132,48 +123,46 @@ def calculate_variables(event, wrapper, sample, jec, genWeights = None):
     elRecoSF_up = 1.
     elRecoSF_down = 1.
 
-    for iEl in range(getattr(event, "nEle"+suffix)):
+    for iEl in range(getattr(event, "nEle")):
         # TODO super cluster eta
-        #trigger = elTrigSFs.getSFs(getattr(event, "Ele_Pt"+suffix)[iEl], getattr(event, "Ele_EtaSC"+suffix)[iEl])
-        #idsf    = elIDSFs.getSFs(  getattr(event, "Ele_Pt"+suffix)[iEl], getattr(event, "Ele_EtaSC"+suffix)[iEl])
-        #recosf  = elRecoSFs.getSFs(getattr(event, "Ele_Pt"+suffix)[iEl], getattr(event, "Ele_EtaSC"+suffix)[iEl])
-        trigger = elTrigSFs.getSFs(getattr(event, "Ele_Pt"+suffix)[iEl], getattr(event, "Ele_Eta"+suffix)[iEl])
-        idsf    = elIDSFs.getSFs(  getattr(event, "Ele_Pt"+suffix)[iEl], getattr(event, "Ele_Eta"+suffix)[iEl])
-        recosf  = elRecoSFs.getSFs(getattr(event, "Ele_Pt"+suffix)[iEl], getattr(event, "Ele_Eta"+suffix)[iEl])
+        #trigger = elTrigSFs.getSFs(getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_EtaSC")[iEl])
+        #idsf    = elIDSFs.getSFs(  getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_EtaSC")[iEl])
+        #recosf  = elRecoSFs.getSFs(getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_EtaSC")[iEl])
+        trigger = elTrigSFs.getSFs(getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_Eta")[iEl])
+        idsf    = elIDSFs.getSFs(  getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_Eta")[iEl])
+        recosf  = elRecoSFs.getSFs(getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_Eta")[iEl])
 
         elTrigSF      *= trigger.loc["central"]
         elIDSF        *= idsf.loc["central"]
         elRecoSF      *= recosf.loc["central"]
 
-        if jec == "nom":
-            elTrigSF_up   *= trigger.loc["up"]
-            elTrigSF_down *= trigger.loc["down"]
+        elTrigSF_up   *= trigger.loc["up"]
+        elTrigSF_down *= trigger.loc["down"]
 
-            elIDSF_up     *= idsf.loc["up"]
-            elIDSF_down   *= idsf.loc["down"]
+        elIDSF_up     *= idsf.loc["up"]
+        elIDSF_down   *= idsf.loc["down"]
 
-            elRecoSF_up   *= recosf.loc["up"]
-            elRecoSF_down *= recosf.loc["down"]
+        elRecoSF_up   *= recosf.loc["up"]
+        elRecoSF_down *= recosf.loc["down"]
 
-    wrapper.branchArrays["elTrigSF"+suffix][0] = elTrigSF
-    wrapper.branchArrays["elIDSF"+suffix][0]   = elIDSF
-    wrapper.branchArrays["elRecoSF"+suffix][0] = elRecoSF
-    wrapper.branchArrays["elSF"+suffix][0]     = elIDSF*elRecoSF
+    wrapper.branchArrays["elTrigSF"][0] = elTrigSF
+    wrapper.branchArrays["elIDSF"][0]   = elIDSF
+    wrapper.branchArrays["elRecoSF"][0] = elRecoSF
+    wrapper.branchArrays["elSF"][0]     = elIDSF*elRecoSF
 
-    if jec == "nom":
-        wrapper.branchArrays["elTrigSF_up"+suffix][0]       = elTrigSF_up
-        wrapper.branchArrays["elTrigSF_up_rel"+suffix][0]   = elTrigSF_up/elTrigSF
-        wrapper.branchArrays["elTrigSF_down"+suffix][0]     = elTrigSF_down
-        wrapper.branchArrays["elTrigSF_down_rel"+suffix][0] = elTrigSF_down/elTrigSF
-            
-        wrapper.branchArrays["elIDSF_up"+suffix][0]     = elIDSF_up
-        wrapper.branchArrays["elIDSF_down"+suffix][0]   = elIDSF_down
-            
-        wrapper.branchArrays["elRecoSF_up"+suffix][0]   = elRecoSF_up
-        wrapper.branchArrays["elRecoSF_down"+suffix][0] = elRecoSF_down
+    wrapper.branchArrays["elTrigSF_up"][0]       = elTrigSF_up
+    wrapper.branchArrays["elTrigSF_up_rel"][0]   = elTrigSF_up/elTrigSF
+    wrapper.branchArrays["elTrigSF_down"][0]     = elTrigSF_down
+    wrapper.branchArrays["elTrigSF_down_rel"][0] = elTrigSF_down/elTrigSF
+        
+    wrapper.branchArrays["elIDSF_up"][0]     = elIDSF_up
+    wrapper.branchArrays["elIDSF_down"][0]   = elIDSF_down
+        
+    wrapper.branchArrays["elRecoSF_up"][0]   = elRecoSF_up
+    wrapper.branchArrays["elRecoSF_down"][0] = elRecoSF_down
 
-        wrapper.branchArrays["elSF_up_rel"+suffix][0]   = (elIDSF_up*elRecoSF_up)/(elIDSF*elRecoSF)
-        wrapper.branchArrays["elSF_down_rel"+suffix][0] = (elIDSF_down*elRecoSF_down)/(elIDSF*elRecoSF)
+    wrapper.branchArrays["elSF_up_rel"][0]   = (elIDSF_up*elRecoSF_up)/(elIDSF*elRecoSF)
+    wrapper.branchArrays["elSF_down_rel"][0] = (elIDSF_down*elRecoSF_down)/(elIDSF*elRecoSF)
             
     # muon scale factors
     muTrigSF = 1.
@@ -188,44 +177,42 @@ def calculate_variables(event, wrapper, sample, jec, genWeights = None):
     muIsoSF_up = 1.
     muIsoSF_down = 1.
 
-    for iMu in range(getattr(event, "nMu"+suffix)):
-        trigger = muTrigSFs.getSFs(getattr(event, "Mu_Pt"+suffix)[iMu], abs(getattr(event, "Mu_Eta"+suffix)[iMu]))
-        idsf    = muIDSFs.getSFs(  getattr(event, "Mu_Pt"+suffix)[iMu], abs(getattr(event, "Mu_Eta"+suffix)[iMu]))
-        isosf   = muIsoSFs.getSFs( getattr(event, "Mu_Pt"+suffix)[iMu], abs(getattr(event, "Mu_Eta"+suffix)[iMu]))
+    for iMu in range(getattr(event, "nMu")):
+        trigger = muTrigSFs.getSFs(getattr(event, "Mu_Pt")[iMu], abs(getattr(event, "Mu_Eta")[iMu]))
+        idsf    = muIDSFs.getSFs(  getattr(event, "Mu_Pt")[iMu], abs(getattr(event, "Mu_Eta")[iMu]))
+        isosf   = muIsoSFs.getSFs( getattr(event, "Mu_Pt")[iMu], abs(getattr(event, "Mu_Eta")[iMu]))
 
         muTrigSF      *= trigger.loc["central"]
         muIDSF        *= idsf.loc["central"]
         muIsoSF       *= isosf.loc["central"]
 
-        if jec == "nom":
-            muTrigSF_up   *= trigger.loc["up"]
-            muTrigSF_down *= trigger.loc["down"]
+        muTrigSF_up   *= trigger.loc["up"]
+        muTrigSF_down *= trigger.loc["down"]
 
-            muIDSF_up     *= idsf.loc["up"]
-            muIDSF_down   *= idsf.loc["down"]
+        muIDSF_up     *= idsf.loc["up"]
+        muIDSF_down   *= idsf.loc["down"]
 
-            muIsoSF_up    *= isosf.loc["up"]
-            muIsoSF_down  *= isosf.loc["down"]
+        muIsoSF_up    *= isosf.loc["up"]
+        muIsoSF_down  *= isosf.loc["down"]
 
-    wrapper.branchArrays["muTrigSF"+suffix][0] = muTrigSF
-    wrapper.branchArrays["muIDSF"+suffix][0]   = muIDSF
-    wrapper.branchArrays["muIsoSF"+suffix][0]  = muIsoSF
-    wrapper.branchArrays["muSF"+suffix][0]     = muIDSF*muIsoSF
+    wrapper.branchArrays["muTrigSF"][0] = muTrigSF
+    wrapper.branchArrays["muIDSF"][0]   = muIDSF
+    wrapper.branchArrays["muIsoSF"][0]  = muIsoSF
+    wrapper.branchArrays["muSF"][0]     = muIDSF*muIsoSF
 
-    if jec == "nom":
-        wrapper.branchArrays["muTrigSF_up"+suffix][0]       = muTrigSF_up
-        wrapper.branchArrays["muTrigSF_up_rel"+suffix][0]   = muTrigSF_up/muTrigSF
-        wrapper.branchArrays["muTrigSF_down"+suffix][0]     = muTrigSF_down
-        wrapper.branchArrays["muTrigSF_down_rel"+suffix][0] = muTrigSF_down/muTrigSF
-            
-        wrapper.branchArrays["muIDSF_up"+suffix][0]     = muIDSF_up
-        wrapper.branchArrays["muIDSF_down"+suffix][0]   = muIDSF_down
-            
-        wrapper.branchArrays["muIsoSF_up"+suffix][0]    = muIsoSF_up
-        wrapper.branchArrays["muIsoSF_down"+suffix][0]  = muIsoSF_down
+    wrapper.branchArrays["muTrigSF_up"][0]       = muTrigSF_up
+    wrapper.branchArrays["muTrigSF_up_rel"][0]   = muTrigSF_up/muTrigSF
+    wrapper.branchArrays["muTrigSF_down"][0]     = muTrigSF_down
+    wrapper.branchArrays["muTrigSF_down_rel"][0] = muTrigSF_down/muTrigSF
+        
+    wrapper.branchArrays["muIDSF_up"][0]     = muIDSF_up
+    wrapper.branchArrays["muIDSF_down"][0]   = muIDSF_down
+        
+    wrapper.branchArrays["muIsoSF_up"][0]    = muIsoSF_up
+    wrapper.branchArrays["muIsoSF_down"][0]  = muIsoSF_down
 
-        wrapper.branchArrays["muSF_up_rel"+suffix][0]     = (muIDSF_up*muIsoSF_up)/(muIDSF*muIsoSF)
-        wrapper.branchArrays["muSF_down_rel"+suffix][0]   = (muIDSF_down*muIsoSF_down)/(muIDSF*muIsoSF)
+    wrapper.branchArrays["muSF_up_rel"][0]     = (muIDSF_up*muIsoSF_up)/(muIDSF*muIsoSF)
+    wrapper.branchArrays["muSF_down_rel"][0]   = (muIDSF_down*muIsoSF_down)/(muIDSF*muIsoSF)
 
     return event
 

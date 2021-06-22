@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from karim import load as load
 
-def calculate_variables(filename, configpath, friendTrees, outpath, apply_selection = False, split_feature = None):
+def calculate_variables(filename, configpath, friendTrees, outpath, apply_selection = False, split_feature = None, jecDependent = False):
     print(" ===== EVALUATING FILE ===== ")
     print(filename)
     print(" =========================== ")
@@ -21,22 +21,32 @@ def calculate_variables(filename, configpath, friendTrees, outpath, apply_select
 
         # open output root file
         with load.OutputFile(outpath) as outfile:
-            outfile.SetConfigBranches(config, jecs)
+            outfile.SetConfigBranches(config, jecs, jecDependent)
 
             # start loop over ntuple entries
             first = True
             for i, event in enumerate(load.TreeIterator(ntuple)):
                 if split_feature is None:
-                    for jec in jecs:
-                        config.calculate_variables(event, outfile, outfile.sampleName, jec, genWeights)
+                    if not jecDependent:
+                        config.calculate_variables(event, outfile, outfile.sampleName, None, genWeights)
+                    else:
+                        for jec in jecs:
+                            config.calculate_variables(event, outfile, outfile.sampleName, jec, genWeights)
                     outfile.FillTree()
                 else:
-                    for jec in jecs:
-                        loopSize = getattr(event, split_feature+"_"+jec)
+                    if not jecDependent:
+                        loopSize = getattr(event, split_feature)
                         for idx in range(loopSize):
-                            config.calculate_variables(event, outfile, outfile.sampleName, idx, jec)
+                            config.calculate_variables(event, outfile, outfile.sampleName, idx)
                             outfile.FillTree()
                             outfile.ClearArrays()
+                    else:
+                        for jec in jecs:
+                            loopSize = getattr(event, split_feature+"_"+jec)
+                            for idx in range(loopSize):
+                                config.calculate_variables(event, outfile, outfile.sampleName, idx, jec)
+                                outfile.FillTree()
+                                outfile.ClearArrays()
 
                 if first:
                     print("writing variables to output tree:")

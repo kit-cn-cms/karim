@@ -87,9 +87,9 @@ def base_selection(event):
 
 def set_branches(wrapper, jec):
     suffix = "_"+jec
-    wrapper.SetIntVar("event"+suffix)   
-    wrapper.SetIntVar("run"+suffix)   
-    wrapper.SetIntVar("lumi"+suffix)   
+    #wrapper.SetIntVar("event"+suffix)   
+    #wrapper.SetIntVar("run"+suffix)   
+    #wrapper.SetIntVar("lumi"+suffix)   
 
     #wrapper.SetIntVar("nJets"+suffix)
 
@@ -114,19 +114,19 @@ def calculate_variables(event, wrapper, sample, jec, genWeights = None):
     suffix = "_"+jec
     btvJECname = btagJECs[jec]
 
-    if getattr(event, "isRecoSelected"+suffix) < 1. and getattr(event,  "isGenSelected"+suffix) < 1.: 
-        return event
+    #if getattr(event, "isRecoSelected"+suffix) < 1. and getattr(event,  "isGenSelected"+suffix) < 1.: 
+    #    return event
 
     # add basic information for friend trees
-    wrapper.branchArrays["event"+suffix][0] = getattr(event, "event"+suffix)
-    wrapper.branchArrays["run"+suffix][0]   = getattr(event, "run"+suffix)
-    wrapper.branchArrays["lumi"+suffix][0]  = getattr(event, "lumi"+suffix)
+    #wrapper.branchArrays["event"+suffix][0] = getattr(event, "event"+suffix)
+    #wrapper.branchArrays["run"+suffix][0]   = getattr(event, "run"+suffix)
+    #wrapper.branchArrays["lumi"+suffix][0]  = getattr(event, "lumi"+suffix)
     
     #wrapper.branchArrays["nJets"+suffix][0] = getattr(event, "nJets"+suffix)
 
     # b-tagging scale factor patches
     patchValue = sfPatch.getPatchValue(sample, 
-        getattr(event, "ttbarID"+suffix), 
+        getattr(event, "ttbarID"), 
         getattr(event, "nJets"+suffix), 
         getattr(event, "HT_jets"+suffix))
 

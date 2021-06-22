@@ -73,7 +73,8 @@ parser.add_option("--apply-selection", dest="apply_selection",default=False,acti
            " option to skip these events. this is not usable as friendtree anymore.")
 parser.add_option("--friend-trees", "-f", dest = "friendTrees", default = None,
     help = "add friend trees as additional source of input information. comma separated list.")
-
+parser.add_option("--jec-dependent", "-j", dest = "jecDependent", default = False, action = "store_true",
+    help = "perform jec loop instead of just calculating variables once")
 (opts, args) = parser.parse_args()
 
 
@@ -148,6 +149,7 @@ for ntuple in args:
             friendTrees     = friendTrees,
             outpath         = "/".join([outfilePath, outfileName]),
             split_feature   = opts.split_feature,
+            jecDependent    = opts.jecDependent,
             )
 
     elif opts.mode == "Database":
