@@ -219,7 +219,7 @@ for el in electrons:
 | legacy 2018 | [RunABCD_SF_ISO.root](https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2018/rootfiles/RunABCD_SF_ISO.root)| `NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta` |
 |  |  |  |
 | UL 2017 | | |
-| legacy 2018 | [Efficiencies_muon_generalTracks_Z_Run2018_UL_ISO.root](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/raw/master/Run2/UL/2018/2018_Z/Efficiencies_muon_generalTracks_Z_Run2018_UL_ISO.root)| `NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt`,`NUM_LooseRelIso_DEN_LooseID_abseta_pt`  |
+| UL 2018 | [Efficiencies_muon_generalTracks_Z_Run2018_UL_ISO.root](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/raw/master/Run2/UL/2018/2018_Z/Efficiencies_muon_generalTracks_Z_Run2018_UL_ISO.root)| `NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt`,`NUM_LooseRelIso_DEN_LooseID_abseta_pt`  |
 |  |  |  |
 
 ```python
