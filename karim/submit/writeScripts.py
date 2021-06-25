@@ -24,7 +24,7 @@ matchTemplate = """
 python3 {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {friendTrees} {sigOnly} {files}
 """
 calcTemplate = """
-python3 {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} {split} {files}
+python3 {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} {split} {jecDependent} {files}
 """
 databaseTemplate = """
 python3 {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} -d {database} {files}
@@ -110,6 +110,7 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     config    = options.config_path,
                     outPath   = options.output,
                     friendTrees = friendTrees,
+                    jecDependent = "--jec-dependent" if options.jecDependent else "",
                     split       = splitFeature,
                     files     = " ".join(jobfiles))
 

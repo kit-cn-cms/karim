@@ -24,21 +24,37 @@ class InputFile(object):
         self.file.Close()
 
 
+jecs = [
+    "jes",
+    "jesAbsolute_2018",
+    "jesHF_2018",
+    "jesEC2_2018",
+    "jesRelativeBal",
+    "jesHEMIssue",
+    "jesBBEC1_2018",
+    "jesRelativeSample_2018",
+    "jesFlavorQCD",
+    "jesBBEC1",
+    "jesHF",
+    "jesAbsolute",
+    "jesEC2",
+    "jesTotal",
+    "jer",
+    ]
+validSysts = ["nom"]
+validSysts+= [j+"Up" for j in jecs]
+validSysts+= [j+"Down" for j in jecs]
+
 def getSystematics(tree):
     branches = [b.GetName() for b in tree.GetListOfBranches()]
     postfix  = []
     for b in branches:
-        # if not b.split("_")[-1].startswith("201"):
-        #     postfix.append(b.split("_")[-1])
-        # else:
-        #     postfix.append(b.split("_")[-2]+"_"+b.split("_")[-1])
-        if b.split("_")[-1].endswith("Up") or b.split("_")[-1].endswith("Down"):
-            if "mu" in b.split("_")[-1] or "sr" in b.split("_")[-1]:
-                continue
+        if not b.split("_")[-1].startswith("201"):
             postfix.append(b.split("_")[-1])
-    
-    postfix.append("nom")
-    jecs     = list(set(postfix))
+        else:
+            postfix.append(b.split("_")[-2]+"_"+b.split("_")[-1])
+    jecs = list(set(postfix))
+    jecs = [j for j in jecs if j in validSysts]
     print("\tfound the following JECs in the input file")
     for j in jecs: 
         print("\t{}".format(j))
@@ -170,9 +186,12 @@ class OutputFile(object):
                 self.branchArrays[i][0] = val
         self.tree.Fill()
 
-    def SetConfigBranches(self, config, jecs):
-        for jec in jecs:
-            config.set_branches(self, jec)
+    def SetConfigBranches(self, config, jecs, jecDependent = False):
+        if jecDependent:
+            for jec in jecs:
+                config.set_branches(self, jec)
+        else:
+            config.set_branches(self, jec = None)
 
     def SetIntVar(self, var):
         self.branchArrays[var] = array("l", [0]) 
