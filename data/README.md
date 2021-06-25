@@ -231,6 +231,66 @@ for mu in muons:
     variedSF  = isoSF.loc["up"] # example of varied scale factor
 ```
 
+## Photon scale factors
+
+For photons separate official POG efficiency scale factors are used.
+The POGs provide these scale factors as ROOT histograms on the [official EGamma POG TWiki pages](https://twiki.cern.ch/twiki/bin/view/CMS/EgammaRunIIRecommendations).
+The relevant pages for UL are:
+*  https://twiki.cern.ch/twiki/bin/view/CMS/EgammaUL2016To2018
+
+These root files has been converted to csv files with the scripts in `data/util` without changing the content.
+The photon scale factors can be read with a dedicated class in `configs/weightModules.py`
+
+#### Electron ID SFs
+|data period | official SF file | SF name | csv file name |
+| -- | -- | -- | -- |
+|  |  |  |
+| UL 2018 | [egammaEffi.txt_EGM2D_Pho_Loose_UL18.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_EGM2D_Pho_Loose_UL18.root) | `tightElectronID` | Ele_Tight_EGM2D.csv |
+| UL 2018 | [eegammaEffi.txt_EGM2D_Pho_Med_UL18.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_EGM2D_Pho_Med_UL18.root) | `mediumElectronID` | Ele_Medium_EGM2D.csv |
+| UL 2018 | [egammaEffi.txt_EGM2D_Pho_Tight.root_UL18.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_EGM2D_Pho_Tight.root_UL18.root) | `looseElectronID` | Ele_Loose_EGM2D.csv |
+|  |  |  |
+
+
+```python
+phoIDSFs = weightModules.LeptonSFs(csv = FILE, sfName = SFNAME)
+
+for pho in photons:
+    effSF = phoIDSFs.getSFs(phoPt, phoEtaSuperCluster)
+    nominalSF = effSF.loc["central"] # nominal scale factor
+    variedSF  = effSF.loc["up"] # example of varied scale factor
+
+```
+
+## EGAMMA SF evaluation using centrally provided json files
+SFs can also be evaluated using centrally provided and maintained SF jsons.
+This follows https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaSFJSON
+These jsons can be evaulated using `correctionlib`: https://github.com/cms-nanoAOD/correctionlib.git
+This needs to be installed via
+```
+pip install git+https://github.com/cms-nanoAOD/correctionlib.git@master
+```
+
+Note: this requires CMSSW_11_2_X! (tested with CMSSW_11_3_1)
+
+The SFs can be accessed like the following code snippet:
+``` python
+
+from correctionlib import _core
+
+#Download the correct JSON files 
+evaluator = _core.CorrectionSet.from_file('electron.json')
+
+#Reconstruction (pT< 20 GeV) Run-2 scale factor
+valsf= evaluator["UL-Electron-ID-SF"].evaluate("2016postVFP","sf","RecoBelow20",1.1, 15.0)
+print("sf is:"+str(valsf))
+
+#Reconstruction (pT> 20 GeV) Run-2 scale factor
+valsf= evaluator["UL-Electron-ID-SF"].evaluate("2016postVFP","sf","RecoAbove20",1.1, 25.0)
+print("sf is:"+str(valsf))
+```
+
+
+
 
 ## Pileup reweighting
 
