@@ -15,19 +15,19 @@ cd -
 export KERAS_BACKEND=tensorflow
 """
 recoTemplate = """
-python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {friendTrees} {files}
+python3 {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {friendTrees} {files}
 """
 evalTemplate = """
-python {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {friendTrees} {applySelection} {writeInputVars} {files}
+python3 {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {friendTrees} {applySelection} {writeInputVars} {files}
 """
 matchTemplate = """
-python {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {friendTrees} {sigOnly} {files}
+python3 {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {friendTrees} {sigOnly} {files}
 """
 calcTemplate = """
-python {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} {split} {files}
+python3 {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} {split} {files}
 """
 databaseTemplate = """
-python {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} -d {database} {files}
+python3 {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} -d {database} {files}
 """
 
 def writeScripts(inputSample, scriptDir, options, basepath):

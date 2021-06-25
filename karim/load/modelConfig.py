@@ -1,7 +1,7 @@
 import yaml
 import numpy as np
 
-from model import Model as ModelBase
+from karim.load.model import Model as ModelBase
 
 class ModelConfig:
     def __init__(self, modelconfigpath):

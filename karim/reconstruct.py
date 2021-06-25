@@ -5,7 +5,7 @@ import sys
 import numpy as np
 import pandas as pd
 from karim import load as load
-from hypotheses import Hypotheses
+# from karim import Hypotheses
 
 def evaluate_reconstruction(filename, modelname, configpath, friendTrees, outpath, apply_selection = False):
     print(" ===== EVALUATING FILE ===== ")

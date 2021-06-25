@@ -4,7 +4,8 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-from karim import load as load
+# from karim import load as load
+import karim.load as load
 
 def calculate_variables(filename, configpath, friendTrees, outpath, apply_selection = False, split_feature = None):
     print(" ===== EVALUATING FILE ===== ")

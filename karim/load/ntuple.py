@@ -28,10 +28,16 @@ def getSystematics(tree):
     branches = [b.GetName() for b in tree.GetListOfBranches()]
     postfix  = []
     for b in branches:
-        if not b.split("_")[-1].startswith("201"):
+        # if not b.split("_")[-1].startswith("201"):
+        #     postfix.append(b.split("_")[-1])
+        # else:
+        #     postfix.append(b.split("_")[-2]+"_"+b.split("_")[-1])
+        if b.split("_")[-1].endswith("Up") or b.split("_")[-1].endswith("Down"):
+            if "mu" in b.split("_")[-1] or "sr" in b.split("_")[-1]:
+                continue
             postfix.append(b.split("_")[-1])
-        else:
-            postfix.append(b.split("_")[-2]+"_"+b.split("_")[-1])
+    
+    postfix.append("nom")
     jecs     = list(set(postfix))
     print("\tfound the following JECs in the input file")
     for j in jecs: 
@@ -59,6 +65,26 @@ class TreeIterator:
         self.timer = ROOT.TStopwatch()
         self.timer.Start()
         return self
+
+    def __next__(self):
+        if self.idx%self.pstep==0 and self.idx>0:
+            print("at event {}/{}".format(self.idx, self.max))
+            print("  time for {} events:  {:.1f} s".format(self.pstep, self.timer.RealTime()))
+            print("  estimated time for {} events: {:.0f} min".format(
+                self.scale, self.timer.RealTime()/self.pstep*self.scale/60.))
+            self.timer.Start()
+
+        if self.idx < self.max:
+            self.tree.GetEntry(self.idx)
+            self.idx+=1
+
+            return self.tree
+            #if not self.Hypotheses is None:
+            #    return self.Hypotheses.GetPermutations(self.tree, self.tree.N_Jets)
+            #else:
+                
+        else:
+            raise StopIteration
 
     def next(self):
         if self.idx%self.pstep==0 and self.idx>0:
