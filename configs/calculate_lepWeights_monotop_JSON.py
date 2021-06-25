@@ -61,7 +61,6 @@ def base_selection(event):
     return True
 
 def set_branches(wrapper, jec):
-    suffix = "_"+jec
     wrapper.SetIntVar("event")   
     wrapper.SetIntVar("run")   
     wrapper.SetIntVar("lumi")   
@@ -122,11 +121,6 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
     '''
     calculate weights
     '''
-    if jec != "nom":
-        return event
-    suffix = "_"+jec
-    if getattr(event, "is_selected"+suffix) < 1.: 
-        return event
     # add basic information for friend trees
     wrapper.branchArrays["event"][0] = getattr(event, "Evt_ID")
     wrapper.branchArrays["run"][0]   = getattr(event, "Evt_Run")
