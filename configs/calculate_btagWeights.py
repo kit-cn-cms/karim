@@ -114,8 +114,8 @@ def calculate_variables(event, wrapper, sample, jec, genWeights = None):
     suffix = "_"+jec
     btvJECname = btagJECs[jec]
 
-    #if getattr(event, "isRecoSelected"+suffix) < 1. and getattr(event,  "isGenSelected"+suffix) < 1.: 
-    #    return event
+    if getattr(event, "isRecoSelected"+suffix) < 1. and getattr(event,  "isGenSelected") < 1.: 
+        return event
 
     # add basic information for friend trees
     #wrapper.branchArrays["event"+suffix][0] = getattr(event, "event"+suffix)
@@ -143,17 +143,20 @@ def calculate_variables(event, wrapper, sample, jec, genWeights = None):
         flav = flavTranslator[getattr(event, "Jet_Flav"+suffix)[idx]]
 
         # load scale factors for eta, pt, btagValue bin
-        sfs = btaggingSFs.getSFs(flav, 
-            abs(getattr(event, "Jet_Eta"+suffix)[idx]), 
-            getattr(event, "Jet_Pt"+suffix)[idx], 
-            getattr(event, "Jet_btagValue"+suffix)[idx],
-            btvJECname)
+        if not flav == 1 or jec == "nom":
+            sfs = btaggingSFs.getSFs(flav, 
+                abs(getattr(event, "Jet_Eta"+suffix)[idx]), 
+                getattr(event, "Jet_Pt"+suffix)[idx], 
+                getattr(event, "Jet_btagValue"+suffix)[idx],
+                btvJECname)
 
         # nominal scale factor
-        if btvJECname == "nom":
-            btagSF*= sfs.loc["central"]
-        else:
-            btagSF*= sfs.loc[btvJECname]
+        
+        if not (flav == 1):
+            if btvJECname == "nom":
+                btagSF*= sfs.loc["central"]
+            else:
+                btagSF*= sfs.loc[btvJECname]
         # scale factor per jet
         #wrapper.branchArrays["Jet_btagSF"+suffix][idx] = sfs.loc[btagJEC]
 
@@ -162,11 +165,9 @@ def calculate_variables(event, wrapper, sample, jec, genWeights = None):
             # scale factor uncertainties
             for u in btagSF_uncs:
                 # cferr only exists for c-jets
-                if flav == 1: 
+                if flav == 1:
                     if "cferr" in u:
                         uncs[u] *= sfs.loc[u]
-                    else:
-                        uncs[u] *= sfs.loc["central"]
                 # for the others cferr does not exist
                 else:
                     if "cferr" in u:
