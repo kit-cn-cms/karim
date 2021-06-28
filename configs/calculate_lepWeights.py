@@ -97,9 +97,6 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
     calculate weights
     '''
 
-    if getattr(event, "isRecoSelected") < 1. and getattr(event,  "isGenSelected") < 1.: 
-        return event
-
     # add basic information for friend trees
     wrapper.branchArrays["event"][0] = getattr(event, "event")
     wrapper.branchArrays["run"][0]   = getattr(event, "run")
@@ -125,12 +122,9 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
 
     for iEl in range(getattr(event, "nEle")):
         # TODO super cluster eta
-        #trigger = elTrigSFs.getSFs(getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_EtaSC")[iEl])
-        #idsf    = elIDSFs.getSFs(  getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_EtaSC")[iEl])
-        #recosf  = elRecoSFs.getSFs(getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_EtaSC")[iEl])
-        trigger = elTrigSFs.getSFs(getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_Eta")[iEl])
-        idsf    = elIDSFs.getSFs(  getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_Eta")[iEl])
-        recosf  = elRecoSFs.getSFs(getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_Eta")[iEl])
+        trigger = elTrigSFs.getSFs(getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_EtaSC")[iEl])
+        idsf    = elIDSFs.getSFs(  getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_EtaSC")[iEl])
+        recosf  = elRecoSFs.getSFs(getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_EtaSC")[iEl])
 
         elTrigSF      *= trigger.loc["central"]
         elIDSF        *= idsf.loc["central"]
@@ -151,9 +145,7 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
     wrapper.branchArrays["elSF"][0]     = elIDSF*elRecoSF
 
     wrapper.branchArrays["elTrigSF_up"][0]       = elTrigSF_up
-    wrapper.branchArrays["elTrigSF_up_rel"][0]   = elTrigSF_up/elTrigSF
     wrapper.branchArrays["elTrigSF_down"][0]     = elTrigSF_down
-    wrapper.branchArrays["elTrigSF_down_rel"][0] = elTrigSF_down/elTrigSF
         
     wrapper.branchArrays["elIDSF_up"][0]     = elIDSF_up
     wrapper.branchArrays["elIDSF_down"][0]   = elIDSF_down
@@ -161,8 +153,17 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
     wrapper.branchArrays["elRecoSF_up"][0]   = elRecoSF_up
     wrapper.branchArrays["elRecoSF_down"][0] = elRecoSF_down
 
-    wrapper.branchArrays["elSF_up_rel"][0]   = (elIDSF_up*elRecoSF_up)/(elIDSF*elRecoSF)
-    wrapper.branchArrays["elSF_down_rel"][0] = (elIDSF_down*elRecoSF_down)/(elIDSF*elRecoSF)
+    # relative SFs only when exactly one electron is present
+    if event.nEle == 1 and event.nMu == 0:
+        wrapper.branchArrays["elTrigSF_up_rel"][0]   = elTrigSF_up/elTrigSF
+        wrapper.branchArrays["elTrigSF_down_rel"][0] = elTrigSF_down/elTrigSF
+        wrapper.branchArrays["elSF_up_rel"][0]   = (elIDSF_up*elRecoSF_up)/(elIDSF*elRecoSF)
+        wrapper.branchArrays["elSF_down_rel"][0] = (elIDSF_down*elRecoSF_down)/(elIDSF*elRecoSF)
+    else:
+        wrapper.branchArrays["elTrigSF_up_rel"][0]   = 1.
+        wrapper.branchArrays["elTrigSF_down_rel"][0] = 1.
+        wrapper.branchArrays["elSF_up_rel"][0]   = 1.
+        wrapper.branchArrays["elSF_down_rel"][0] = 1.
             
     # muon scale factors
     muTrigSF = 1.
@@ -201,9 +202,7 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
     wrapper.branchArrays["muSF"][0]     = muIDSF*muIsoSF
 
     wrapper.branchArrays["muTrigSF_up"][0]       = muTrigSF_up
-    wrapper.branchArrays["muTrigSF_up_rel"][0]   = muTrigSF_up/muTrigSF
     wrapper.branchArrays["muTrigSF_down"][0]     = muTrigSF_down
-    wrapper.branchArrays["muTrigSF_down_rel"][0] = muTrigSF_down/muTrigSF
         
     wrapper.branchArrays["muIDSF_up"][0]     = muIDSF_up
     wrapper.branchArrays["muIDSF_down"][0]   = muIDSF_down
@@ -211,8 +210,17 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
     wrapper.branchArrays["muIsoSF_up"][0]    = muIsoSF_up
     wrapper.branchArrays["muIsoSF_down"][0]  = muIsoSF_down
 
-    wrapper.branchArrays["muSF_up_rel"][0]     = (muIDSF_up*muIsoSF_up)/(muIDSF*muIsoSF)
-    wrapper.branchArrays["muSF_down_rel"][0]   = (muIDSF_down*muIsoSF_down)/(muIDSF*muIsoSF)
+    # relative SFs only when exactly one muon is present
+    if event.nMu == 1 and event.nEle == 0:
+        wrapper.branchArrays["muTrigSF_up_rel"][0]   = muTrigSF_up/muTrigSF
+        wrapper.branchArrays["muTrigSF_down_rel"][0] = muTrigSF_down/muTrigSF
+        wrapper.branchArrays["muSF_up_rel"][0]     = (muIDSF_up*muIsoSF_up)/(muIDSF*muIsoSF)
+        wrapper.branchArrays["muSF_down_rel"][0]   = (muIDSF_down*muIsoSF_down)/(muIDSF*muIsoSF)
+    else:
+        wrapper.branchArrays["muTrigSF_up_rel"][0]   = 1.
+        wrapper.branchArrays["muTrigSF_down_rel"][0] = 1.
+        wrapper.branchArrays["muSF_up_rel"][0]     = 1.
+        wrapper.branchArrays["muSF_down_rel"][0]   = 1.
 
     return event
 
