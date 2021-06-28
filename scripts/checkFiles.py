@@ -22,7 +22,8 @@ usage = ["",
 
 
 parser = optparse.OptionParser(usage = "\n".join(usage))
-parser.add_option("-M", "--mode", dest = "mode", choices = ["Reconstruction", "R", "Matching", "M"],
+parser.add_option("-M", "--mode", dest = "mode", 
+    choices = ["Reconstruction", "R", "Matching", "M", "Calculation", "C"],
     help = "switch between reconstruction evaluation mode and gen level particle matching mode")
 
 parser.add_option("-r", "--requirement", dest="name_requirement",default="",
@@ -37,6 +38,8 @@ if opts.mode == "R":
     opts.mode = "Reconstruction"
 if opts.mode == "M":
     opts.mode = "Matching"
+if opts.mode == "C":
+    opts.mode = "Calculation"
 
 if opts.output is None:
     exit("need to specify an output directory")
