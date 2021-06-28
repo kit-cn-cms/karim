@@ -63,9 +63,6 @@ def calculate_variables(event, wrapper, sample, jec, genWeights = None):
     calculate weights
     '''
 
-    if getattr(event, "isRecoSelected") < 1. and getattr(event,  "isGenSelected") < 1.: 
-        return event
-
     # add basic information for friend trees
     wrapper.branchArrays["event"][0] = getattr(event, "event")
     wrapper.branchArrays["run"][0]   = getattr(event, "run")
