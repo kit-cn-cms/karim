@@ -4,15 +4,15 @@ name: Lint
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the dev_nanoAOD branch
+  # Triggers the workflow on push or pull request events for every branch except for the dev_nanoAOD branch
   # 'paths' variable will only select python files
   # FIXME: this needs to be updated if python3 is available on other branches
   push:
-    branches: [ master ]
+    branches: [ "!dev_nanoAOD" ]
     paths:
       - "**.py"
   pull_request:
-    branches: [ master ]
+    branches: [ "!dev_nanoAOD" ]
     paths:
       - "**.py"
 
