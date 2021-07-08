@@ -148,6 +148,7 @@ for ntuple in args:
             configpath      = os.path.abspath(opts.config_path),
             friendTrees     = friendTrees,
             outpath         = "/".join([outfilePath, outfileName]),
+            apply_selection = opts.apply_selection,
             split_feature   = opts.split_feature,
             jecDependent    = opts.jecDependent,
             )

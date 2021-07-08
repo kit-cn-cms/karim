@@ -27,6 +27,9 @@ def calculate_variables(filename, configpath, friendTrees, outpath, apply_select
             # start loop over ntuple entries
             first = True
             for i, event in enumerate(load.TreeIterator(ntuple)):
+                if apply_selection:
+                    if not config.base_selection(event):
+                        continue
                 if split_feature is None:
                     if not jecDependent:
                         config.calculate_variables(event, outfile, outfile.sampleName, None, genWeights)
