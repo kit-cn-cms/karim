@@ -17,8 +17,8 @@ The files are copied without changes from the [official POG TWiki pages](https:/
 | legacy 2017 | [DeepFlavour_94XSF_V4_B_F.csv](https://twiki.cern.ch/twiki/pub/CMS/BtagRecommendation94X/) | `iterativefit`  |
 | legacy 2018 | [DeepJet_102XSF_V2_JESreduced.csv](https://twiki.cern.ch/twiki/pub/CMS/BtagRecommendation102X/) | `iterativefit` |
 |  |  |  |
-| UL 2018 | [DeepJet_106XUL18SF.csv](https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL18) | `iterativefit` |
 | UL 2017 | [DeepJet_106XUL17SF_V2p1.csv](https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL17) | `iterativefit` |
+| UL 2018 | [DeepJet_106XUL18SF.csv](https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL18) | `iterativefit` |
 | | | |
 
 
@@ -155,10 +155,7 @@ The lepton scale factors can be read with a dedicated class in `configs/weightMo
 | legacy 2018 | [2018_ElectronTight.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaIDRecipesRun2/2018_ElectronTight.root) | `tightElectronID` | |
 |  |  |  |
 | UL 2017 | | | |
-| UL 2018 | [egammaEffi.txt_Ele_Tight_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Tight_EGM2D.root) | `tightElectronID` | Ele_Tight_EGM2D.csv |
-| UL 2018 | [egammaEffi.txt_Ele_Medium_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Medium_EGM2D.root) | `mediumElectronID` | Ele_Medium_EGM2D.csv |
-| UL 2018 | [egammaEffi.txt_Ele_Loose_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Loose_EGM2D.root) | `looseElectronID` | Ele_Loose_EGM2D.csv |
-| UL 2018 | [egammaEffi.txt_Ele_Veto_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Veto_EGM2D.root) | `vetoElectronID` | Ele_Veto_EGM2D.csv |
+| UL 2018 | [egammaEffi.txt_Ele_Tight_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Tight_EGM2D.root)      [egammaEffi.txt_Ele_Medium_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Medium_EGM2D.root)    [egammaEffi.txt_Ele_Loose_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Loose_EGM2D.root)    [egammaEffi.txt_Ele_Veto_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Veto_EGM2D.root)    | `tightElectronID`    `mediumElectronID`    `looseElectronID`    `vetoElectronID`  | Ele_Tight_EGM2D.csv    Ele_Medium_EGM2D.csv    Ele_Loose_EGM2D.csv   Ele_Veto_EGM2D.csv   |
 |  |  |  |
 
 
@@ -240,7 +237,6 @@ The relevant pages for UL are:
 These root files has been converted to csv files with the scripts in `data/util` without changing the content.
 The photon scale factors can be read with a dedicated class in `configs/weightModules.py`
 
-#### Electron ID SFs
 |data period | official SF file | SF name | csv file name |
 | -- | -- | -- | -- |
 |  |  |  |
