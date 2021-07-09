@@ -267,10 +267,10 @@ This follows https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaSFJSON
 These jsons can be evaulated using `correctionlib`: https://github.com/cms-nanoAOD/correctionlib.git
 This needs to be installed via
 ```
-pip install git+https://github.com/cms-nanoAOD/correctionlib.git@master
+pip3 install git+https://github.com/cms-nanoAOD/correctionlib.git@master
 ```
 
-Note: this requires CMSSW_11_2_X! (tested with CMSSW_11_3_1)
+Note: this requires CMSSW_11_2_X! (tested with CMSSW_11_3_1) and `python3`
 
 The SFs can be accessed like the following code snippet:
 ``` python
