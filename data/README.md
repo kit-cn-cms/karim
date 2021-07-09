@@ -14,10 +14,11 @@ The files are copied without changes from the [official POG TWiki pages](https:/
 |data period | official SF file | SF name |
 | -- | -- | -- |
 | legacy 2016 | |
-| legacy 2017 | [DeepFlavour_94XSF_V4_B_F.csv](https://twiki.cern.ch/twiki/pub/CMS/BtagRecommendation94X/DeepFlavour_94XSF_V4_B_F.csv) | `iterativefit`  |
-| legacy 2018 | [DeepJet_102XSF_V2_JESreduced.csv](https://twiki.cern.ch/twiki/pub/CMS/BtagRecommendation102X/DeepJet_102XSF_V2_JESreduced.csv) | `iterativefit` |
+| legacy 2017 | [DeepFlavour_94XSF_V4_B_F.csv](https://twiki.cern.ch/twiki/pub/CMS/BtagRecommendation94X/) | `iterativefit`  |
+| legacy 2018 | [DeepJet_102XSF_V2_JESreduced.csv](https://twiki.cern.ch/twiki/pub/CMS/BtagRecommendation102X/) | `iterativefit` |
 |  |  |  |
-| UL 2017 | | |
+| UL 2018 | [DeepJet_106XUL18SF.csv](https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL18) | `iterativefit` |
+| UL 2017 | [DeepJet_106XUL17SF_V2p1.csv](https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL17) | `iterativefit` |
 | | | |
 
 
@@ -40,8 +41,6 @@ for u in btagSF_uncs:
     if flav == 1:
         if "cferr" in u:
             uncs[u] *= sfs.loc[u]
-        else:
-            uncs[u] *= sfs.loc["central"]
     # for the others cferr does not exist
     else:
         if "cferr" in u:
