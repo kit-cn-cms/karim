@@ -55,6 +55,7 @@ def getSystematics(tree):
             postfix.append(b.split("_")[-2]+"_"+b.split("_")[-1])
     jecs = list(set(postfix))
     jecs = [j for j in jecs if j in validSysts]
+    jecs = list(sorted(jecs))
     print("\tfound the following JECs in the input file")
     for j in jecs: 
         print("\t{}".format(j))

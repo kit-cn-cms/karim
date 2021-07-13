@@ -160,5 +160,6 @@ class PileupSFs:
         self.data = data
 
     def getSF(self, pu, name = "central"):
+        if pu < 2:  pu = 2
         if pu > 98: pu = 98
         return self.data.loc[pu][name]
