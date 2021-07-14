@@ -123,9 +123,6 @@ def calculate_variables(event, wrapper, sample, jec, genWeights = None):
         btvJECname = "central"
     #btvJECname = btagJECs[jec]
 
-    if getattr(event, "isRecoSelected"+suffix) < 1. and getattr(event,  "isGenSelected") < 1.: 
-        return event
-
     # add basic information for friend trees
     #wrapper.branchArrays["event"+suffix][0] = getattr(event, "event"+suffix)
     #wrapper.branchArrays["run"+suffix][0]   = getattr(event, "run"+suffix)
