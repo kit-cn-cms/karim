@@ -104,6 +104,8 @@ class SFPatches:
         self.errors = 0
 
     def getPatchValue(self, sample, ttID, nJets, HT):
+        if nJets <= 0: return 1.
+        if HT <= 0: return 1.
         if sample.startswith("ttH") or sample.startswith("TTH"):
             proc = "ttH"
         elif sample.startswith("TTZ"):
@@ -122,7 +124,6 @@ class SFPatches:
                 proc = self.applyToMissing
             else:
                 return 1.
-
         p = self.data.loc[(proc)]
         return p.loc[(p["jetsMin"]<=nJets) & (p["jetsMax"]>nJets) & (p["htMin"]<=HT) & (p["htMax"]>HT)]["factor"]
 
