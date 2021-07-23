@@ -143,7 +143,7 @@ def get_jetFlavor_data(df_all, jf, dimensions = ["eta", "pt"]):
         data["value"] = {}
         data["value"]["nodetype"] = "multibinning"
         data["value"]["inputs"] = []
-        data["value"]["flow"] = "error"
+        data["value"]["flow"] = "clamp"
 
         edges = []
         reindex = []

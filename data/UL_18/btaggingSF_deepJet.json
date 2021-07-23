@@ -142,7 +142,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 5
                                             }, 
@@ -245,7 +245,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 4
                                             }
@@ -388,7 +388,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 5
                                             }, 
@@ -491,7 +491,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 4
                                             }
@@ -612,7 +612,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 5
                                             }, 
@@ -715,7 +715,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 4
                                             }
@@ -858,7 +858,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 5
                                             }, 
@@ -961,7 +961,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 4
                                             }
@@ -1082,7 +1082,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 5
                                             }, 
@@ -1185,7 +1185,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 4
                                             }
@@ -1328,7 +1328,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 5
                                             }, 
@@ -1431,7 +1431,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 4
                                             }
@@ -1595,7 +1595,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 5
                                             }, 
@@ -1698,7 +1698,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 4
                                             }
@@ -1841,7 +1841,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 5
                                             }, 
@@ -1944,7 +1944,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 4
                                             }
@@ -2065,7 +2065,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 5
                                             }, 
@@ -2168,7 +2168,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 4
                                             }
@@ -2311,7 +2311,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 5
                                             }, 
@@ -2414,7 +2414,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 4
                                             }
@@ -2535,7 +2535,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 5
                                             }, 
@@ -2638,7 +2638,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 4
                                             }
@@ -2781,7 +2781,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 5
                                             }, 
@@ -2884,7 +2884,7 @@
                                                         ]
                                                     ], 
                                                     "nodetype": "multibinning", 
-                                                    "flow": "error"
+                                                    "flow": "clamp"
                                                 }, 
                                                 "key": 4
                                             }

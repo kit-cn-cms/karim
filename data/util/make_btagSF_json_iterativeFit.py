@@ -110,7 +110,7 @@ def get_jetFlavor_data(df_all, jf):
         data["value"] = {}
         data["value"]["nodetype"] = "binning"
         data["value"]["input"] = "eta"
-        data["value"]["flow"] = "error"
+        data["value"]["flow"] = "clamp"
 
         edgesMin = list(df["etaMin"].values)
         edgesMax = list(df["etaMax"].values)
@@ -134,7 +134,7 @@ def get_eta_data(df_all, etaMin, etaMax):
     else:
         data["nodetype"] = "binning"
         data["input"] = "pt"
-        data["flow"] = "error"
+        data["flow"] = "clamp"
 
         edgesMin = list(df["ptMin"].values)
         edgesMax = list(df["ptMax"].values)
@@ -157,7 +157,7 @@ def get_pt_data(df_all, ptMin, ptMax):
     else:
         data["nodetype"] = "binning"
         data["input"] = "discr"
-        data["flow"] = "error"
+        data["flow"] = "clamp"
 
         edgesMin = list(df["discrMin"].values)
         edgesMax = list(df["discrMax"].values)
