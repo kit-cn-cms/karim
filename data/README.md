@@ -316,35 +316,45 @@ For UL campaigns, the data histograms are provided directly under
 *  2017: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/PileUp/UltraLegacy/
 *  2016: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/PileUp/UltraLegacy/
 
-citing:
+With file names
+```
+PileupHistogram-goldenJSON-13tev-201*-69200ub-99bins.root
+```
+
+Citing:
 ```
 In all those directories you will find (as indicated in the file name) histograms corresponding to the following values of the pp inelastic cross section: 69200 ub (recommended central value), 66000 ub (central value - 4.6%), 72400 ub (central value + 4.6%), 80000 ub (conventional value used for the public plots, agreed with ATLAS years ago).
 ```
 
-According to [HN](https://hypernews.cern.ch/HyperNews/CMS/get/physics-validation/3689/1/1.html) the MC pileup distributions can be taken from https://github.com/CMS-LUMI-POG/PileupTools/tree/master/Results<YEAR>UL
+See also [HN](https://hypernews.cern.ch/HyperNews/CMS/get/physics-validation/3709.html)
 
-Using these two ingredients the PU weight (as a function of Pileup_nTrueInt in nanoAOD) can be calculated via
+The MC pileup distributions can be taken from the values found in 
+
+* 2016: https://github.com/cms-sw/cmssw/blob/master/SimGeneral/MixingModule/python/mix_2016_25ns_UltraLegacy_PoissonOOTPU_cfi.py
+* 2017: https://github.com/cms-sw/cmssw/blob/master/SimGeneral/MixingModule/python/mix_2017_25ns_UltraLegacy_PoissonOOTPU_cfi.py
+* 2018: https://github.com/cms-sw/cmssw/blob/master/SimGeneral/MixingModule/python/mix_2018_25ns_UltraLegacy_PoissonOOTPU_cfi.py
+
+This has been converted to root files for better usability in a pull request of the nanoAOD-tools repository, see [here](https://github.com/cms-nanoAOD/nanoAOD-tools/pull/283).
+
+The calculation of the pileup weight (as a function of Puleup_nTrueInt in NanoAOD) can be calculated via
 ```
-data_histo[xbin]/MC_histo[ (x - 1)bin ]
+data_histo[iBin]/MC_histo[iBin]
 ```
 
-This calculation is done in `data/util/make_pileup_csv_UL.py` and stored as a csv file to be used by karim.
+This calculation is done in `data/util/make_pileup_json.py` and stored as a json file for the correctionlib.
+
+New pileup weights can be derived via
+```
+python data/util/make_pileup_json.py -o OUTPUT.json --mc MCROOTFILE.root --data AFS/PATH/TO/DATA_69300ub.root
+```
 
 
-| data period | pileup json/histo | lumi json |
-| -- | -- | -- |
-| legacy 2016 | | | 
-| legacy 2017 | | | 
-| legacy 2018 | `/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/Legacy_2018/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt` | `/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/PileUp/pileup_latest.txt` | 
-| | | |
-| UL 2017 | | |
-
-
-These pileup reweighting SFs can be read with a dedicated class in `configs/weightModules.py`
+These pileup reweighting SFs can be read with the correctionlib as
 ```python
-pileupSFs = weightModules.PileupSFs(FILE)
+lib = _core.CorrectionSet.from_file(JSONFILE)
+puSFs = lib["pileup"]
 
-nomSF  = pileupSFs.getSF(nTruePUInteractions, "central")
-upSF   = pileupSFs.getSF(nTruePUInteractions, "up")
-downSF = pileupSFs.getSF(nTruePUInteractions, "down")
+nomSF  = puSFs.evaluate("central", nTruePUInteractions)
+upSF   = puSFs.evaluate("up", nTruePUInteractions)
+downSF = puSFs.evaluate("down", nTruePUInteractions)
 ```
