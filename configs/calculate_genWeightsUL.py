@@ -8,8 +8,12 @@ karimpath = os.path.dirname(os.path.dirname(filepath))
 year = "18"
 sfDir = os.path.join(karimpath, "data", "UL_"+year)
 
+from correctionlib import _core
+
 # initialize pileup SFs
 pileupSFs = weightModules.PileupSFs(os.path.join(sfDir, "pileup.csv"))
+pu_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "pileup.json"))
+puSFs = pu_evaluator["pileup"]
 
 def get_additional_variables():
     '''
@@ -55,6 +59,9 @@ def set_branches(wrapper, jec = None):
     wrapper.SetFloatVar("pileup_up_rel")
     wrapper.SetFloatVar("pileup_down_rel")
 
+    wrapper.SetFloatVar("old_pileup")
+    wrapper.SetFloatVar("old_pileup_up_rel")
+    wrapper.SetFloatVar("old_pileup_down_rel")
     
     
 
@@ -98,9 +105,14 @@ def calculate_variables(event, wrapper, sample, jec, genWeights = None):
         wrapper.branchArrays["fsrDownRel"][0] = getattr(event, "Weight_fsrDown")
     except: pass
 
-    puSF = pileupSFs.getSF(getattr(event, "nTruePU"), "central")
+    puSF_old = pileupSFs.getSF(getattr(event, "nTruePU"), "central")
+    wrapper.branchArrays["old_pileup"][0] = puSF_old
+    wrapper.branchArrays["old_pileup_up_rel"][0] = pileupSFs.getSF(getattr(event, "nTruePU"), "up")/puSF_old
+    wrapper.branchArrays["old_pileup_down_rel"][0] = pileupSFs.getSF(getattr(event, "nTruePU"), "down")/puSF_old
+
+    puSF = puSFs.evaluate("central", float(event.nTruePU))
     wrapper.branchArrays["pileup"][0] = puSF
-    wrapper.branchArrays["pileup_up_rel"][0] = pileupSFs.getSF(getattr(event, "nTruePU"), "up")/puSF
-    wrapper.branchArrays["pileup_down_rel"][0] = pileupSFs.getSF(getattr(event, "nTruePU"), "down")/puSF
+    wrapper.branchArrays["pileup_up_rel"][0] = puSFs.evaluate("up", float(event.nTruePU))/puSF
+    wrapper.branchArrays["pileup_down_rel"][0] = puSFs.evaluate("down", float(event.nTruePU))/puSF
     return event
 

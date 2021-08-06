@@ -20,7 +20,7 @@ mistagSF = btagSFjson["incl"]
 btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_ttbb_deepJet.json"))
 btagEff = btagEffjson["btagEff"]
 
-styles = ["T", "M", "L", "TM", "TL", "ML", "TML"]
+styles = ["M", "TM", "ML", "TML"]
 #styles = ["M"]
 workingPoints = list(set([wp for style in styles for wp in style]))
 
