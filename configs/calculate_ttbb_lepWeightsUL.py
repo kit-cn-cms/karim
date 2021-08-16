@@ -13,15 +13,17 @@ from correctionlib import _core
 
 #Download the correct JSON files 
 ele_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "electron.json"))
+eleTrigFile = _core.CorrectionSet.from_file(os.path.join(sfDir, "EleTriggerSF_v0.json"))
+eleTrig = eleTrigFile["EleTriggerSF"]
 
 # TODO Trigger SFs
 #elTrigSFs = weightModules.LeptonSFs(
 #    csv     = os.path.join(sfDir, "electron_triggerSF_"+year+".csv"),
 #    sfName  = "ele28_ht150_OR_ele32_ele_pt_ele_sceta")
-#muTrigSFs = weightModules.LeptonSFs(
-#    csv     = os.path.join(sfDir, "muon_triggerSF_"+year+".csv"),
-#    sfName  = "IsoMu24_PtEtaBins")
-#    #sfName  = "IsoMu27_PtEtaBins") 2017 value
+muTrigSFs = weightModules.LeptonSFs(
+    csv     = os.path.join(sfDir, "Efficiencies_muon_generalTracks_Z_Run2018_UL_SingleMuonTriggers.csv"),
+    sfName  = "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt")
+    #sfName  = "IsoMu27_PtEtaBins") 2017 value
 
 # initialize muon ID scale factors
 muIDSFs = weightModules.LeptonSFs(
@@ -127,7 +129,6 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
         else:
             pt = 499.
         # TODO trigger
-        #trigger = elTrigSFs.getSFs(getattr(event, "Ele_Pt")[iEl], getattr(event, "Ele_EtaSC")[iEl])
         idsf      = ele_evaluator["UL-Electron-ID-SF"].evaluate(yearL,"sf","Tight", 
                     event.Ele_EtaSC[iEl], pt)
         idsfErr   = ele_evaluator["UL-Electron-ID-SF"].evaluate(yearL,"syst","Tight", 
@@ -137,12 +138,12 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
         recosfErr = ele_evaluator["UL-Electron-ID-SF"].evaluate(yearL,"syst","RecoAbove20", 
                     event.Ele_EtaSC[iEl], pt)
 
-        #elTrigSF      *= trigger.loc["central"]
+        elTrigSF      *= eleTrig.evaluate("central", event.Ele_EtaSC[iEl], pt)
         elIDSF        *= idsf
         elRecoSF      *= recosf
 
-        #elTrigSF_up   *= trigger.loc["up"]
-        #elTrigSF_down *= trigger.loc["down"]
+        elTrigSF_up   *= eleTrig.evaluate("up", event.Ele_EtaSC[iEl], pt)
+        elTrigSF_down *= eleTrig.evaluate("down", event.Ele_EtaSC[iEl], pt)
 
         elIDSF_up     *= (idsf + idsfErr)
         elIDSF_down   *= (idsf - idsfErr)
@@ -191,16 +192,16 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
 
     for iMu in range(getattr(event, "nMu")):
         # TODO trigger
-        #trigger = muTrigSFs.getSFs(getattr(event, "Mu_Pt")[iMu], abs(getattr(event, "Mu_Eta")[iMu]))
+        trigger = muTrigSFs.getSFs(getattr(event, "Mu_Pt")[iMu], abs(getattr(event, "Mu_Eta")[iMu]))
         idsf    = muIDSFs.getSFs(  getattr(event, "Mu_Pt")[iMu], abs(getattr(event, "Mu_Eta")[iMu]))
         isosf   = muIsoSFs.getSFs( getattr(event, "Mu_Pt")[iMu], abs(getattr(event, "Mu_Eta")[iMu]))
 
-        #muTrigSF      *= trigger.loc["central"]
+        muTrigSF      *= trigger.loc["central"]
         muIDSF        *= idsf.loc["central"]
         muIsoSF       *= isosf.loc["central"]
 
-        #muTrigSF_up   *= trigger.loc["up"]
-        #muTrigSF_down *= trigger.loc["down"]
+        muTrigSF_up   *= trigger.loc["up"]
+        muTrigSF_down *= trigger.loc["down"]
 
         muIDSF_up     *= idsf.loc["up"]
         muIDSF_down   *= idsf.loc["down"]

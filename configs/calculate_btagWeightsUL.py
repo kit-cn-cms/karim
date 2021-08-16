@@ -8,8 +8,9 @@ import sys
 filepath = os.path.abspath(__file__)
 karimpath = os.path.dirname(os.path.dirname(filepath))
 year = "18"
+yearL = "2018"
 sfDir = os.path.join(karimpath, "data", "UL_"+year)
-
+sfDirLeg = os.path.join(karimpath, "data", "legacy_"+yearL)
 # initialize iterative fit b-tagging sfs
 btaggingSFs = weightModules.BTaggingScaleFactors(os.path.join(sfDir, "btaggingSF_deepJet.csv"))
 uncs = [
@@ -74,7 +75,7 @@ flavTranslator = {
 
 # initialize b-tagging SF correction
 # TODO
-#sfPatch = weightModules.SFPatches(os.path.join(sfDir, "btaggingSF_patches_"+year+".csv"))
+sfPatch = weightModules.SFPatches(os.path.join(sfDirLeg, "btaggingSF_patches_"+yearL+".csv"))
 
 def get_additional_variables():
     '''
@@ -107,7 +108,7 @@ def set_branches(wrapper, jec):
 
     # b tagging patch
     # TODO
-    #wrapper.SetFloatVar("btagSFPatch"+suffix)
+    wrapper.SetFloatVar("btagSFPatch"+suffix)
 
 
 def calculate_variables(event, wrapper, sample, jec, genWeights = None):
@@ -132,12 +133,16 @@ def calculate_variables(event, wrapper, sample, jec, genWeights = None):
 
     # b-tagging scale factor patches
     # TODO
-    #patchValue = sfPatch.getPatchValue(sample, 
-    #    getattr(event, "ttbarID"), 
-    #    getattr(event, "nJets"+suffix), 
-    #    getattr(event, "HT_jets"+suffix))
+    try:
+        ttbarID = getattr(event, "ttbarID")
+    except:
+        ttbarID = 0
+    patchValue = sfPatch.getPatchValue(sample, 
+        ttbarID, 
+        getattr(event, "nJets"+suffix), 
+        getattr(event, "HT_jets"+suffix))
 
-    #wrapper.branchArrays["btagSFPatch"+suffix][0] = patchValue
+    wrapper.branchArrays["btagSFPatch"+suffix][0] = patchValue
 
     # iterative b-tagging scale factors
     btagSF = 1.
