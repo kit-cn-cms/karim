@@ -41,7 +41,9 @@ muIsoSFs_tight  = weightModules.LeptonSFs(
     csv     = os.path.join(sfDir, "Efficiencies_muon_generalTracks_Z_Run2018_UL_ISO.csv"),
     sfName  = "NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt")
 
-pileupSFs = weightModules.PileupSFs(os.path.join(sfDir, "pileup.csv"))
+pu_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "pileup.json"))
+puSFs = pu_evaluator["pileup"]
+# pileupSFs = weightModules.PileupSFs(os.path.join(sfDir, "pileup.csv"))
 
 
 def get_additional_variables():
@@ -93,6 +95,8 @@ def set_branches(wrapper, jec):
     # wrapper.SetFloatVar("Weight_PU_up")
 
     wrapper.SetFloatVar("pileup") #TODO
+    wrapper.SetFloatVar("pileup_up_rel")
+    wrapper.SetFloatVar("pileup_down_rel")
     
     # cross section weight
     wrapper.SetFloatVar("xsNorm")
@@ -199,8 +203,14 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
     # wrapper.branchArrays["Weight_PU_Up"+suffix][0] = pileupSFs.getSF(getattr(event, "nTruePU"+suffix), "up")
     # wrapper.branchArrays["Weight_PU_Down"+suffix][0] = pileupSFs.getSF(getattr(event, "nTruePU"+suffix), "down")
 
-    puSF = pileupSFs.getSF(getattr(event, "nTruePU"), "central") #TODO
-    wrapper.branchArrays["pileup"][0] = puSF #TODO 
+
+    puSF = puSFs.evaluate("central", float(event.nTruePU))
+    wrapper.branchArrays["pileup"][0] = puSF
+    wrapper.branchArrays["pileup_up_rel"][0] = puSFs.evaluate("up", float(event.nTruePU))/puSF
+    wrapper.branchArrays["pileup_down_rel"][0] = puSFs.evaluate("down", float(event.nTruePU))/puSF
+
+    # puSF = pileupSFs.getSF(getattr(event, "nTruePU"), "central") #TODO
+    # wrapper.branchArrays["pileup"][0] = puSF #TODO 
 
     # cross section norm
     wrapper.branchArrays["xsNorm"][0] = genWeights.getXS("incl")

@@ -115,9 +115,9 @@ def get_eta_pt_bins(inFile, wp):
     etaEdges = []
     ptEdges = []
     for iEta in range(h.GetNbinsX()+1):
-        etaEdges.append(h.GetXaxis().GetBinLowEdge(iEta+1))
+        etaEdges.append(round(h.GetXaxis().GetBinLowEdge(iEta+1),4))
     for iPt in range(h.GetNbinsY()+1):
-        ptEdges.append(h.GetYaxis().GetBinLowEdge(iPt+1))
+        ptEdges.append(round(h.GetYaxis().GetBinLowEdge(iPt+1),4))
     data["edges"] = [etaEdges, ptEdges]
 
     values = []
