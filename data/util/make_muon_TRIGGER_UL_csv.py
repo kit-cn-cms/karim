@@ -1,10 +1,11 @@
 import ROOT
 import sys
 inf = sys.argv[1]
+year = sys.argv[2]
 f = ROOT.TFile(inf)
 
 keys = [k.GetName() for k in f.GetListOfKeys()]
-print(keys)
+for k in keys: print(k)
 
 data = {}
 data["sfType"] = []
@@ -15,11 +16,17 @@ data["etaMin"] = []
 data["etaMax"] = []
 data["factor"] = []
 
+trgName = "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt"
+if year == "2017":
+    trgName = "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt"
+elif "2016" in year:
+    trgName = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt"
+
 for trg in keys:
     # if not trg.endswith("PtEtaBins"): continue
-    if not trg.endswith("NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt"): continue
+    if not trg.endswith(trgName): continue
     #name = trg+"/pt_abseta_ratio"
-    name = "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt"
+    name = trgName
     h = f.Get(name)
 
     for yBin in range(h.GetXaxis().GetNbins()):
