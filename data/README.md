@@ -4,6 +4,33 @@ The different scale factors and weights collected in this directory are summariz
 Some are official POG weights and scale factors which have been collected here for convenience. 
 Some are privately produced weights and scale factors for MC-to-data corrections in specific analyses.
 
+## SF evaluation using correction lib v2 json files
+SFs can also be evaluated using centrally provided and maintained SF jsons.
+This follows e.g.  https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaSFJSON
+These jsons can be evaulated using `correctionlib`: https://github.com/cms-nanoAOD/correctionlib.git
+This needs to be installed via
+```
+pip3 install git+https://github.com/cms-nanoAOD/correctionlib.git@master
+```
+
+Note: this requires CMSSW_11_2_X! (tested with CMSSW_11_3_1) and `python3`
+
+The SFs can be accessed like the following code snippet:
+``` python
+
+from correctionlib import _core
+
+#Download the correct JSON files 
+evaluator = _core.CorrectionSet.from_file('electron.json')
+
+#Reconstruction (pT< 20 GeV) Run-2 scale factor
+valsf= evaluator["UL-Electron-ID-SF"].evaluate("2016postVFP","sf","RecoBelow20",1.1, 15.0)
+print("sf is:"+str(valsf))
+
+#Reconstruction (pT> 20 GeV) Run-2 scale factor
+valsf= evaluator["UL-Electron-ID-SF"].evaluate("2016postVFP","sf","RecoAbove20",1.1, 25.0)
+print("sf is:"+str(valsf))
+```
 
 ## b-tagging scale factors
 
@@ -51,7 +78,24 @@ for u in btagSF_uncs:
 ```
 The b-tagging SF uncertainties should be normalized with `1./nominalSF` for easier application.
 
-WIP: currently the fixed WP scale factors are not implemented properly - use with care
+Implementation for fixedWP b-tagging SFs is also available in the same csv files. These SFs are dependent on jet pT instead of the b-tagging value.
+For these fixedWP b-tagging SFs also efficiency maps are needed that are supposed to be derived separately for each analysis.
+
+Scripts have been added to the `util` directory to convert the b-tagging SF csv files to json files to be used in the correction lib.
+If the conversion has been peformed b-tagging SFs and patches can be extracted e.g. via
+```python
+btagSFjson = _core.CorrectionSet.from_file(SF_FILE)
+btagSF = btagSFjson["comb"]
+mistagSF = btagSFjson["incl"]
+
+btagEffjson = _core.CorrectionSet.from_file(EFF_FILE)
+btagEff = btagEffjson["btagEff"]
+
+jet_eff = btagEff.evaluate(wp, flav, eta, pt)
+jet_sf = btagSF.evaluate(wp, "central", flav, eta, pt)
+jet_sf_up = btagSF.evaluate(wp, "up", flav, eta, pt)
+```
+
 
 ### b-tagging scale factor patches
 
@@ -91,9 +135,11 @@ WIP: hdamp, pdf and UE variations not yet validated
 
 For electons and muons separate trigger scale factors are used. 
 The muon trigger scale factors are provided by the POG as root files on the [official Muon POG TWiki pages](https://twiki.cern.ch/twiki/bin/view/CMS/MuonPOG).
-The electron trigger scale factors are derived as a part of the ttHbb analysis and are provided in [this gitlab repository](https://gitlab.cern.ch/ttH/reference/-/tree/master/scale_factors/triggers).
+The single electron trigger scale factors for legacy are derived as a part of the ttHbb analysis and are provided in [this gitlab repository](https://gitlab.cern.ch/ttH/reference/-/tree/master/scale_factors/triggers). 
 These root files has been converted to csv files with the scripts in `data/util` without changing the content.
-The trigger scale factors can be read with a dedicated class in `configs/weightModules.py`
+The trigger scale factors as csv files can be read with a dedicated class in `configs/weightModules.py`
+
+The single electron trigger scale factors for ultra legacy are derived as a part of the ttbb analysis and are provided in [this gitlab repository](https://gitlab.cern.ch/ttbb-differential/scale-factors/-/tree/master). They are provided as root files and as json files and can be read with the json correction lib.
 
 #### Electron Trigger SFs
 |data period | official SF file | SF name |
@@ -102,9 +148,13 @@ The trigger scale factors can be read with a dedicated class in `configs/weightM
 | legacy 2017 | [SingleEG_JetHT_Trigger_Scale_Factors_ttHbb2017_v3.root](https://gitlab.cern.ch/ttH/reference/-/blob/master/scale_factors/triggers/SingleEG_JetHT_Trigger_Scale_Factors_ttHbb2017_v3.root) | `ele28_ht150_OR_ele32_ele_pt_ele_sceta` |
 | legacy 2018 | [SingleEG_JetHT_Trigger_Scale_Factors_ttHbb2018_v3.root](https://gitlab.cern.ch/ttH/reference/-/blob/master/scale_factors/triggers/SingleEG_JetHT_Trigger_Scale_Factors_ttHbb2018_v3.root) | `ele28_ht150_OR_ele32_ele_pt_ele_sceta` |
 |  |  |  |
+| UL 2016preVFP | | |
+| UL 2016postVFP | | |
 | UL 2017 | | |
+| UL 2018 | [UL18_EleTriggerSF_v0.json](https://gitlab.cern.ch/ttbb-differential/scale-factors/-/blob/master/UL18_EleTriggerSF_v0.json) | `EleTriggerSF` |
 |  | |  |
 
+Reading the trigger SFs from csv files:
 ```python
 elTrigSFs = weightModules.LeptonSFs(csv = FILE, sfName = SFNAME)
 
@@ -113,15 +163,34 @@ for el in electrons:
     nominalSF = trigSF.loc["central"] # nominal scale factor
     variedSF  = trigSF.loc["up"] # example of varied scale factor
 ```
+Reading the trigger SFs from json files:
+```python
+j = _core.CorrectionSet.from_file(JSONFILE)
+trig = j["EleTriggerSF"]
+trig.evaluate("up",eleEtaSC, elePt)
+```
 
 #### Muon Trigger SFs
+
+Single muon trigger SFs are provided by the muon POG.
+Relevant TWiki pages for UL are:
+* https://twiki.cern.ch/twiki/bin/view/CMS/MuonUL2018
+* https://twiki.cern.ch/twiki/bin/view/CMS/MuonUL2017
+* https://twiki.cern.ch/twiki/bin/view/CMS/MuonUL2016
+
+The Muon POG does not provide json files in v2 scheme yet - maybe update this as soon as they are available.
+For now UL SFs are extracted from the root files and converted to csv files.
+
 |data period | official SF file | SF name |
 | -- | -- | -- |
 | legacy 2016 | | |
 | legacy 2017 | [EfficienciesAndSF_RunBtoF_Nov17Nov2017.root](http://kplee.web.cern.ch/kplee/TagProbe/94X/v20180202_MergingHighPtBins/EfficienciesAndSF_RunBtoF_Nov17Nov2017.root) | `IsoMu27_PtEtaBins` |
 | legacy 2018 | [EfficienciesAndSF_2018Data_BeforeMuonHLTUpdate.root](https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2018_trigger/EfficienciesAndSF_2018Data_BeforeMuonHLTUpdate.root) (8950.82/pb)   [EfficienciesAndSF_2018Data_AfterMuonHLTUpdate.root](https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2018_trigger/EfficienciesAndSF_2018Data_BeforeMuonHLTUpdate.root) (50789.75/pb)  | `IsoMu24_PtEtaBins` |
 |  |  |  |
-| UL 2017 | | |
+| UL 2016preVFP | [Efficiencies_muon_generalTracks_Z_Run2016_UL_HIPM_SingleMuonTriggers_schemaV1.json](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/blob/master/Run2/UL/2016_preVFP/2016_preVFP_trigger/Efficiencies_muon_generalTracks_Z_Run2016_UL_HIPM_SingleMuonTriggers_schemaV1.json) | `NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt` |
+| UL 2017postVFP | [Efficiencies_muon_generalTracks_Z_Run2016_UL_SingleMuonTriggers_schemaV1.json](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/blob/master/Run2/UL/2016_postVFP/2016_postVFP_trigger/Efficiencies_muon_generalTracks_Z_Run2016_UL_SingleMuonTriggers_schemaV1.json) | `NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt` |
+| UL 2017 | [Efficiencies_muon_generalTracks_Z_Run2017_UL_SingleMuonTriggers_schemaV1.json](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/blob/master/Run2/UL/2017/2017_trigger/Efficiencies_muon_generalTracks_Z_Run2017_UL_SingleMuonTriggers_schemaV1.json) | `NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt` |
+| UL 2018 | [Efficiencies_muon_generalTracks_Z_Run2018_UL_SingleMuonTriggers_schemaV1.json](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/blob/master/Run2/UL/2018/2018_trigger/Efficiencies_muon_generalTracks_Z_Run2018_UL_SingleMuonTriggers_schemaV1.json) | `NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt` |
 |  | | |
 
 ```python
@@ -138,14 +207,18 @@ for mu in muons:
 
 For electrons and muons separate official POG identification and reconstruction scale factors are used.
 The POGs provide these scale factors as ROOT histograms on the [official EGamma POG TWiki pages](https://twiki.cern.ch/twiki/bin/view/CMS/EgammaRunIIRecommendations) and [official Muon POG TWiki pages](https://twiki.cern.ch/twiki/bin/view/CMS/MuonPOG).
+
+These root files has been converted to csv files with the scripts in `data/util` without changing the content.
+The lepton scale factors can be read with a dedicated class in `configs/weightModules.py`.
+
 The relevant pages for UL are:
 *  https://twiki.cern.ch/twiki/bin/view/CMS/EgammaUL2016To2018
+*  https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaSFJSON
 *  https://twiki.cern.ch/twiki/bin/view/CMS/MuonUL2018
 *  https://twiki.cern.ch/twiki/bin/view/CMS/MuonUL2017
 *  https://twiki.cern.ch/twiki/bin/view/CMS/MuonUL2016
 
-These root files has been converted to csv files with the scripts in `data/util` without changing the content.
-The lepton scale factors can be read with a dedicated class in `configs/weightModules.py`
+For UL the EGamma POG provides the SFs also as json correction lib v2 files. The Muon POG only provides the root files and v2 correction lib files which are not readable with the setup here. Hence for the electron SFs the json files are used while for the muon SFs the csv files created from root files are used.
 
 #### Electron ID SFs
 |data period | official SF file | SF name | csv file name |
@@ -153,12 +226,14 @@ The lepton scale factors can be read with a dedicated class in `configs/weightMo
 | legacy 2016 | | | |
 | legacy 2017 | [2017_ElectronTight.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaIDRecipesRun2/2017_ElectronTight.root) | `tightElectronID` | |
 | legacy 2018 | [2018_ElectronTight.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaIDRecipesRun2/2018_ElectronTight.root) | `tightElectronID` | |
-|  |  |  |
-| UL 2017 | | | |
-| UL 2018 | [egammaEffi.txt_Ele_Tight_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Tight_EGM2D.root)      [egammaEffi.txt_Ele_Medium_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Medium_EGM2D.root)    [egammaEffi.txt_Ele_Loose_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Loose_EGM2D.root)    [egammaEffi.txt_Ele_Veto_EGM2D.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi.txt_Ele_Veto_EGM2D.root)    | `tightElectronID`    `mediumElectronID`    `looseElectronID`    `vetoElectronID`  | Ele_Tight_EGM2D.csv    Ele_Medium_EGM2D.csv    Ele_Loose_EGM2D.csv   Ele_Veto_EGM2D.csv   |
-|  |  |  |
+|  |  |  | |
+| UL 2016preVFP | [electron.json](https://github.com/akapoorcern/ScaleFactorsJSON/tree/master/2016preVFP_UL/electron.json) | `Tight, Loose, Medium, Veto` | |
+| UL 2017postVFP | [electron.json](https://github.com/akapoorcern/ScaleFactorsJSON/tree/master/2016postVFP_UL/electron.json) | `Tight, Loose, Medium, Veto` | |
+| UL 2017 | [electron.json](https://github.com/akapoorcern/ScaleFactorsJSON/tree/master/2017_UL/electron.json) | `Tight, Loose, Medium, Veto` | |
+| UL 2018 | [electron.json](https://github.com/akapoorcern/ScaleFactorsJSON/tree/master/2018_UL/electron.json) | `Tight, Loose, Medium, Veto` | |
+|  |  |  | |
 
-
+For the csv files:
 ```python
 elIDSFs = weightModules.LeptonSFs(csv = FILE, sfName = SFNAME)
 
@@ -168,6 +243,13 @@ for el in electrons:
     variedSF  = idSF.loc["up"] # example of varied scale factor
 ```
 
+For the json files:
+```python
+ele_evaluator = _core.CorrectionSet.from_file(JSONFILE)
+idsf    = ele_evaluator["UL-Electron-ID-SF"].evaluate(year,"sf","Tight", eleEtaSC, pt)
+idsfErr = ele_evaluator["UL-Electron-ID-SF"].evaluate(year,"syst","Tight", eleEtaSC, pt)
+```
+
 #### Muon ID SFs
 |data period | official SF file | SF name |
 | -- | -- | -- |
@@ -175,7 +257,9 @@ for el in electrons:
 | legacy 2017 | [RunBCDEF_SF_ID.root](https://twiki.cern.ch/twiki/pub/CMS/MuonReferenceEffs2017/RunBCDEF_SF_ID.root) | `NUM_TightID_DEN_genTracks_pt_abseta` |
 | legacy 2018 | [RunABCD_SF_ID.root](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/blob/master/Run2/preUL/2018/2018_Jpsi/RunABCD_SF_ID.root) | `NUM_TightID_DEN_genTracks_pt_abseta` |
 |  |  |  |
-| UL 2017 | | |
+| UL 2016preVFP | [Efficiencies_muon_generalTracks_Z_Run2016_UL_HIPM_ID.root](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/blob/master/Run2/UL/2016_preVFP/2016_preVFP_Z/Efficiencies_muon_generalTracks_Z_Run2016_UL_HIPM_ID.root) | `NUM_{Loose,Medium,Tight}ID_DEN_TrackerMuons_abseta_pt` |
+| UL 2016postVFP | [Efficiencies_muon_generalTracks_Z_Run2016_UL_ID.root](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/blob/master/Run2/UL/2016_postVFP/2016_postVFP_Z/Efficiencies_muon_generalTracks_Z_Run2016_UL_ID.root) | `NUM_{Loose,Medium,Tight}ID_DEN_TrackerMuons_abseta_pt` |
+| UL 2017 | [Efficiencies_muon_generalTracks_Z_Run2017_UL_ID.root](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/blob/master/Run2/UL/2017/2017_Z/Efficiencies_muon_generalTracks_Z_Run2017_UL_ID.root) | `NUM_{Loose,Medium,Tight}ID_DEN_TrackerMuons_abseta_pt` |
 | UL 2018 | [Efficiencies_muon_generalTracks_Z_Run2018_UL_ID.root](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/raw/master/Run2/UL/2018/2018_Z/Efficiencies_muon_generalTracks_Z_Run2018_UL_ID.root) | `NUM_{Loose,Medium,Tight}ID_DEN_TrackerMuons_abseta_pt` |
 |  |  |  |
 
@@ -195,10 +279,13 @@ for mu in muons:
 | legacy 2017 | [egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root](https://twiki.cern.ch/twiki/pub/CMS/Egamma2017DataRecommendations/egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root) | `electronReco` | |
 | legacy 2018 | [egammaEffi.txt_EGM2D_updatedAll.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaIDRecipesRun2/egammaEffi.txt_EGM2D_updatedAll.root) | `electronReco` | |
 |  |  |  | |
-| UL 2017 | | | |
-| UL 2018 | [egammaEffi_ptAbove20.txt_EGM2D_UL2018.root](https://twiki.cern.ch/twiki/pub/CMS/EgammaUL2016To2018/egammaEffi_ptAbove20.txt_EGM2D_UL2018.root) | `electronReco` | Ele_Reco_EGM2D_UL2018.csv |
+| UL 2016preVFP | [electron.json](https://github.com/akapoorcern/ScaleFactorsJSON/tree/master/2016preVFP_UL/electron.json) | `RecoAbove20` | |
+| UL 2017postVFP | [electron.json](https://github.com/akapoorcern/ScaleFactorsJSON/tree/master/2016postVFP_UL/electron.json) | `RecoAbove20` | |
+| UL 2017 | [electron.json](https://github.com/akapoorcern/ScaleFactorsJSON/tree/master/2017_UL/electron.json) | `RecoAbove20` | |
+| UL 2018 | [electron.json](https://github.com/akapoorcern/ScaleFactorsJSON/tree/master/2018_UL/electron.json) | `RecoAbove20` | |
 |  |  |  | |
 
+For the csv files:
 ```python
 elRecoSFs = weightModules.LeptonSFs(csv = FILE, sfName = SFNAME)
 for el in electrons:
@@ -207,6 +294,14 @@ for el in electrons:
     variedSF  = recoSF.loc["up"] # example of varied scale factor
 ```
 
+For the json files:
+```python
+ele_evaluator = _core.CorrectionSet.from_file(JSONFILE)
+recosf    = ele_evaluator["UL-Electron-ID-SF"].evaluate(year,"sf","RecoAbove20", eleEtaSC, pt)
+recosfErr = ele_evaluator["UL-Electron-ID-SF"].evaluate(year,"syst","RecoAbove20", eleEtaSC, pt)
+```
+
+
 #### Muon ISO SFs
 |data period | official SF file | SF name |
 | -- | -- | -- |
@@ -214,7 +309,9 @@ for el in electrons:
 | legacy 2017 | [RunBCDEF_SF_ISO.root](https://twiki.cern.ch/twiki/pub/CMS/MuonReferenceEffs2017/RunBCDEF_SF_ISO.root) | `NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta` |
 | legacy 2018 | [RunABCD_SF_ISO.root](https://gitlab.cern.ch/cms-muonPOG/MuonReferenceEfficiencies/blob/master/EfficienciesStudies/2018/rootfiles/RunABCD_SF_ISO.root)| `NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta` |
 |  |  |  |
-| UL 2017 | | |
+| UL 2016preVFP | [Efficiencies_muon_generalTracks_Z_Run2016_UL_HIPM_ISO.root](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/blob/master/Run2/UL/2016_preVFP/2016_preVFP_Z/Efficiencies_muon_generalTracks_Z_Run2016_UL_HIPM_ISO.root) | `NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt`,`NUM_LooseRelIso_DEN_LooseID_abseta_pt` |
+| UL 2016postVFP | [Efficiencies_muon_generalTracks_Z_Run2016_UL_ISO.root](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/blob/master/Run2/UL/2016_postVFP/2016_postVFP_Z/Efficiencies_muon_generalTracks_Z_Run2016_UL_ISO.root) | `NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt`,`NUM_LooseRelIso_DEN_LooseID_abseta_pt` |
+| UL 2017 | [Efficiencies_muon_generalTracks_Z_Run2017_UL_ISO.root](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/blob/master/Run2/UL/2017/2017_Z/Efficiencies_muon_generalTracks_Z_Run2017_UL_ISO.root) | `NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt`,`NUM_LooseRelIso_DEN_LooseID_abseta_pt` |
 | UL 2018 | [Efficiencies_muon_generalTracks_Z_Run2018_UL_ISO.root](https://gitlab.cern.ch/cms-muonPOG/muonefficiencies/-/raw/master/Run2/UL/2018/2018_Z/Efficiencies_muon_generalTracks_Z_Run2018_UL_ISO.root)| `NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt`,`NUM_LooseRelIso_DEN_LooseID_abseta_pt`  |
 |  |  |  |
 
@@ -255,36 +352,6 @@ for pho in photons:
     variedSF  = effSF.loc["up"] # example of varied scale factor
 
 ```
-
-## EGAMMA SF evaluation using centrally provided json files
-SFs can also be evaluated using centrally provided and maintained SF jsons.
-This follows https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaSFJSON
-These jsons can be evaulated using `correctionlib`: https://github.com/cms-nanoAOD/correctionlib.git
-This needs to be installed via
-```
-pip3 install git+https://github.com/cms-nanoAOD/correctionlib.git@master
-```
-
-Note: this requires CMSSW_11_2_X! (tested with CMSSW_11_3_1) and `python3`
-
-The SFs can be accessed like the following code snippet:
-``` python
-
-from correctionlib import _core
-
-#Download the correct JSON files 
-evaluator = _core.CorrectionSet.from_file('electron.json')
-
-#Reconstruction (pT< 20 GeV) Run-2 scale factor
-valsf= evaluator["UL-Electron-ID-SF"].evaluate("2016postVFP","sf","RecoBelow20",1.1, 15.0)
-print("sf is:"+str(valsf))
-
-#Reconstruction (pT> 20 GeV) Run-2 scale factor
-valsf= evaluator["UL-Electron-ID-SF"].evaluate("2016postVFP","sf","RecoAbove20",1.1, 25.0)
-print("sf is:"+str(valsf))
-```
-
-
 
 
 ## Pileup reweighting
