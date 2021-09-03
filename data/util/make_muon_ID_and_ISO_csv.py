@@ -24,16 +24,16 @@ for trg in keys:
             #print(h.GetYaxis().GetBinLowEdge(yBin+1), h.GetYaxis().GetBinUpEdge(yBin+1))
             for _ in range(3):
                 data["sfType"].append(trg)
-                data["etaMin"].append(h.GetYaxis().GetBinLowEdge(yBin+1))
-                data["etaMax"].append(h.GetYaxis().GetBinUpEdge(yBin+1))
-                if xBin == 0:
+                data["etaMin"].append(h.GetXaxis().GetBinLowEdge(xBin+1))
+                data["etaMax"].append(h.GetXaxis().GetBinUpEdge(xBin+1))
+                if yBin == 0:
                     data["ptMin"].append(0.)
                 else:
-                    data["ptMin"].append(h.GetXaxis().GetBinLowEdge(xBin+1))
-                if xBin == h.GetXaxis().GetNbins()-1:
+                    data["ptMin"].append(h.GetYaxis().GetBinLowEdge(yBin+1))
+                if yBin == h.GetYaxis().GetNbins()-1:
                     data["ptMax"].append(99999.)
                 else:
-                    data["ptMax"].append(h.GetXaxis().GetBinUpEdge(xBin+1))
+                    data["ptMax"].append(h.GetYaxis().GetBinUpEdge(yBin+1))
                 
             factor = h.GetBinContent(xBin+1, yBin+1)
             data["sysType"].append("central")
