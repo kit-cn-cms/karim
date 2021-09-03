@@ -75,6 +75,8 @@ parser.add_option("--friend-trees", "-f", dest = "friendTrees", default = None,
     help = "add friend trees as additional source of input information. comma separated list.")
 parser.add_option("--jec-dependent", "-j", dest = "jecDependent", default = False, action = "store_true",
     help = "perform jec loop instead of just calculating variables once")
+parser.add_option("--year", "-y", dest = "dataEra", default = None, 
+    help = "data era if needed in config")
 (opts, args) = parser.parse_args()
 
 
@@ -121,6 +123,7 @@ for ntuple in args:
             modelname   = opts.model,
             configpath  = os.path.abspath(opts.config_path),
             friendTrees = friendTrees,
+            dataEra     = opts.dataEra,
             outpath     = "/".join([outfilePath, outfileName]),
             )
     elif opts.mode == "Evaluation":
@@ -129,6 +132,7 @@ for ntuple in args:
             modelconfigpath = opts.model,
             configpath      = os.path.abspath(opts.config_path),
             friendTrees     = friendTrees,
+            dataEra     = opts.dataEra,
             outpath         = "/".join([outfilePath, outfileName]),
             apply_selection = opts.apply_selection,
             write_input_vars= opts.write_input_vars
@@ -138,6 +142,7 @@ for ntuple in args:
             filename    = ntuple,
             configpath  = os.path.abspath(opts.config_path),
             friendTrees = friendTrees,
+            dataEra     = opts.dataEra,
             threshold   = opts.threshold,
             signal_only = opts.signal_only,
             outpath     = "/".join([outfilePath, outfileName])
@@ -147,6 +152,7 @@ for ntuple in args:
             filename        = ntuple,
             configpath      = os.path.abspath(opts.config_path),
             friendTrees     = friendTrees,
+            dataEra         = opts.dataEra,
             outpath         = "/".join([outfilePath, outfileName]),
             apply_selection = opts.apply_selection,
             split_feature   = opts.split_feature,
@@ -158,6 +164,7 @@ for ntuple in args:
             filename        = ntuple,
             configpath      = os.path.abspath(opts.config_path),
             friendTrees     = friendTrees,
+            dataEra         = opts.dataEra,
             database        = opts.database,
             outpath         = "/".join([outfilePath, outfileName])
             )        

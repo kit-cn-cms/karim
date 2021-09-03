@@ -81,6 +81,8 @@ parser.add_option("--friend-trees", "-f", dest = "friendTrees", default = None,
     help = "add friend trees as additional source of input information. comma separated list.")
 parser.add_option("--jec-dependent", "-j", dest = "jecDependent", default = False, action = "store_true",
     help = "perform jec loop instead of just calculating variables once")
+parser.add_option("--year", "-y", dest = "dataEra", default = None,
+    help = "give data taking year if your config depends on it")
 (opts, args) = parser.parse_args()
 
 

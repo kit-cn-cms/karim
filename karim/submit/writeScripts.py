@@ -15,19 +15,19 @@ cd -
 export KERAS_BACKEND=tensorflow
 """
 recoTemplate = """
-python3 {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {friendTrees} {files}
+python3 {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {dataEra} {friendTrees} {files}
 """
 evalTemplate = """
-python3 {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {friendTrees} {applySelection} {writeInputVars} {files}
+python3 {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {dataEra} {friendTrees} {applySelection} {writeInputVars} {files}
 """
 matchTemplate = """
-python3 {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {friendTrees} {sigOnly} {files}
+python3 {basepath}/scripts/karim.py -M {mode} -t {threshold} -c {config} -o {outPath} {dataEra} {friendTrees} {sigOnly} {files}
 """
 calcTemplate = """
-python3 {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} {split} {jecDependent} {files}
+python3 {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} {dataEra} {split} {jecDependent} {files}
 """
 databaseTemplate = """
-python3 {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} -d {database} {files}
+python3 {basepath}/scripts/karim.py -M {mode} -c {config} -o {outPath} {friendTrees} {dataEra} -d {database} {files}
 """
 
 def writeScripts(inputSample, scriptDir, options, basepath):
@@ -49,6 +49,7 @@ def writeScripts(inputSample, scriptDir, options, basepath):
     scriptNameTemplate = "/".join([scriptDir, sampleName+"_{idx}.sh"])
 
     friendTrees = "--friend-trees {}".format(options.friendTrees) if not options.friendTrees is None else ""
+    dataEra = "--year {}".format(options.dataEra) if not options.dataEra is None else ""
     splitFeature = "--split {}".format(options.split_feature) if not options.split_feature is None else ""
     # collect rootfiles until number of events per job is reached
     entries = 0
@@ -69,6 +70,7 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     config    = options.config_path,
                     outPath   = options.output,
                     friendTrees = friendTrees,
+                    dataEra   = dataEra,
                     files     = " ".join(jobfiles)
                     )
 
@@ -82,6 +84,7 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     config    = options.config_path,
                     outPath   = options.output,
                     friendTrees = friendTrees,
+                    dataEra   = dataEra,
                     applySelection = "--apply-selection" if options.apply_selection else "",
                     writeInputVars = "--write-input-vars" if options.write_input_vars else "",
                     files     = " ".join(jobfiles)
@@ -97,6 +100,7 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     config    = options.config_path,
                     outPath   = options.output,
                     friendTrees = friendTrees,
+                    dataEra   = dataEra,
                     sigOnly   = "--signal-only" if options.signal_only else "",
                     files     = " ".join(jobfiles))
 
@@ -110,6 +114,7 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     config    = options.config_path,
                     outPath   = options.output,
                     friendTrees = friendTrees,
+                    dataEra   = dataEra,
                     jecDependent = "--jec-dependent" if options.jecDependent else "",
                     split       = splitFeature,
                     files     = " ".join(jobfiles))
@@ -123,6 +128,7 @@ def writeScripts(inputSample, scriptDir, options, basepath):
                     config    = options.config_path,
                     outPath   = options.output,
                     friendTrees = friendTrees,
+                    dataEra   = dataEra,
                     database  = options.database,
                     files     = " ".join(jobfiles))
 

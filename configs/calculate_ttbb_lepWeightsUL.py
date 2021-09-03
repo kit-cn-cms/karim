@@ -11,29 +11,58 @@ sfDir = os.path.join(karimpath, "data", "UL_"+year)
 
 from correctionlib import _core
 
-#Download the correct JSON files 
-ele_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "electron.json"))
-eleTrigFile = _core.CorrectionSet.from_file(os.path.join(sfDir, "EleTriggerSF_v0.json"))
-eleTrig = eleTrigFile["EleTriggerSF"]
+muYear = {
+    "2016preVFP":   "2016_UL_HIPM",
+    "2016postVFP":  "2016_UL",
+    "2017":         "2017_UL",
+    "2018":         "2018_UL",
+    }
 
-# TODO Trigger SFs
-#elTrigSFs = weightModules.LeptonSFs(
-#    csv     = os.path.join(sfDir, "electron_triggerSF_"+year+".csv"),
-#    sfName  = "ele28_ht150_OR_ele32_ele_pt_ele_sceta")
-muTrigSFs = weightModules.LeptonSFs(
-    csv     = os.path.join(sfDir, "Efficiencies_muon_generalTracks_Z_Run2018_UL_SingleMuonTriggers.csv"),
-    sfName  = "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt")
-    #sfName  = "IsoMu27_PtEtaBins") 2017 value
+muTrigName = {
+    "2016preVFP":   "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt",
+    "2016postVFP":  "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt",
+    "2017":         "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt",
+    "2018":         "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt",
+    }
 
-# initialize muon ID scale factors
-muIDSFs = weightModules.LeptonSFs(
-    csv     = os.path.join(sfDir, "Efficiencies_muon_generalTracks_Z_Run2018_UL_ID.csv"),
-    sfName  = "NUM_TightID_DEN_TrackerMuons_abseta_pt")
+data = {}
+for year in ["2018", "2017", "2016preVFP", "2016postVFP"]:
+    # short year
+    yearS = year[2:]
 
-# initialize muon Iso scale factors
-muIsoSFs  = weightModules.LeptonSFs(
-    csv     = os.path.join(sfDir, "Efficiencies_muon_generalTracks_Z_Run2018_UL_ISO.csv"),
-    sfName  = "NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt")
+    # dict
+    data[year] = {}
+
+    # sf directory
+    sfDir = os.path.join(karimpath, "data", "UL_"+yearS)
+    sfDirT = os.path.join(karimpath, "data", "UL_18")
+
+    # electron ID/RECO/ISO
+    ele_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "electron.json"))
+    data[year]["electron"] = ele_evaluator["UL-Electron-ID-SF"]
+
+    # electron trigger
+    eleTrigFile = _core.CorrectionSet.from_file(os.path.join(sfDirT, "EleTriggerSF_v0.json"))
+    data[year]["eleTrig"] = eleTrigFile["EleTriggerSF"]
+
+
+    # muon trigger
+    muTrigFile = "Efficiencies_muon_generalTracks_Z_Run{}_SingleMuonTriggers.csv".format(muYear[year])
+    data[year]["muTrig"] = weightModules.LeptonSFs(
+        csv     = os.path.join(sfDir, muTrigFile),
+        sfName  = muTrigName[year])
+
+    # muon ID scale factors
+    muIDFile = "Efficiencies_muon_generalTracks_Z_Run{}_ID.csv".format(muYear[year])
+    data[year]["muID"] = weightModules.LeptonSFs(
+        csv     = os.path.join(sfDir, muIDFile),
+        sfName  = "NUM_TightID_DEN_TrackerMuons_abseta_pt")
+
+    # muon Iso scale factors
+    muISOFile = "Efficiencies_muon_generalTracks_Z_Run{}_ISO.csv".format(muYear[year])
+    data[year]["muISO"] = weightModules.LeptonSFs(
+        csv     = os.path.join(sfDir, muISOFile),
+        sfName  = "NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt")
 
 
 def get_additional_variables():
@@ -89,13 +118,8 @@ def set_branches(wrapper, jec = None):
     wrapper.SetFloatVar("elSF_up_rel")
     wrapper.SetFloatVar("elSF_down_rel")
  
-    # additional relative weights
-    #wrapper.SetFloatVar("L1ECALPrefire")
-    #wrapper.SetFloatVar("L1ECALPrefire_up_rel")
-    #wrapper.SetFloatVar("L1ECALPrefire_down_rel")
 
-
-def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
+def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genWeights = None):
     '''
     calculate weights
     '''
@@ -129,21 +153,23 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
         else:
             pt = 499.
         # TODO trigger
-        idsf      = ele_evaluator["UL-Electron-ID-SF"].evaluate(yearL,"sf","Tight", 
+        idsf      = data[dataEra]["electron"].evaluate(dataEra,"sf","Tight", 
                     event.Ele_EtaSC[iEl], pt)
-        idsfErr   = ele_evaluator["UL-Electron-ID-SF"].evaluate(yearL,"syst","Tight", 
+        idsfErr   = data[dataEra]["electron"].evaluate(dataEra,"syst","Tight", 
                     event.Ele_EtaSC[iEl], pt)
-        recosf    = ele_evaluator["UL-Electron-ID-SF"].evaluate(yearL,"sf","RecoAbove20", 
+        recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoAbove20", 
                     event.Ele_EtaSC[iEl], pt)
-        recosfErr = ele_evaluator["UL-Electron-ID-SF"].evaluate(yearL,"syst","RecoAbove20", 
+        recosfErr = data[dataEra]["electron"].evaluate(dataEra,"syst","RecoAbove20", 
                     event.Ele_EtaSC[iEl], pt)
 
-        elTrigSF      *= eleTrig.evaluate("central", event.Ele_EtaSC[iEl], pt)
+        elTrigSF      *= data[dataEra]["eleTrig"].evaluate("central", event.Ele_EtaSC[iEl], pt)
         elIDSF        *= idsf
         elRecoSF      *= recosf
 
-        elTrigSF_up   *= eleTrig.evaluate("up", event.Ele_EtaSC[iEl], pt)
-        elTrigSF_down *= eleTrig.evaluate("down", event.Ele_EtaSC[iEl], pt)
+        elTrigSF_up   *= data[dataEra]["eleTrig"].evaluate("up", 
+                            event.Ele_EtaSC[iEl], pt)
+        elTrigSF_down *= data[dataEra]["eleTrig"].evaluate("down", 
+                            event.Ele_EtaSC[iEl], pt)
 
         elIDSF_up     *= (idsf + idsfErr)
         elIDSF_down   *= (idsf - idsfErr)
@@ -191,10 +217,9 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
     muIsoSF_down = 1.
 
     for iMu in range(getattr(event, "nMu")):
-        # TODO trigger
-        trigger = muTrigSFs.getSFs(getattr(event, "Mu_Pt")[iMu], abs(getattr(event, "Mu_Eta")[iMu]))
-        idsf    = muIDSFs.getSFs(  getattr(event, "Mu_Pt")[iMu], abs(getattr(event, "Mu_Eta")[iMu]))
-        isosf   = muIsoSFs.getSFs( getattr(event, "Mu_Pt")[iMu], abs(getattr(event, "Mu_Eta")[iMu]))
+        trigger = data[dataEra]["muTrig"].getSFs(event.Mu_Pt[iMu], abs(event.Mu_Eta[iMu]))
+        idsf    = data[dataEra]["muID"].getSFs(  event.Mu_Pt[iMu], abs(event.Mu_Eta[iMu]))
+        isosf   = data[dataEra]["muISO"].getSFs( event.Mu_Pt[iMu], abs(event.Mu_Eta[iMu]))
 
         muTrigSF      *= trigger.loc["central"]
         muIDSF        *= idsf.loc["central"]
@@ -214,12 +239,12 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
     wrapper.branchArrays["muIsoSF"][0]  = muIsoSF
     wrapper.branchArrays["muSF"][0]     = muIDSF*muIsoSF
 
-    wrapper.branchArrays["muTrigSF_up"][0]       = muTrigSF_up
-    wrapper.branchArrays["muTrigSF_down"][0]     = muTrigSF_down
+    wrapper.branchArrays["muTrigSF_up"][0]   = muTrigSF_up
+    wrapper.branchArrays["muTrigSF_down"][0] = muTrigSF_down
         
     wrapper.branchArrays["muIDSF_up"][0]     = muIDSF_up
     wrapper.branchArrays["muIDSF_down"][0]   = muIDSF_down
-        
+       
     wrapper.branchArrays["muIsoSF_up"][0]    = muIsoSF_up
     wrapper.branchArrays["muIsoSF_down"][0]  = muIsoSF_down
 
@@ -227,13 +252,13 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
     if event.nMu == 1 and event.nEle == 0:
         wrapper.branchArrays["muTrigSF_up_rel"][0]   = muTrigSF_up/muTrigSF
         wrapper.branchArrays["muTrigSF_down_rel"][0] = muTrigSF_down/muTrigSF
-        wrapper.branchArrays["muSF_up_rel"][0]     = (muIDSF_up*muIsoSF_up)/(muIDSF*muIsoSF)
-        wrapper.branchArrays["muSF_down_rel"][0]   = (muIDSF_down*muIsoSF_down)/(muIDSF*muIsoSF)
+        wrapper.branchArrays["muSF_up_rel"][0]       = (muIDSF_up*muIsoSF_up)/(muIDSF*muIsoSF)
+        wrapper.branchArrays["muSF_down_rel"][0]     = (muIDSF_down*muIsoSF_down)/(muIDSF*muIsoSF)
     else:
         wrapper.branchArrays["muTrigSF_up_rel"][0]   = 1.
         wrapper.branchArrays["muTrigSF_down_rel"][0] = 1.
-        wrapper.branchArrays["muSF_up_rel"][0]     = 1.
-        wrapper.branchArrays["muSF_down_rel"][0]   = 1.
+        wrapper.branchArrays["muSF_up_rel"][0]       = 1.
+        wrapper.branchArrays["muSF_down_rel"][0]     = 1.
 
     return event
 

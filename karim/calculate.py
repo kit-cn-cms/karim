@@ -7,7 +7,8 @@ import pandas as pd
 # from karim import load as load
 import karim.load as load
 
-def calculate_variables(filename, configpath, friendTrees, outpath, apply_selection = False, split_feature = None, jecDependent = False):
+def calculate_variables(filename, configpath, friendTrees, outpath, 
+        dataEra = None, apply_selection = False, split_feature = None, jecDependent = False):
     print(" ===== EVALUATING FILE ===== ")
     print(filename)
     print(" =========================== ")
@@ -32,10 +33,10 @@ def calculate_variables(filename, configpath, friendTrees, outpath, apply_select
                         continue
                 if split_feature is None:
                     if not jecDependent:
-                        config.calculate_variables(event, outfile, outfile.sampleName, None, genWeights)
+                        config.calculate_variables(event, outfile, outfile.sampleName, None, dataEra, genWeights)
                     else:
                         for jec in jecs:
-                            config.calculate_variables(event, outfile, outfile.sampleName, jec, genWeights)
+                            config.calculate_variables(event, outfile, outfile.sampleName, jec, dataEra, genWeights)
                     outfile.FillTree()
                 else:
                     if not jecDependent:
