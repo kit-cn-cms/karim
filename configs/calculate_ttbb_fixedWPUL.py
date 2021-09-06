@@ -13,14 +13,20 @@ yearL = "2018"
 sfDir = os.path.join(karimpath, "data", "UL_"+year)
 sfDirLeg = os.path.join(karimpath, "data", "legacy_"+yearL)
 
-btagSFjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btaggingSF_deepJet.json"))
-btagSF = btagSFjson["comb"]
-mistagSF = btagSFjson["incl"]
+btagSF = {}
+mistagSF = {}
+btagEff = {}
+for year in ["2017", "2018"]:
+    sfDir = os.path.join(karimpath, "data", "UL_"+year[2:])
+    
+    btagSFjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btaggingSF_deepJet.json"))
+    btagSF[year] = btagSFjson["comb"]
+    mistagSF[year] = btagSFjson["incl"]
 
-btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_ttbb_deepJet.json"))
-btagEff = btagEffjson["btagEff"]
+    btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_ttbb_deepJet.json"))
+    btagEff[year] = btagEffjson["btagEff"]
 
-styles = ["M", "TM", "ML", "TML"]
+styles = ["TM"]
 #styles = ["M"]
 workingPoints = list(set([wp for style in styles for wp in style]))
 
@@ -51,7 +57,7 @@ def set_branches(wrapper, jec):
                 wrapper.SetFloatVar("btagSF_"+style+"_mistag_"+mistagUnc+"_rel"+suffix)
 
 
-def calculate_variables(event, wrapper, sample, jec, genWeights = None):
+def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights = None):
     '''
     calculate weights
     '''
@@ -91,22 +97,22 @@ def calculate_variables(event, wrapper, sample, jec, genWeights = None):
                     jetuncs[mistagUnc] = {}
 
             for wp in workingPoints:
-                effs[wp] = btagEff.evaluate(wp, flav, eta, pt)
-                jetsfs[wp]  = mistagSF.evaluate(wp, "central", flav, eta, pt)
+                effs[wp] = btagEff[dataEra].evaluate(wp, flav, eta, pt)
+                jetsfs[wp]  = mistagSF[dataEra].evaluate(wp, "central", flav, eta, pt)
                 if jec == "nom":
                     for unc in jetuncs:
-                        jetuncs[unc][wp] = mistagSF.evaluate(wp, unc, flav, eta, pt)
+                        jetuncs[unc][wp] = mistagSF[dataEra].evaluate(wp, unc, flav, eta, pt)
         else:
             if jec == "nom":
                 for tagUnc in taggingUncertainties:
                     jetuncs[tagUnc] = {}
 
             for wp in workingPoints:
-                effs[wp] = btagEff.evaluate(wp, flav, eta, pt)
-                jetsfs[wp]  = btagSF.evaluate(wp, "central", flav, eta, pt)
+                effs[wp] = btagEff[dataEra].evaluate(wp, flav, eta, pt)
+                jetsfs[wp]  = btagSF[dataEra].evaluate(wp, "central", flav, eta, pt)
                 if jec == "nom":
                     for unc in jetuncs:
-                        jetuncs[unc][wp] = btagSF.evaluate(wp, unc, flav, eta, pt)
+                        jetuncs[unc][wp] = btagSF[dataEra].evaluate(wp, unc, flav, eta, pt)
 
         for s in styles:
             if passes[s[0]]:
