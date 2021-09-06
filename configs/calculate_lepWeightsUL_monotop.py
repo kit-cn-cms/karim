@@ -3,34 +3,59 @@ import common
 import weightModules
 from array import array
 import os
+from pprint import pprint
 filepath = os.path.abspath(__file__)
 karimpath = os.path.dirname(os.path.dirname(filepath))
-year  = "18"
-yearL = "2018"
-sfDir = os.path.join(karimpath, "data", "UL_"+year)
+dataEra = "18"
+sfDir = os.path.join(karimpath, "data", "UL_"+dataEra)
 
 from correctionlib import _core
 
-#Download the correct JSON files 
-print(os.path.join(sfDir, "electron.json"))
-evaluator_EG = _core.CorrectionSet.from_file(os.path.join(sfDir, "electron.json"))
 
-muIDSFs_tight = weightModules.LeptonSFs(
-    csv     = os.path.join(sfDir, "Efficiencies_muon_generalTracks_Z_Run2018_UL_ID.csv"),
-    sfName  = "NUM_TightID_DEN_TrackerMuons_abseta_pt")
+mudataEra = {
+    "2016preVFP":   "2016_UL_HIPM",
+    "2016postVFP":  "2016_UL",
+    "2017":         "2017_UL",
+    "2018":         "2018_UL",
+    }
 
-muIDSFs_loose = weightModules.LeptonSFs(
-    csv     = os.path.join(sfDir, "Efficiencies_muon_generalTracks_Z_Run2018_UL_ID.csv"),
-    sfName  = "NUM_LooseID_DEN_TrackerMuons_abseta_pt")
+data = {}
+for dataEra in ["2018", "2017", "2016preVFP", "2016postVFP"]:
+    # short dataEra
+    dataEraS = dataEra[2:]
 
-# initialize lepton Reco/Iso scale factors
-muIsoSFs_tight  = weightModules.LeptonSFs(
-    csv     = os.path.join(sfDir, "Efficiencies_muon_generalTracks_Z_Run2018_UL_ISO.csv"),
-    sfName  = "NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt")
-muIsoSFs_loose  = weightModules.LeptonSFs(
-    csv     = os.path.join(sfDir, "Efficiencies_muon_generalTracks_Z_Run2018_UL_ISO.csv"),
-    sfName  = "NUM_LooseRelIso_DEN_LooseID_abseta_pt")
+    # dict
+    data[dataEra] = {}
 
+    # sf directory
+    sfDir = os.path.join(karimpath, "data", "UL_"+dataEraS)
+
+    # electron ID/RECO/ISO
+    ele_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "electron.json"))
+    data[dataEra]["electron"] = ele_evaluator["UL-Electron-ID-SF"]
+    photon_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "photon.json"))
+    data[dataEra]["photon"] = photon_evaluator["UL-Photon-ID-SF"]
+
+    # muon ID scale factors
+    muIDFile = "Efficiencies_muon_generalTracks_Z_Run{}_ID.csv".format(mudataEra[dataEra])
+    data[dataEra]["muIDT"] = weightModules.LeptonSFs(
+        csv     = os.path.join(sfDir, muIDFile),
+        sfName  = "NUM_TightID_DEN_TrackerMuons_abseta_pt")
+    data[dataEra]["muIDL"] = weightModules.LeptonSFs(
+        csv     = os.path.join(sfDir, muIDFile),
+        sfName  = "NUM_LooseID_DEN_TrackerMuons_abseta_pt")
+
+    # muon Iso scale factors
+    muISOFile = "Efficiencies_muon_generalTracks_Z_Run{}_ISO.csv".format(mudataEra[dataEra])
+    data[dataEra]["muISOT"] = weightModules.LeptonSFs(
+        csv     = os.path.join(sfDir, muISOFile),
+        sfName  = "NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt")
+    data[dataEra]["muISOL"] = weightModules.LeptonSFs(
+        csv     = os.path.join(sfDir, muISOFile),
+        sfName  = "NUM_LooseRelIso_DEN_LooseID_abseta_pt")
+
+pprint(data)
+# exit()
 
 def get_additional_variables():
     '''
@@ -45,9 +70,9 @@ def base_selection(event):
     return True
 
 def set_branches(wrapper, jec):
-    wrapper.SetIntVar("Evt_ID")   
-    wrapper.SetIntVar("Evt_Run")   
-    wrapper.SetIntVar("Evt_Lumi")   
+    wrapper.SetIntVar("event")   
+    wrapper.SetIntVar("run")   
+    wrapper.SetIntVar("lumi")   
 
     # electron scale factors
     wrapper.SetFloatVar("eleIDSF_tight")
@@ -93,20 +118,15 @@ def set_branches(wrapper, jec):
     wrapper.SetFloatVar("phoEffSF_loose_down")
 
 
-def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
+
+def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genWeights = None):
     '''
     calculate weights
     '''
-    isData = False
-    if "SingleEl" in sample or "EGamma" in sample or "SingleMu" in sample or "MET" in sample:
-        isData = True
-
-
-
     # add basic information for friend trees
-    wrapper.branchArrays["Evt_ID"][0] = getattr(event, "Evt_ID")
-    wrapper.branchArrays["Evt_Run"][0]   = getattr(event, "Evt_Run")
-    wrapper.branchArrays["Evt_Lumi"][0]  = getattr(event, "Evt_Lumi")
+    wrapper.branchArrays["event"][0] = getattr(event, "Evt_ID")
+    wrapper.branchArrays["run"][0]   = getattr(event, "Evt_Run")
+    wrapper.branchArrays["lumi"][0]  = getattr(event, "Evt_Lumi")
     
     # electron scale factors
     # tight electrons
@@ -124,11 +144,11 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
             pt = getattr(event, "TightElectron_Pt")[iEl]
         else:
             pt = 499.
-        idsf = evaluator_EG["UL-Electron-ID-SF"].evaluate(yearL,"sf","Tight", getattr(event, "TightElectron_EtaSC")[iEl], pt)
-        idsfErr = evaluator_EG["UL-Electron-ID-SF"].evaluate(yearL,"syst","Tight", getattr(event, "TightElectron_EtaSC")[iEl], pt)
+        idsf = data[dataEra]["electron"].evaluate(dataEra,"sf","Tight", getattr(event, "TightElectron_Eta")[iEl], pt)
+        idsfErr = data[dataEra]["electron"].evaluate(dataEra,"syst","Tight", getattr(event, "TightElectron_Eta")[iEl], pt)
 
-        recosf    = evaluator_EG["UL-Electron-ID-SF"].evaluate(yearL,"sf","RecoAbove20", getattr(event, "TightElectron_EtaSC")[iEl], pt)
-        recosfErr    = evaluator_EG["UL-Electron-ID-SF"].evaluate(yearL,"syst","RecoAbove20", getattr(event, "TightElectron_EtaSC")[iEl], pt)
+        recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoAbove20", getattr(event, "TightElectron_Eta")[iEl], pt)
+        recosfErr    = data[dataEra]["electron"].evaluate(dataEra,"syst","RecoAbove20", getattr(event, "TightElectron_Eta")[iEl], pt)
 
         elIDSF_tight        *= idsf
         elIDSF_tight_up     *= (idsf + idsfErr)
@@ -161,15 +181,15 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
             pt = getattr(event, "LooseElectron_Pt")[iEl]
         else:
             pt = 499.
-        idsf = evaluator_EG["UL-Electron-ID-SF"].evaluate(yearL,"sf","Loose", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
-        idsfErr = evaluator_EG["UL-Electron-ID-SF"].evaluate(yearL,"syst","Loose", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+        idsf = data[dataEra]["electron"].evaluate(dataEra,"sf","Loose", getattr(event, "LooseElectron_Eta")[iEl], pt)
+        idsfErr = data[dataEra]["electron"].evaluate(dataEra,"syst","Loose", getattr(event, "LooseElectron_Eta")[iEl], pt)
 
         if pt >= 20.:
-            recosf    = evaluator_EG["UL-Electron-ID-SF"].evaluate(yearL,"sf","RecoAbove20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
-            recosfErr    = evaluator_EG["UL-Electron-ID-SF"].evaluate(yearL,"syst","RecoAbove20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+            recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoAbove20", getattr(event, "LooseElectron_Eta")[iEl], pt)
+            recosfErr    = data[dataEra]["electron"].evaluate(dataEra,"syst","RecoAbove20", getattr(event, "LooseElectron_Eta")[iEl], pt)
         else:
-            recosf    = evaluator_EG["UL-Electron-ID-SF"].evaluate(yearL,"sf","RecoBelow20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
-            recosfErr    = evaluator_EG["UL-Electron-ID-SF"].evaluate(yearL,"syst","RecoBelow20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+            recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoBelow20", getattr(event, "LooseElectron_Eta")[iEl], pt)
+            recosfErr    = data[dataEra]["electron"].evaluate(dataEra,"syst","RecoBelow20", getattr(event, "LooseElectron_Eta")[iEl], pt)
 
         elIDSF_loose        *= idsf
         elIDSF_loose_up     *= (idsf + idsfErr)
@@ -187,51 +207,51 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
     wrapper.branchArrays["eleRecoSF_loose_up"][0]   = elRecoSF_loose_up
     wrapper.branchArrays["eleRecoSF_loose_down"][0]   = elRecoSF_loose_down
 
-    # tight photons
-    phoEffSF_tight = 1.
-    phoEffSF_tight_up = 1.
-    phoEffSF_tight_down = 1.
+    # # tight photons
+    # phoEffSF_tight = 1.
+    # phoEffSF_tight_up = 1.
+    # phoEffSF_tight_down = 1.
 
-    for iPho in range(getattr(event, "N_TightPhotons")):
-        if getattr(event, "TightPhoton_Pt")[iEl] < 500:
-            pt = getattr(event, "TightPhoton_Pt")[iPho]
-        else:
-            pt = 499.
-        sf = evaluator_EG["UL-Photon-ID-SF"].evaluate(yearL,"sf","Tight", getattr(event, "TightPhoton_Eta")[iPho], pt)
-        sfErr = evaluator_EG["UL-Photon-ID-SF"].evaluate(yearL,"syst","Tight", getattr(event, "TightPhoton_Eta")[iPho], pt)
+    # for iPho in range(getattr(event, "N_TightPhotons")):
+    #     if getattr(event, "TightPhoton_Pt")[iPho] < 500:
+    #         pt = getattr(event, "TightPhoton_Pt")[iPho]
+    #     else:
+    #         pt = 499.
+    #     sf = data[dataEra]["photon"].evaluate(dataEra,"sf","Tight", getattr(event, "TightPhoton_Eta")[iPho], pt)
+    #     sfErr = data[dataEra]["photon"].evaluate(dataEra,"syst","Tight", getattr(event, "TightPhoton_Eta")[iPho], pt)
 
-        phoEffSF_tight        *= sf
-        phoEffSF_tight_up     *= (sf + sfErr)
-        phoEffSF_tight_down   *= (sf - sfErr)
+    #     phoEffSF_tight        *= sf
+    #     phoEffSF_tight_up     *= (sf + sfErr)
+    #     phoEffSF_tight_down   *= (sf - sfErr)
 
-    wrapper.branchArrays["phoEffSF_tight"][0]   = phoEffSF_tight
-    wrapper.branchArrays["phoEffSF_tight_up"][0]   = phoEffSF_tight_up
-    wrapper.branchArrays["phoEffSF_tight_down"][0]   = phoEffSF_tight_down
+    # wrapper.branchArrays["phoEffSF_tight"][0]   = phoEffSF_tight
+    # wrapper.branchArrays["phoEffSF_tight_up"][0]   = phoEffSF_tight_up
+    # wrapper.branchArrays["phoEffSF_tight_down"][0]   = phoEffSF_tight_down
 
-    # loose photons
-    phoEffSF_loose = 1.
-    phoEffSF_loose_up = 1.
-    phoEffSF_loose_down = 1.
+    # # loose photons
+    # phoEffSF_loose = 1.
+    # phoEffSF_loose_up = 1.
+    # phoEffSF_loose_down = 1.
 
-    for iPho in range(getattr(event, "N_LoosePhotons")):
-        # TODO super cluster eta
-        if getattr(event, "TightPhoton_Pt")[iPho] < 500:
-            pt = getattr(event, "TightPhoton_Pt")[iPho]
-        else:
-            pt = 499.
-        pt = getattr(event, "LoosePhoton_Pt")[iPho]
-        sf = evaluator_EG["UL-Photon-ID-SF"].evaluate(yearL,"sf","Loose", getattr(event, "LoosePhoton_Eta")[iPho], pt)
-        sfErr = evaluator_EG["UL-Photon-ID-SF"].evaluate(yearL,"syst","Loose", getattr(event, "LoosePhoton_Eta")[iPho], pt)
-        print("########")
-        print(sf)
-        print("########")
-        phoEffSF_loose        *= sf
-        phoEffSF_loose_up     *= (sf + sfErr)
-        phoEffSF_loose_down   *= (sf - sfErr)
+    # for iPho in range(getattr(event, "N_LoosePhotons")):
+    #     # TODO super cluster eta
+    #     if getattr(event, "TightPhoton_Pt")[iPho] < 500:
+    #         pt = getattr(event, "TightPhoton_Pt")[iPho]
+    #     else:
+    #         pt = 499.
+    #     pt = getattr(event, "LoosePhoton_Pt")[iPho]
+    #     sf = data[dataEra]["photon"].evaluate(dataEra,"sf","Loose", getattr(event, "LoosePhoton_Eta")[iPho], pt)
+    #     sfErr = data[dataEra]["photon"].evaluate(dataEra,"syst","Loose", getattr(event, "LoosePhoton_Eta")[iPho], pt)
+    #     print("########")
+    #     print(sf)
+    #     print("########")
+    #     phoEffSF_loose        *= sf
+    #     phoEffSF_loose_up     *= (sf + sfErr)
+    #     phoEffSF_loose_down   *= (sf - sfErr)
 
-    wrapper.branchArrays["phoEffSF_loose"][0]   = phoEffSF_loose
-    wrapper.branchArrays["phoEffSF_loose_up"][0]   = phoEffSF_loose_up
-    wrapper.branchArrays["phoEffSF_loose_down"][0]   = phoEffSF_loose_down
+    # wrapper.branchArrays["phoEffSF_loose"][0]   = phoEffSF_loose
+    # wrapper.branchArrays["phoEffSF_loose_up"][0]   = phoEffSF_loose_up
+    # wrapper.branchArrays["phoEffSF_loose_down"][0]   = phoEffSF_loose_down
             
     # tight muons
     muIDSF_tight = 1.
@@ -243,8 +263,8 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
     muIsoSF_tight_down = 1.
 
     for iMu in range(getattr(event, "N_TightMuons")):
-        idsf    = muIDSFs_tight.getSFs(  getattr(event, "TightMuon_Pt")[iMu], abs(getattr(event, "TightMuon_Eta")[iMu]))
-        isosf   = muIsoSFs_tight.getSFs( getattr(event, "TightMuon_Pt")[iMu], abs(getattr(event, "TightMuon_Eta")[iMu]))
+        idsf    = data[dataEra]["muIDT"].getSFs(  getattr(event, "TightMuon_Pt")[iMu], abs(getattr(event, "TightMuon_Eta")[iMu]))
+        isosf   = data[dataEra]["muISOT"].getSFs( getattr(event, "TightMuon_Pt")[iMu], abs(getattr(event, "TightMuon_Eta")[iMu]))
 
         muIDSF_tight        *= idsf.loc["central"]
         muIDSF_tight_up     *= idsf.loc["up"]
@@ -271,8 +291,8 @@ def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
     muIsoSF_loose_down = 1.
 
     for iMu in range(getattr(event, "N_LooseMuons")):
-        idsf    = muIDSFs_loose.getSFs(  getattr(event, "LooseMuon_Pt")[iMu], abs(getattr(event, "LooseMuon_Eta")[iMu]))
-        isosf   = muIsoSFs_loose.getSFs( getattr(event, "LooseMuon_Pt")[iMu], abs(getattr(event, "LooseMuon_Eta")[iMu]))
+        idsf    = data[dataEra]["muIDL"].getSFs(  getattr(event, "LooseMuon_Pt")[iMu], abs(getattr(event, "LooseMuon_Eta")[iMu]))
+        isosf   = data[dataEra]["muISOL"].getSFs( getattr(event, "LooseMuon_Pt")[iMu], abs(getattr(event, "LooseMuon_Eta")[iMu]))
 
         muIDSF_loose        *= idsf.loc["central"]
         muIDSF_loose_up     *= idsf.loc["up"]
