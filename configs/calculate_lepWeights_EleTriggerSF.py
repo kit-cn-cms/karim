@@ -26,7 +26,6 @@ muTrigName = {
     }
 
 data = {}
-puSF = {}
 for year in ["2018", "2017", "2016preVFP", "2016postVFP"]:
     # short year
     yearS = year[2:]
@@ -41,11 +40,6 @@ for year in ["2018", "2017", "2016preVFP", "2016postVFP"]:
     # electron ID/RECO/ISO
     ele_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "electron.json"))
     data[year]["electron"] = ele_evaluator["UL-Electron-ID-SF"]
-
-    # electron trigger
-    eleTrigFile = _core.CorrectionSet.from_file(os.path.join(sfDirT, "EleTriggerSF_v0.json"))
-    data[year]["eleTrig"] = eleTrigFile["EleTriggerSF"]
-
 
     # muon trigger
     muTrigFile = "Efficiencies_muon_generalTracks_Z_Run{}_SingleMuonTriggers.csv".format(muYear[year])
@@ -67,16 +61,16 @@ for year in ["2018", "2017", "2016preVFP", "2016postVFP"]:
 
     # initialize pileup SFs
     pu_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "pileup.json"))
-    puSF[year] = pu_evaluator["pileup"]
+    data[year]["PU"] = pu_evaluator["pileup"]
 
 
 #TODO Rochester is missing
 #Download the correct JSON files 
-print(os.path.join(sfDir, "electron.json"))
-ele_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "electron.json"))
+# print(os.path.join(sfDir, "electron.json"))
+# ele_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "electron.json"))
 
-pu_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "pileup.json"))
-puSFs = pu_evaluator["pileup"]
+# pu_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "pileup.json"))
+# puSFs = pu_evaluator["pileup"]
 # pileupSFs = weightModules.PileupSFs(os.path.join(sfDir, "pileup.csv"))
 
 
@@ -248,10 +242,15 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     # wrapper.branchArrays["Weight_PU_Up"+suffix][0] = pileupSFs.getSF(getattr(event, "nTruePU"+suffix), "up")
     # wrapper.branchArrays["Weight_PU_Down"+suffix][0] = pileupSFs.getSF(getattr(event, "nTruePU"+suffix), "down")
 
-    pu = puSF[year].evaluate("central", float(event.nTruePU))
-    wrapper.branchArrays["pileup"][0] = pu
-    wrapper.branchArrays["pileup_up_rel"][0] = puSF[dataEra].evaluate("up", float(event.nTruePU))/pu
-    wrapper.branchArrays["pileup_down_rel"][0] = puSF[dataEra].evaluate("down", float(event.nTruePU))/pu
+    # pu = puSF[year].evaluate("central", float(event.nTruePU))
+    # wrapper.branchArrays["pileup"][0] = pu
+    # wrapper.branchArrays["pileup_up_rel"][0] = puSF[dataEra].evaluate("up", float(event.nTruePU))/pu
+    # wrapper.branchArrays["pileup_down_rel"][0] = puSF[dataEra].evaluate("down", float(event.nTruePU))/pu
+
+    puSF = data[dataEra]["PU"].evaluate("central", float(event.nTruePU))
+    wrapper.branchArrays["pileup"][0] = puSF
+    wrapper.branchArrays["pileup_up_rel"][0] = data[dataEra]["PU"].evaluate("up", float(event.nTruePU))/puSF
+    wrapper.branchArrays["pileup_down_rel"][0] = data[dataEra]["PU"].evaluate("down", float(event.nTruePU))/puSF
 
     # puSF = puSFs.evaluate("central", float(event.nTruePU))
     # wrapper.branchArrays["pileup"][0] = puSF
@@ -265,4 +264,3 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     wrapper.branchArrays["xsNorm"][0] = genWeights.getXS("incl")
 
     return event
-
