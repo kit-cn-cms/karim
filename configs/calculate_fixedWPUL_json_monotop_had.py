@@ -26,7 +26,7 @@ for year in ["2018"]:
     data[year]["btagSF"] =  btagSFjson["comb"]
     data[year]["mistagSF"] =  btagSFjson["incl"]
 
-    btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_Monotop_lep_deepJet.json"))
+    btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_Monotop_had_deepJet.json"))
     data[year]["btagEff"] =  btagEffjson["btagEff"]
 
 styles = ["M", "TM", "ML", "TML"]
@@ -83,13 +83,13 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
             for mistagUnc in mistagUncertainties:
                 sf_mistagunc[mistagUnc][style] = 1.
 
-    for idx in range(getattr(event, "N_Jets"+suffix)):
-        eta = abs(getattr(event, "Jet_Eta"+suffix)[idx])
-        pt  = getattr(event, "Jet_Pt"+suffix)[idx]
+    for idx in range(getattr(event, "N_Jets_outside_lead_AK15Jet"+suffix)):
+        eta = abs(getattr(event, "Jets_outside_lead_AK15Jet_Eta"+suffix)[idx])
+        pt  = getattr(event, "Jets_outside_lead_AK15Jet_Pt"+suffix)[idx]
         passes = {}
         for wp in workingPoints:
-            passes[wp] = getattr(event, "Jet_tagged"+wp+suffix)[idx]
-        HadronFlav  = getattr(event, "Jet_HadronFlav"+suffix)[idx]
+            passes[wp] = getattr(event, "Jets_outside_lead_AK15Jet_tagged"+wp+suffix)[idx]
+        HadronFlav  = getattr(event, "Jets_outside_lead_AK15Jet_HadronFlav"+suffix)[idx]
 
         jetsfs = {}
         effs = {}
