@@ -35,7 +35,11 @@ for year in ["2018", "2017", "2016preVFP", "2016postVFP"]:
 
     # sf directory
     sfDir = os.path.join(karimpath, "data", "UL_"+yearS)
+
+    # TODO update ele trig SFs
     sfDirT = os.path.join(karimpath, "data", "UL_18")
+    if year == "2016postVFP":
+        sfDirT = os.path.join(karimpath, "data", "UL_"+yearS)
 
     # electron ID/RECO/ISO
     ele_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "electron.json"))
@@ -162,14 +166,14 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
         recosfErr = data[dataEra]["electron"].evaluate(dataEra,"syst","RecoAbove20", 
                     event.Ele_EtaSC[iEl], pt)
 
-        elTrigSF      *= data[dataEra]["eleTrig"].evaluate("central", event.Ele_EtaSC[iEl], pt)
+        elTrigSF      *= data[dataEra]["eleTrig"].evaluate("central", pt, event.Ele_EtaSC[iEl])
         elIDSF        *= idsf
         elRecoSF      *= recosf
 
         elTrigSF_up   *= data[dataEra]["eleTrig"].evaluate("up", 
-                            event.Ele_EtaSC[iEl], pt)
+                            pt, event.Ele_EtaSC[iEl])
         elTrigSF_down *= data[dataEra]["eleTrig"].evaluate("down", 
-                            event.Ele_EtaSC[iEl], pt)
+                            pt, event.Ele_EtaSC[iEl])
 
         elIDSF_up     *= (idsf + idsfErr)
         elIDSF_down   *= (idsf - idsfErr)
