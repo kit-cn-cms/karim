@@ -42,9 +42,9 @@ def set_branches(wrapper, jec):
     suffix = "_"+jec
 
     if jec == "nom":
-        wrapper.SetIntVar("event")
-        wrapper.SetIntVar("run")
-        wrapper.SetIntVar("lumi")
+        wrapper.SetIntVar("Evt_ID")   
+        wrapper.SetIntVar("Evt_Run")   
+        wrapper.SetIntVar("Evt_Lumi") 
 
         # cross section weight
         wrapper.SetFloatVar("xsNorm")
@@ -70,9 +70,9 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
 
     if jec == "nom":
         # add basic information for friend trees
-        wrapper.branchArrays["event"][0] = getattr(event, "event")
-        wrapper.branchArrays["run"][0]   = getattr(event, "run")
-        wrapper.branchArrays["lumi"][0]  = getattr(event, "lumi")
+        wrapper.branchArrays["Evt_ID"][0] = getattr(event, "Evt_ID")
+        wrapper.branchArrays["Evt_Run"][0]   = getattr(event, "Evt_Run")
+        wrapper.branchArrays["Evt_Lumi"][0]  = getattr(event, "Evt_Lumi")
 
         # cross section norm
         wrapper.branchArrays["xsNorm"][0] = genWeights.getXS("incl")
