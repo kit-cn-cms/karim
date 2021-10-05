@@ -14,8 +14,6 @@ yearL = "2018"
 sfDir = os.path.join(karimpath, "data", "UL_"+year)
 sfDirLeg = os.path.join(karimpath, "data", "legacy_"+yearL)
 
-btagSFjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btaggingSF_deepJet_iterativeFit.json"))
-itFit = btagSFjson["iterativeFit"]
 
 
 btagSF = {}
@@ -31,8 +29,26 @@ for year in ["2017", "2018"]:
     btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_ttbb_deepJet.json"))
     btagEff[year] = btagEffjson["btagEff"]
 
+    itFitSFjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btaggingSF_deepJet_iterativeFit.json"))
+    itFit = itFitSFjson["iterativeFit"]
+
+# fixedWP
 SFb_sys = ["up","down"]
 SFl_sys = ["up","down"]
+
+# itFit
+uncs = [
+    "hfstats2",
+    "hfstats1",
+    "lfstats2",
+    "lfstats1",
+    "cferr2",
+    "cferr1",
+    "hf",
+    "lf"
+    ]
+btagSF_uncs = ["up_"+u   for u in uncs] + \
+              ["down_"+u for u in uncs]
 
 def get_additional_variables():
     '''
@@ -62,9 +78,13 @@ def set_branches(wrapper, jec):
         for sys in SFl_sys:
             wrapper.SetFloatVar("fixedWPSFl_TM_"+sys+"_rel")
 
-    wrapper.SetFloatVar("itFitSF"+suffix)
     # b tagging
     wrapper.SetFloatVar("fixedWPSF_TM"+suffix)
+
+    wrapper.SetFloatVar("itFitSF"+suffix)
+    if jec == "nom":
+        for u in btagSF_uncs:
+            wrapper.SetFloatVar("itFitSF_{}_rel".format(u))
 
 def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights = None):
     '''
@@ -86,6 +106,8 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
 
         # cross section norm
         wrapper.branchArrays["xsNorm"][0] = genWeights.getXS("incl")
+
+    if "2016" in dataEra: return 
 
     P_MC_TM   = 1.
     P_DATA_TM = 1.
@@ -179,12 +201,20 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
             wrapper.branchArrays["fixedWPSFb_TM_"+sys+"_rel"][0] = Pl_DATA_TM[sys]/P_DATA_TM
         for sys in SFb_sys:
             wrapper.branchArrays["fixedWPSFl_TM_"+sys+"_rel"][0] = Pb_DATA_TM[sys]/P_DATA_TM
+
+
+
+
     sf = 1.
+    sf_uncs = {}
+    for u in btagSF_uncs:
+        sf_uncs[u] = 1.
+
     for idx in range(getattr(event, "nJets"+suffix)):
         flav = getattr(event, "Jet_Flav"+suffix)[idx]
 
         if not (flav == 4):
-            nom = itFit.evaluate(btvJECname, flav,
+            nom = itFit.evaluate("central", flav,
                 abs(getattr(event, "Jet_Eta"+suffix)[idx]),
                 getattr(event, "Jet_Pt"+suffix)[idx],
                 getattr(event, "Jet_btagValue"+suffix)[idx])
@@ -192,7 +222,30 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         else:
             nom = 1.
 
+        if jec == "nom":
+            # scale factor uncertainties
+            for u in btagSF_uncs:
+                # cferr only exists for c-jets
+                if (flav == 4):
+                    if "cferr" in u:
+                        sf_uncs[u] *= itFit.evaluate(u, 4,
+                            abs(getattr(event, "Jet_Eta"+suffix)[idx]),
+                            getattr(event, "Jet_Pt"+suffix)[idx],
+                            getattr(event, "Jet_btagValue"+suffix)[idx])
+                else:
+                    if "cferr" in u:
+                        sf_uncs[u] *= nom
+                    else:
+                        sf_uncs[u] *= itFit.evaluate(u, flav,
+                            abs(getattr(event, "Jet_Eta"+suffix)[idx]),
+                            getattr(event, "Jet_Pt"+suffix)[idx],
+                            getattr(event, "Jet_btagValue"+suffix)[idx])
+
     wrapper.branchArrays["itFitSF"+suffix][0] = sf
+    if jec == "nom":
+        for u in btagSF_uncs:
+            wrapper.branchArrays["itFitSF_{}_rel".format(u)][0] = sf_uncs[u]/sf
+
 
 
     return event

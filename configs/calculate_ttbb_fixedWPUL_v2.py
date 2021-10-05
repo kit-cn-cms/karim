@@ -47,13 +47,6 @@ def set_branches(wrapper, jec):
     suffix = "_"+jec
 
     if jec == "nom":
-        wrapper.SetIntVar("event")
-        wrapper.SetIntVar("run")
-        wrapper.SetIntVar("lumi")
-
-        # cross section weight
-        wrapper.SetFloatVar("xsNorm")
-
         for sys in SFb_sys:
             wrapper.SetFloatVar("fixedWPSFb_TM_"+sys+"_rel")
         for sys in SFl_sys:
@@ -67,20 +60,6 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     '''
 
     suffix = "_"+jec
-    # TODO adjust when merged JEC uncertainties are avialable
-    if jec == "nom":
-        btvJECname = "central"
-    else:
-        btvJECname = "central"
-
-    if jec == "nom":
-        # add basic information for friend trees
-        wrapper.branchArrays["event"][0] = getattr(event, "event")
-        wrapper.branchArrays["run"][0]   = getattr(event, "run")
-        wrapper.branchArrays["lumi"][0]  = getattr(event, "lumi")
-
-        # cross section norm
-        wrapper.branchArrays["xsNorm"][0] = genWeights.getXS("incl")
 
     P_MC_TM   = 1.
     P_DATA_TM = 1.
@@ -96,7 +75,6 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         sfb_T = {}
         sfl_M = {}
         sfl_T = {}
-
     for idx in range(getattr(event, "nJets"+suffix)):
         eta   = abs(getattr(event, "Jet_Eta"+suffix)[idx])
         pt    = getattr(event, "Jet_Pt"+suffix)[idx]
@@ -136,7 +114,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
                         Pb_DATA_TM[sys] *= eff_T*sfb_T[sys]
                     for sys in SFl_sys:
                         Pl_DATA_TM[sys] *= eff_T*sf_T
-        elif passes_M: 
+        elif passes_M:
             P_MC_TM   *= (eff_M      - eff_T)
             P_DATA_TM *= (eff_M*sf_M - eff_T*sf_T)
             if jec == "nom":
@@ -164,13 +142,11 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
                         Pb_DATA_TM[sys] *= (1. - eff_M*sfb_M[sys])
                     for sys in SFl_sys:
                         Pl_DATA_TM[sys] *= (1. - eff_M*sf_M)
-
     wrapper.branchArrays["fixedWPSF_TM"+suffix][0] = P_DATA_TM/P_MC_TM
     if jec == "nom":
         for sys in SFl_sys:
             wrapper.branchArrays["fixedWPSFb_TM_"+sys+"_rel"][0] = Pl_DATA_TM[sys]/P_DATA_TM
         for sys in SFb_sys:
             wrapper.branchArrays["fixedWPSFl_TM_"+sys+"_rel"][0] = Pb_DATA_TM[sys]/P_DATA_TM
-
     return event
 
