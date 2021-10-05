@@ -9,23 +9,18 @@ from correctionlib import _core
 filepath = os.path.abspath(__file__)
 karimpath = os.path.dirname(os.path.dirname(filepath))
 
-year = "18"
-yearL = "2018"
-sfDir = os.path.join(karimpath, "data", "UL_"+year)
-sfDirLeg = os.path.join(karimpath, "data", "legacy_"+yearL)
-
-
 btagSF = {}
 mistagSF = {}
 btagEff = {}
-for year in ["2017", "2018"]:
+# for year in ["2017", "2018"]:
+for year in ["2018"]:
     sfDir = os.path.join(karimpath, "data", "UL_"+year[2:])
     
     btagSFjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btaggingSF_deepJet.json"))
     btagSF[year] = btagSFjson["comb"]
     mistagSF[year] = btagSFjson["incl"]
 
-    btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_ttbb_deepJet.json"))
+    btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_monotop_had_deepJet.json"))
     btagEff[year] = btagEffjson["btagEff"]
 
 SFb_sys = ["up","down"]
@@ -47,9 +42,9 @@ def set_branches(wrapper, jec):
     suffix = "_"+jec
 
     if jec == "nom":
-        wrapper.SetIntVar("event")
-        wrapper.SetIntVar("run")
-        wrapper.SetIntVar("lumi")
+        wrapper.SetIntVar("Evt_ID")   
+        wrapper.SetIntVar("Evt_Run")   
+        wrapper.SetIntVar("Evt_Lumi") 
 
         # cross section weight
         wrapper.SetFloatVar("xsNorm")
@@ -75,9 +70,9 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
 
     if jec == "nom":
         # add basic information for friend trees
-        wrapper.branchArrays["event"][0] = getattr(event, "event")
-        wrapper.branchArrays["run"][0]   = getattr(event, "run")
-        wrapper.branchArrays["lumi"][0]  = getattr(event, "lumi")
+        wrapper.branchArrays["Evt_ID"][0] = getattr(event, "Evt_ID")
+        wrapper.branchArrays["Evt_Run"][0]   = getattr(event, "Evt_Run")
+        wrapper.branchArrays["Evt_Lumi"][0]  = getattr(event, "Evt_Lumi")
 
         # cross section norm
         wrapper.branchArrays["xsNorm"][0] = genWeights.getXS("incl")
@@ -92,56 +87,56 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         for sys in SFl_sys:
             Pl_DATA[sys] = 1.
 
-        sfb_M = {}
-        sfl_M = {}
+        sfb_L = {}
+        sfl_L = {}
 
-    for idx in range(getattr(event, "nJets"+suffix)):
-        eta   = abs(getattr(event, "Jet_Eta"+suffix)[idx])
-        pt    = getattr(event, "Jet_Pt"+suffix)[idx]
-        flav  = getattr(event, "Jet_Flav"+suffix)[idx]
-        passes_M = getattr(event, "Jet_taggedM"+suffix)[idx]
+    for idx in range(getattr(event, "N_Jets_outside_lead_AK15Jet"+suffix)):
+        eta   = abs(getattr(event, "Jets_outside_lead_AK15Jet_Eta"+suffix)[idx])
+        pt    = getattr(event, "Jets_outside_lead_AK15Jet_Pt"+suffix)[idx]
+        flav  = getattr(event, "Jets_outside_lead_AK15Jet_HadronFlav"+suffix)[idx]
+        passes_L = getattr(event, "Jets_outside_lead_AK15Jet_taggedL"+suffix)[idx]
 
-        eff_M = btagEff[dataEra].evaluate("M", flav, eta, pt)
+        eff_L = btagEff[dataEra].evaluate("L", flav, eta, pt)
 
         if flav == 0:
-            sf_M = mistagSF[dataEra].evaluate("M", "central", flav, eta, pt)
+            sf_L = mistagSF[dataEra].evaluate("L", "central", flav, eta, pt)
             if jec == "nom":
                 for sys in SFl_sys:
-                    sfl_M[sys] = mistagSF[dataEra].evaluate("M", sys, flav, eta, pt)
+                    sfl_L[sys] = mistagSF[dataEra].evaluate("L", sys, flav, eta, pt)
         else:
-            sf_M = btagSF[dataEra].evaluate("M", "central", flav, eta, pt)
+            sf_L = btagSF[dataEra].evaluate("L", "central", flav, eta, pt)
             if jec == "nom":
                 for sys in SFb_sys:
-                    sfb_M[sys] = btagSF[dataEra].evaluate("M", sys, flav, eta, pt)
+                    sfb_L[sys] = btagSF[dataEra].evaluate("L", sys, flav, eta, pt)
 
-        if passes_M:
-            P_MC   *= eff_M
-            P_DATA *= eff_M*sf_M
+        if passes_L:
+            P_MC   *= eff_L
+            P_DATA *= eff_L*sf_L
             if jec == "nom":
                 if flav == 0:
                     for sys in SFl_sys:
-                        Pl_DATA[sys] *= eff_M*sfl_M[sys]
+                        Pl_DATA[sys] *= eff_L*sfl_L[sys]
                     for sys in SFb_sys:
-                        Pb_DATA[sys] *= eff_M*sf_M
+                        Pb_DATA[sys] *= eff_L*sf_L
                 else:
                     for sys in SFb_sys:
-                        Pb_DATA[sys] *= eff_M*sfb_M[sys]
+                        Pb_DATA[sys] *= eff_L*sfb_L[sys]
                     for sys in SFl_sys:
-                        Pl_DATA[sys] *= eff_M*sf_M
+                        Pl_DATA[sys] *= eff_L*sf_L
         else:
-            P_MC   *= (1. - eff_M)
-            P_DATA *= (1. - eff_M*sf_M)  
+            P_MC   *= (1. - eff_L)
+            P_DATA *= (1. - eff_L*sf_L)  
             if jec == "nom":
                 if flav == 0:
                     for sys in SFl_sys:
-                        Pl_DATA[sys] *= (1. - eff_M*sfl_M[sys])
+                        Pl_DATA[sys] *= (1. - eff_L*sfl_L[sys])
                     for sys in SFb_sys:
-                        Pb_DATA[sys] *= (1. - eff_M*sf_M)
+                        Pb_DATA[sys] *= (1. - eff_L*sf_L)
                 else:
                     for sys in SFb_sys:
-                        Pb_DATA[sys] *= (1. - eff_M*sfb_M[sys])
+                        Pb_DATA[sys] *= (1. - eff_L*sfb_L[sys])
                     for sys in SFl_sys:
-                        Pl_DATA[sys] *= (1. - eff_M*sf_M)
+                        Pl_DATA[sys] *= (1. - eff_L*sf_L)
 
     wrapper.branchArrays["fixedWPSF"+suffix][0] = P_DATA/P_MC
     if jec == "nom":
