@@ -11,8 +11,8 @@ karimpath = os.path.dirname(os.path.dirname(filepath))
 
 
 data = {}
-# for year in ["2018", "2017", "2016preVFP", "2016postVFP"]:
-for year in ["2018"]:
+for year in ["2018", "2017", "2016preVFP", "2016postVFP"]:
+# for year in ["2018"]:
     # short year
     yearS = year[2:]
 
