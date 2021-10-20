@@ -16,7 +16,10 @@ parser.add_option("--wp", dest = "wp", help = "WP")
 sfDir = os.path.join(datapath, "UL_"+opts.year[2:])
 
 btagSFjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "bjets.json"))
-btagSF   = btagSFjson["deepJet_106XUL18SF_wp"]
+if opts.year == "2018":
+    btagSF = btagSFjson["deepJet_106XUL18SF_wp"]
+elif opts.year == "2017":
+    btagSF = btagSFjson["deepJet_106XUL17SF_wp"]
 
 
 sf_b = []

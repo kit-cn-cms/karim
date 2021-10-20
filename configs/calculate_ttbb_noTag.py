@@ -129,7 +129,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         pt    = getattr(event, "Jet_Pt"+suffix)[idx]
         flav  = getattr(event, "Jet_Flav"+suffix)[idx]
         passes_M = getattr(event, "Jet_taggedM"+suffix)[idx]
-        passes_T = getattr(event, "Jet_taggedM"+suffix)[idx]
+        passes_T = getattr(event, "Jet_taggedT"+suffix)[idx]
 
         eff_M = btagEff[dataEra].evaluate("M", flav, eta, pt)
         eff_T = btagEff[dataEra].evaluate("T", flav, eta, pt)
