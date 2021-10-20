@@ -22,7 +22,7 @@ def get_meta_data():
 # generate one for iterative fit and one for fixed WP
 def get_correction_meta_data(
         name        = "EleTriggerSF",
-        description = "Electron Trigger SFs for UL18"):
+        description = "Electron Trigger SFs"):
 
     # define correction meta data
     corr = {}
@@ -53,13 +53,13 @@ def get_inputs():
         "type": "string", 
         "description": "sf, e.g. central/up/down"})
     inputs.append({
-        "name": "eta",
-        "type": "real",
-        "description": "Electron eta value"})
-    inputs.append({
         "name": "pt",
         "type": "real",
         "description": "Electron pT value"})
+    inputs.append({
+        "name": "eta",
+        "type": "real",
+        "description": "Electron eta value"})
     return inputs
 
 def get_data(inFiles, wps = ["central", "up", "down"]):
@@ -109,7 +109,7 @@ def get_eta_pt_bins(inFile, wp):
     
     data = {}
     data["nodetype"] = "multibinning"
-    data["inputs"] = ["eta", "pt"]
+    data["inputs"] = ["pt", "eta"]
     data["flow"] = "clamp"
 
     etaEdges = []
@@ -134,7 +134,7 @@ def get_eta_pt_bins(inFile, wp):
     
         
 import optparse 
-parser = optparse.OptionParser(usage = "give rootfiles with efficiency maps as arguments")
+parser = optparse.OptionParser(usage = "give rootfile as argument")
 parser.add_option("-o", dest = "output", help = "output file")
 (opts, args) = parser.parse_args()
 
@@ -147,7 +147,7 @@ data = get_meta_data()
 
 correction_data = get_correction_meta_data(
     name        = "EleTriggerSF",
-    description = "Electron Trigger SFs for UL18")
+    description = "Electron Trigger SFs")
 correction_data["inputs"] = get_inputs()
 correction_data["data"] = get_data(inFiles, wps)
 data["corrections"].append(correction_data)

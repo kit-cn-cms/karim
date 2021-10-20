@@ -5,9 +5,9 @@ from array import array
 import os
 filepath = os.path.abspath(__file__)
 karimpath = os.path.dirname(os.path.dirname(filepath))
-year = "18"
+# year = "18"
 # year = "17"
-sfDir = os.path.join(karimpath, "data", "UL_"+year)
+# sfDir = os.path.join(karimpath, "data", "UL_"+year)
 
 from correctionlib import _core
 
@@ -128,7 +128,19 @@ def set_branches(wrapper, jec):
     
     # cross section weight
     wrapper.SetFloatVar("xsNorm")
- 
+
+    # run dependencies for 2017
+    wrapper.SetFloatVar("lumifrac_2017B")
+    wrapper.SetFloatVar("lumifrac_2017C")
+    wrapper.SetFloatVar("lumifrac_2017D")
+    wrapper.SetFloatVar("lumifrac_2017E")
+    wrapper.SetFloatVar("lumifrac_2017F")
+    wrapper.SetFloatVar("lumi_2017B")
+    wrapper.SetFloatVar("lumi_2017C")
+    wrapper.SetFloatVar("lumi_2017D")
+    wrapper.SetFloatVar("lumi_2017E")
+    wrapper.SetFloatVar("lumi_2017F")
+
 
 
 # def calculate_variables(event, wrapper, sample, jec = None, genWeights = None):
@@ -262,5 +274,24 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
 
     # cross section norm
     wrapper.branchArrays["xsNorm"][0] = genWeights.getXS("incl")
+
+    if dataEra == "2017":
+        total_lumi_UL2017 = 41.48
+        lumifrac_2017B    = 0.116
+        lumifrac_2017C    = 0.233
+        lumifrac_2017D    = 0.102
+        lumifrac_2017E    = 0.223
+        lumifrac_2017F    = 0.326
+
+        wrapper.branchArrays["lumifrac_2017B"][0] = lumifrac_2017B
+        wrapper.branchArrays["lumifrac_2017C"][0] = lumifrac_2017C
+        wrapper.branchArrays["lumifrac_2017D"][0] = lumifrac_2017D
+        wrapper.branchArrays["lumifrac_2017E"][0] = lumifrac_2017E
+        wrapper.branchArrays["lumifrac_2017F"][0] = lumifrac_2017F
+        wrapper.branchArrays["lumi_2017B"][0]     = lumifrac_2017B * total_lumi_UL2017
+        wrapper.branchArrays["lumi_2017C"][0]     = lumifrac_2017C * total_lumi_UL2017
+        wrapper.branchArrays["lumi_2017D"][0]     = lumifrac_2017D * total_lumi_UL2017
+        wrapper.branchArrays["lumi_2017E"][0]     = lumifrac_2017E * total_lumi_UL2017
+        wrapper.branchArrays["lumi_2017F"][0]     = lumifrac_2017F * total_lumi_UL2017
 
     return event
