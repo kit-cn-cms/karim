@@ -141,9 +141,9 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     wrapper.branchArrays["fixedWPSF"+suffix][0] = P_DATA/P_MC
     if jec == "nom":
         for sys in SFl_sys:
-            wrapper.branchArrays["fixedWPSFb_"+sys+"_rel"][0] = Pl_DATA[sys]/P_DATA
+            wrapper.branchArrays["fixedWPSFl_"+sys+"_rel"][0] = Pl_DATA[sys]/P_DATA
         for sys in SFb_sys:
-            wrapper.branchArrays["fixedWPSFl_"+sys+"_rel"][0] = Pb_DATA[sys]/P_DATA
+            wrapper.branchArrays["fixedWPSFb_"+sys+"_rel"][0] = Pb_DATA[sys]/P_DATA
 
     return event
 
