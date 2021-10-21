@@ -110,7 +110,7 @@ def get_flav_data(allInFiles, flav):
     data["value"] = get_eta_pt_bins(inFile)
     return data
     
-name = "efficiencies(L|M|T)_(l|c|b)__mc__nom"
+name = "efficiencies(L|M|T)_(l|c|b)__(MC|mc)__nom"
 def get_key(f):
     key = None
     for k in list(f.GetListOfKeys()):

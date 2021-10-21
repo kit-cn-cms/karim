@@ -89,10 +89,17 @@ def testFile(path):
     test if rootfile is corrupted
     '''
     rf = ROOT.TFile.Open(path)
-    if rf is None or len(rf.GetListOfKeys())==0 or rf.TestBit(ROOT.TFile.kZombie):
+    if rf is None:
+        return False
+    elif not rf:
         return False
     elif rf.TestBit(ROOT.TFile.kRecovered):
         return False
+    elif rf.TestBit(ROOT.TFile.kZombie):
+        return False
+    elif len(rf.GetListOfKeys())==0:
+        return False
+
     else:
         tree = rf.Get("Events")
         if tree is None:
