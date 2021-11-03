@@ -5,19 +5,22 @@ from array import array
 import os
 filepath = os.path.abspath(__file__)
 karimpath = os.path.dirname(os.path.dirname(filepath))
-year = "18"
-sfDir = os.path.join(karimpath, "data", "UL_"+year)
 
 from correctionlib import _core
+jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration", "POG")
+puName = {
+    "2016preVFP":   "Collisions16_UltraLegacy_goldenJSON",
+    "2016postVFP":  "Collisions16_UltraLegacy_goldenJSON",
+    "2017":         "Collisions17_UltraLegacy_goldenJSON",
+    "2018":         "Collisions18_UltraLegacy_goldenJSON",
+    }
 
 puSF = {}
 for year in ["2016preVFP", "2016postVFP", "2017", "2018"]:
-    # get sf dir
-    sfDir = os.path.join(karimpath, "data", "UL_"+year[2:])
-
     # initialize pileup SFs
-    pu_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "pileup.json"))
-    puSF[year] = pu_evaluator["pileup"]
+    pu_evaluator = _core.CorrectionSet.from_file(
+        os.path.join(jsonDir, "LUM", year+"_UL", "puWeights.json.gz"))
+    puSF[year] = pu_evaluator[puName[year]]
 
 def get_additional_variables():
     '''
@@ -108,25 +111,25 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         wrapper.branchArrays["fsrDownRel"][0] = getattr(event, "Weight_fsrDown")
     except: pass
 
-    pu = puSF[year].evaluate("central", float(event.nTruePU))
+    pu = puSF[year].evaluate(float(event.nTruePU), "nominal")
     wrapper.branchArrays["pileup"][0] = pu
-    wrapper.branchArrays["pileup_up_rel"][0] = puSF[dataEra].evaluate("up", float(event.nTruePU))/pu
-    wrapper.branchArrays["pileup_down_rel"][0] = puSF[dataEra].evaluate("down", float(event.nTruePU))/pu
+    wrapper.branchArrays["pileup_up_rel"][0] = puSF[dataEra].evaluate(float(event.nTruePU), "up")/pu
+    wrapper.branchArrays["pileup_down_rel"][0] = puSF[dataEra].evaluate(float(event.nTruePU), "down")/pu
 
 
     # simple pdf weight
-    if sample.startswith("TTbb") or sample.startswith("TTTo"):
-        nom_pdf = event.Weight_pdf[0]
-        residuals = np.array([nom_pdf - event.Weight_pdf[i+1] for i in range(len(event.Weight_pdf)-1)])
-        if sample.startswith("TTbb"):
-            variation = (np.mean(residuals**2, axis = 0))**0.5
-        elif sample.startswith("TTTo"):
-            variation = (residuals)**2
-            variation = (variation.sum(axis=0))**0.5
-        wrapper.branchArrays["pdf_up"][0]       =  nom_pdf+variation
-        wrapper.branchArrays["pdf_up_rel"][0]   = (nom_pdf+variation)/nom_pdf
-        wrapper.branchArrays["pdf_down"][0]     =  nom_pdf-variation
-        wrapper.branchArrays["pdf_down_rel"][0] = (nom_pdf-variation)/nom_pdf
+    # TODO update 
+    nom_pdf = event.Weight_pdf[0]
+    residuals = np.array([nom_pdf - event.Weight_pdf[i+1] for i in range(len(event.Weight_pdf)-1)])
+    if sample.startswith("TTbb"):
+        variation = (np.mean(residuals**2, axis = 0))**0.5
+    else:
+        variation = (residuals)**2
+        variation = (variation.sum(axis=0))**0.5
+    wrapper.branchArrays["pdf_up"][0]       =  nom_pdf+variation
+    wrapper.branchArrays["pdf_up_rel"][0]   = (nom_pdf+variation)/nom_pdf
+    wrapper.branchArrays["pdf_down"][0]     =  nom_pdf-variation
+    wrapper.branchArrays["pdf_down_rel"][0] = (nom_pdf-variation)/nom_pdf
 
         
     
