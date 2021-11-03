@@ -10,10 +10,10 @@ from correctionlib import _core
 jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration", "POG")
 
 muTrigName = {
-    "2016preVFP":   "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt",
-    "2016postVFP":  "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt",
-    "2017":         "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt",
-    "2018":         "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt",
+    "2016preVFP":   "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight",
+    "2016postVFP":  "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight",
+    "2017":         "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight",
+    "2018":         "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",
     }
 
 data = {}
@@ -145,24 +145,24 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     wrapper.branchArrays["elRecoSF"][0] = elRecoSF
 
     # relative SFs only when exactly one electron is present
-    if event.nEle == 1 and event.nMu == 0:
+    if event.nEle == 1 and event.nLooseLep == 1:
         wrapper.branchArrays["elTrigSF_up_rel"][0]   = elTrigSF_up/elTrigSF
         wrapper.branchArrays["elTrigSF_down_rel"][0] = elTrigSF_down/elTrigSF
 
-        wrapper.branchArrays["elIDSF_up"][0]     = elIDSF_up/elIDSF
-        wrapper.branchArrays["elIDSF_down"][0]   = elIDSF_down/elIDSF
+        wrapper.branchArrays["elIDSF_up_rel"][0]     = elIDSF_up/elIDSF
+        wrapper.branchArrays["elIDSF_down_rel"][0]   = elIDSF_down/elIDSF
             
-        wrapper.branchArrays["elRecoSF_up"][0]   = elRecoSF_up/elRecoSF
-        wrapper.branchArrays["elRecoSF_down"][0] = elRecoSF_down/elRecoSF
+        wrapper.branchArrays["elRecoSF_up_rel"][0]   = elRecoSF_up/elRecoSF
+        wrapper.branchArrays["elRecoSF_down_rel"][0] = elRecoSF_down/elRecoSF
     else:
         wrapper.branchArrays["elTrigSF_up_rel"][0]   = 1.
         wrapper.branchArrays["elTrigSF_down_rel"][0] = 1.
 
-        wrapper.branchArrays["elIDSF_up"][0]     = 1.
-        wrapper.branchArrays["elIDSF_down"][0]   = 1.
+        wrapper.branchArrays["elIDSF_up_rel"][0]     = 1.
+        wrapper.branchArrays["elIDSF_down_rel"][0]   = 1.
             
-        wrapper.branchArrays["elRecoSF_up"][0]   = 1.
-        wrapper.branchArrays["elRecoSF_down"][0] = 1.
+        wrapper.branchArrays["elRecoSF_up_rel"][0]   = 1.
+        wrapper.branchArrays["elRecoSF_down_rel"][0] = 1.
             
     # muon scale factors
     muTrigSF = 1.
@@ -202,7 +202,7 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
         muIsoSF       *= isosf
 
         muIDSF_up     *= (idsf + idsfErr)
-        muIDSF_down   *= (idsf - ifsfErr)
+        muIDSF_down   *= (idsf - idsfErr)
 
         muIsoSF_up    *= (isosf + isosfErr)
         muIsoSF_down  *= (isosf - isosfErr)
@@ -219,34 +219,25 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     wrapper.branchArrays["muIDSF"][0]   = muIDSF
     wrapper.branchArrays["muIsoSF"][0]  = muIsoSF
 
-    wrapper.branchArrays["muTrigSF_up"][0]   = muTrigSF_up
-    wrapper.branchArrays["muTrigSF_down"][0] = muTrigSF_down
-        
-    wrapper.branchArrays["muIDSF_up"][0]     = muIDSF_up
-    wrapper.branchArrays["muIDSF_down"][0]   = muIDSF_down
-       
-    wrapper.branchArrays["muIsoSF_up"][0]    = muIsoSF_up
-    wrapper.branchArrays["muIsoSF_down"][0]  = muIsoSF_down
-
     # relative SFs only when exactly one muon is present
-    if event.nMu == 1 and event.nEle == 0:
+    if event.nMu == 1 and event.nLooseLep == 1:
         wrapper.branchArrays["muTrigSF_up_rel"][0]   = muTrigSF_up/muTrigSF
         wrapper.branchArrays["muTrigSF_down_rel"][0] = muTrigSF_down/muTrigSF
             
-        wrapper.branchArrays["muIDSF_up"][0]     = muIDSF_up/muIDSF
-        wrapper.branchArrays["muIDSF_down"][0]   = muIDSF_down/muIDSF
+        wrapper.branchArrays["muIDSF_up_rel"][0]     = muIDSF_up/muIDSF
+        wrapper.branchArrays["muIDSF_down_rel"][0]   = muIDSF_down/muIDSF
            
-        wrapper.branchArrays["muIsoSF_up"][0]    = muIsoSF_up/muIsoSF
-        wrapper.branchArrays["muIsoSF_down"][0]  = muIsoSF_down/muIsoSF
+        wrapper.branchArrays["muIsoSF_up_rel"][0]    = muIsoSF_up/muIsoSF
+        wrapper.branchArrays["muIsoSF_down_rel"][0]  = muIsoSF_down/muIsoSF
     else:
         wrapper.branchArrays["muTrigSF_up_rel"][0]   = 1.
         wrapper.branchArrays["muTrigSF_down_rel"][0] = 1.
 
-        wrapper.branchArrays["muIDSF_up"][0]     = 1.
-        wrapper.branchArrays["muIDSF_down"][0]   = 1.
+        wrapper.branchArrays["muIDSF_up_rel"][0]     = 1.
+        wrapper.branchArrays["muIDSF_down_rel"][0]   = 1.
            
-        wrapper.branchArrays["muIsoSF_up"][0]    = 1.
-        wrapper.branchArrays["muIsoSF_down"][0]  = 1.
+        wrapper.branchArrays["muIsoSF_up_rel"][0]    = 1.
+        wrapper.branchArrays["muIsoSF_down_rel"][0]  = 1.
 
     return event
 
