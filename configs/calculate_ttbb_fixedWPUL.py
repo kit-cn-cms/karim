@@ -8,30 +8,27 @@ from correctionlib import _core
 
 filepath = os.path.abspath(__file__)
 karimpath = os.path.dirname(os.path.dirname(filepath))
+
 year = "18"
 yearL = "2018"
 sfDir = os.path.join(karimpath, "data", "UL_"+year)
 sfDirLeg = os.path.join(karimpath, "data", "legacy_"+yearL)
 
+
 btagSF = {}
-mistagSF = {}
 btagEff = {}
 for year in ["2017", "2018"]:
     sfDir = os.path.join(karimpath, "data", "UL_"+year[2:])
-    
-    btagSFjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btaggingSF_deepJet.json"))
-    btagSF[year] = btagSFjson["comb"]
-    mistagSF[year] = btagSFjson["incl"]
+ 
+    btagSFjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "bjets.json"))
+    btagSF[year]   = btagSFjson["deepJet_106XUL"+year[2:]+"SF_wp"]   
 
     btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_ttbb_deepJet.json"))
     btagEff[year] = btagEffjson["btagEff"]
 
-styles = ["TM"]
-#styles = ["M"]
-workingPoints = list(set([wp for style in styles for wp in style]))
+SFb_sys = ["up","down"]
+SFl_sys = ["up","down"]
 
-taggingUncertainties = ["up", "down"]
-mistagUncertainties = ["up", "down"]
 def get_additional_variables():
     '''
     get names of additional variables which are already defined in ntuples
@@ -47,16 +44,18 @@ def base_selection(event):
 def set_branches(wrapper, jec):
     suffix = "_"+jec
 
-    # b tagging
-    for style in styles:
-        wrapper.SetFloatVar("btagSF_"+style+suffix)
-        if jec == "nom":
-            for tagUnc in taggingUncertainties:
-                wrapper.SetFloatVar("btagSF_"+style+"_tag_"+tagUnc+"_rel"+suffix)
-            for mistagUnc in mistagUncertainties:
-                wrapper.SetFloatVar("btagSF_"+style+"_mistag_"+mistagUnc+"_rel"+suffix)
+    if jec == "nom":
+        for sys in SFb_sys:
+            wrapper.SetFloatVar("fixedWPSFb_TM_"+sys+"_rel")
+        for sys in SFl_sys:
+            wrapper.SetFloatVar("fixedWPSFl_TM_"+sys+"_rel")
 
+    wrapper.SetFloatVar("fixedWPSF_TM"+suffix)
 
+# translate WPs into BTV internal name
+wpDict = {"L": 0, "M": 1, "T": 2}
+# translate flavor in to BTV internal name
+flavDict = {5: 0, 4: 1, 0: 2}
 def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights = None):
     '''
     calculate weights
@@ -64,113 +63,96 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
 
     suffix = "_"+jec
 
-    sf = {}
+    P_MC_TM   = 1.
+    P_DATA_TM = 1.
     if jec == "nom":
-        sf_tagunc = {}
-        for tagUnc in taggingUncertainties:
-            sf_tagunc[tagUnc] = {}
-        sf_mistagunc = {}
-        for mistagUnc in mistagUncertainties:
-            sf_mistagunc[mistagUnc] = {}
-    for style in styles:
-        sf[style] = [1., 1.]
-        if jec == "nom":
-            for tagUnc in taggingUncertainties:
-                sf_tagunc[tagUnc][style] = 1.
-            for mistagUnc in mistagUncertainties:
-                sf_mistagunc[mistagUnc][style] = 1.
+        Pb_DATA_TM = {}
+        Pl_DATA_TM = {}
+        for sys in SFb_sys:
+            Pb_DATA_TM[sys] = 1.
+        for sys in SFl_sys:
+            Pl_DATA_TM[sys] = 1.
+
+        sfb_M = {}
+        sfb_T = {}
+        sfl_M = {}
+        sfl_T = {}
 
     for idx in range(getattr(event, "nJets"+suffix)):
-        eta = abs(getattr(event, "Jet_Eta"+suffix)[idx])
-        pt  = getattr(event, "Jet_Pt"+suffix)[idx]
-        passes = {}
-        for wp in workingPoints:
-            passes[wp] = getattr(event, "Jet_tagged"+wp+suffix)[idx]
-        flav  = getattr(event, "Jet_Flav"+suffix)[idx]
+        eta   = abs(getattr(event, "Jet_Eta"+suffix)[idx])
+        pt    = getattr(event, "Jet_Pt"+suffix)[idx]
+        ogflav = getattr(event, "Jet_Flav"+suffix)[idx]
+        flav  = flavDict[ogflav]
+        passes_M = getattr(event, "Jet_taggedM"+suffix)[idx]
+        passes_T = getattr(event, "Jet_taggedT"+suffix)[idx]
 
-        jetsfs = {}
-        effs = {}
-        jetuncs = {}
-        if flav == 0:
+        eff_M = btagEff[dataEra].evaluate("M", ogflav, eta, pt)
+        eff_T = btagEff[dataEra].evaluate("T", ogflav, eta, pt)
+
+        if flav == 2:
+            sf_M = btagSF[dataEra].evaluate("central", "incl", 1, flav, eta, pt)
+            sf_T = btagSF[dataEra].evaluate("central", "incl", 2, flav, eta, pt)
             if jec == "nom":
-                for mistagUnc in mistagUncertainties:
-                    jetuncs[mistagUnc] = {}
-
-            for wp in workingPoints:
-                effs[wp] = btagEff[dataEra].evaluate(wp, flav, eta, pt)
-                jetsfs[wp]  = mistagSF[dataEra].evaluate(wp, "central", flav, eta, pt)
-                if jec == "nom":
-                    for unc in jetuncs:
-                        jetuncs[unc][wp] = mistagSF[dataEra].evaluate(wp, unc, flav, eta, pt)
+                for sys in SFl_sys:
+                    sfl_M[sys] = btagSF[dataEra].evaluate(sys, "incl", 1, flav, eta, pt)
+                    sfl_T[sys] = btagSF[dataEra].evaluate(sys, "incl", 2, flav, eta, pt)
         else:
+            sf_M = btagSF[dataEra].evaluate("central", "comb", 1, flav, eta, pt)
+            sf_T = btagSF[dataEra].evaluate("central", "comb", 2, flav, eta, pt)
             if jec == "nom":
-                for tagUnc in taggingUncertainties:
-                    jetuncs[tagUnc] = {}
+                for sys in SFb_sys:
+                    sfb_M[sys] = btagSF[dataEra].evaluate(sys, "comb", 1, flav, eta, pt)
+                    sfb_T[sys] = btagSF[dataEra].evaluate(sys, "comb", 2, flav, eta, pt)
 
-            for wp in workingPoints:
-                effs[wp] = btagEff[dataEra].evaluate(wp, flav, eta, pt)
-                jetsfs[wp]  = btagSF[dataEra].evaluate(wp, "central", flav, eta, pt)
-                if jec == "nom":
-                    for unc in jetuncs:
-                        jetuncs[unc][wp] = btagSF[dataEra].evaluate(wp, unc, flav, eta, pt)
+        if passes_T:
+            P_MC_TM   *= eff_T
+            P_DATA_TM *= eff_T*sf_T
+            if jec == "nom":
+                if flav == 2:
+                    for sys in SFl_sys:
+                        Pl_DATA_TM[sys] *= eff_T*sfl_T[sys]
+                    for sys in SFb_sys:
+                        Pb_DATA_TM[sys] *= eff_T*sf_T
+                else:
+                    for sys in SFb_sys:
+                        Pb_DATA_TM[sys] *= eff_T*sfb_T[sys]
+                    for sys in SFl_sys:
+                        Pl_DATA_TM[sys] *= eff_T*sf_T
+        elif passes_M:
+            P_MC_TM   *= (eff_M      - eff_T)
+            P_DATA_TM *= (eff_M*sf_M - eff_T*sf_T)
+            if jec == "nom":
+                if flav == 2:
+                    for sys in SFl_sys:
+                        Pl_DATA_TM[sys] *= (eff_M*sfl_M[sys] - eff_T*sfl_T[sys])
+                    for sys in SFb_sys:
+                        Pb_DATA_TM[sys] *= (eff_M*sf_M - eff_T*sf_T)
+                else:
+                    for sys in SFb_sys:
+                        Pb_DATA_TM[sys] *= (eff_M*sfb_M[sys] - eff_T*sfb_T[sys])
+                    for sys in SFl_sys:
+                        Pl_DATA_TM[sys] *= (eff_M*sf_M - eff_T*sf_T)
+        else:
+            P_MC_TM   *= (1. - eff_M)
+            P_DATA_TM *= (1. - eff_M*sf_M)  
+            if jec == "nom":
+                if flav == 2:
+                    for sys in SFl_sys:
+                        Pl_DATA_TM[sys] *= (1. - eff_M*sfl_M[sys])
+                    for sys in SFb_sys:
+                        Pb_DATA_TM[sys] *= (1. - eff_M*sf_M)
+                else:
+                    for sys in SFb_sys:
+                        Pb_DATA_TM[sys] *= (1. - eff_M*sfb_M[sys])
+                    for sys in SFl_sys:
+                        Pl_DATA_TM[sys] *= (1. - eff_M*sf_M)
 
-        for s in styles:
-            if passes[s[0]]:
-                sf[s][0] *= effs[s[0]]*jetsfs[s[0]]
-                sf[s][1] *= effs[s[0]]
-                if jec == "nom":
-                    for unc in jetuncs:
-                        if flav == 0:
-                            sf_mistagunc[unc][s]*= effs[s[0]]*jetuncs[unc][s[0]]
-                            sf_tagunc[unc][s]*= effs[s[0]]*jetsfs[s[0]]
-                        else:
-                            sf_tagunc[unc][s]*= effs[s[0]]*jetuncs[unc][s[0]]
-                            sf_mistagunc[unc][s]*= effs[s[0]]*jetsfs[s[0]]
-            elif not passes[s[-1]]:
-                sf[s][0] *= (1.-effs[s[-1]]*jetsfs[s[-1]])
-                sf[s][1] *= (1.-effs[s[-1]])
-                if jec == "nom":
-                    for unc in jetuncs:
-                        if flav == 0:
-                            sf_mistagunc[unc][s]*= (1.-effs[s[-1]]*jetuncs[unc][s[-1]])
-                            sf_tagunc[unc][s]*= (1.-effs[s[-1]]*jetsfs[s[-1]])
-                        else:
-                            sf_tagunc[unc][s]*= (1.-effs[s[-1]]*jetuncs[unc][s[-1]])
-                            sf_mistagunc[unc][s]*= (1.-effs[s[-1]]*jetsfs[s[-1]])
-            elif passes[s[1]]:
-                sf[s][0] *= (effs[s[1]]*jetsfs[s[1]] - effs[s[0]]*jetsfs[s[0]])
-                sf[s][1] *= (effs[s[1]] - effs[s[0]])
-                if jec == "nom":
-                    for unc in jetuncs:
-                        if flav == 0:
-                            sf_mistagunc[unc][s]*= (effs[s[1]]*jetuncs[unc][s[1]] - effs[s[0]]*jetuncs[unc][s[0]])
-                            sf_tagunc[unc][s]*= (effs[s[1]]*jetsfs[s[1]] - effs[s[0]]*jetsfs[s[0]])
-                        else:
-                            sf_tagunc[unc][s]*= (effs[s[1]]*jetuncs[unc][s[1]] - effs[s[0]]*jetuncs[unc][s[0]])
-                            sf_mistagunc[unc][s]*= (effs[s[1]]*jetsfs[s[1]] - effs[s[0]]*jetsfs[s[0]])
-            elif passes[s[2]]:
-                sf[s][0] *= (effs[s[2]]*jetsfs[s[2]] - effs[s[1]]*jetsfs[s[1]])
-                sf[s][1] *= (effs[s[2]] - effs[s[1]])
-                if jec == "nom":
-                    for unc in jetuncs:
-                        if flav == 0:
-                            sf_mistagunc[unc][s]*= (effs[s[2]]*jetuncs[unc][s[2]] - effs[s[1]]*jetuncs[unc][s[1]])
-                            sf_tagunc[unc][s]*= (effs[s[2]]*jetsfs[s[2]] - effs[s[1]]*jetsfs[s[1]])
-                        else:
-                            sf_tagunc[unc][s]*= (effs[s[2]]*jetuncs[unc][s[2]] - effs[s[1]]*jetuncs[unc][s[1]])
-                            sf_mistagunc[unc][s]*= (effs[s[2]]*jetsfs[s[2]] - effs[s[1]]*jetsfs[s[1]])
-            else:
-                print("ERROR")
-                exit()
 
-    
-    for style in styles:
-        wrapper.branchArrays["btagSF_"+style+suffix][0] = sf[style][0]/sf[style][1]
-        if jec == "nom":
-            for tagUnc in taggingUncertainties:
-                wrapper.branchArrays["btagSF_"+style+"_tag_"+tagUnc+"_rel"+suffix][0] = sf_tagunc[tagUnc][style] / sf[style][0]
-            for mistagUnc in mistagUncertainties:
-                wrapper.branchArrays["btagSF_"+style+"_mistag_"+mistagUnc+"_rel"+suffix][0] = sf_mistagunc[mistagUnc][style] / sf[style][0]
-
+    wrapper.branchArrays["fixedWPSF_TM"+suffix][0] = P_DATA_TM/P_MC_TM
+    if jec == "nom":
+        for sys in SFl_sys:
+            wrapper.branchArrays["fixedWPSFb_TM_"+sys+"_rel"][0] = Pl_DATA_TM[sys]/P_DATA_TM
+        for sys in SFb_sys:
+            wrapper.branchArrays["fixedWPSFl_TM_"+sys+"_rel"][0] = Pb_DATA_TM[sys]/P_DATA_TM
     return event
 
