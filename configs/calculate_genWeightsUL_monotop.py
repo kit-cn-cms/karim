@@ -1,3 +1,6 @@
+
+
+
 import numpy as np
 import common
 import weightModules
@@ -7,25 +10,20 @@ filepath = os.path.abspath(__file__)
 karimpath = os.path.dirname(os.path.dirname(filepath))
 
 from correctionlib import _core
+jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration", "POG")
+puName = {
+    "2016preVFP":   "Collisions16_UltraLegacy_goldenJSON",
+    "2016postVFP":  "Collisions16_UltraLegacy_goldenJSON",
+    "2017":         "Collisions17_UltraLegacy_goldenJSON",
+    "2018":         "Collisions18_UltraLegacy_goldenJSON",
+    }
 
-# initialize old pileup SFs
-# pileupSFs = weightModules.PileupSFs(os.path.join(sfDir, "pileup.csv"))
-
-data = {}
-for year in ["2018", "2017", "2016preVFP", "2016postVFP"]:
-    # short year
-    yearS = year[2:]
-
-    # dict
-    data[year] = {}
-
-    # sf directory
-    sfDir = os.path.join(karimpath, "data", "UL_"+yearS)
-
-    # PU
-    pu_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "pileup.json"))
-    data[year]["PU"] = pu_evaluator["pileup"]
-
+puSF = {}
+for year in ["2016preVFP", "2016postVFP", "2017", "2018"]:
+    # initialize pileup SFs
+    pu_evaluator = _core.CorrectionSet.from_file(
+        os.path.join(jsonDir, "LUM", year+"_UL", "puWeights.json.gz"))
+    puSF[year] = pu_evaluator[puName[year]]
 
 def get_additional_variables():
     '''
@@ -40,9 +38,11 @@ def base_selection(event):
     return True
 
 def set_branches(wrapper, jec = None):
+
     wrapper.SetIntVar("Evt_ID")   
     wrapper.SetIntVar("Evt_Run")   
     wrapper.SetIntVar("Evt_Lumi")   
+  
 
     # cross section weight
     wrapper.SetFloatVar("xsNorm")
@@ -70,11 +70,10 @@ def set_branches(wrapper, jec = None):
     wrapper.SetFloatVar("pileup_up_rel")
     wrapper.SetFloatVar("pileup_down_rel")
 
-    wrapper.SetFloatVar("old_pileup")
-    wrapper.SetFloatVar("old_pileup_up_rel")
-    wrapper.SetFloatVar("old_pileup_down_rel")
-    
-    
+    wrapper.SetFloatVar("pdf_up")
+    wrapper.SetFloatVar("pdf_up_rel")
+    wrapper.SetFloatVar("pdf_down")
+    wrapper.SetFloatVar("pdf_down_rel")
 
 def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights = None):
     '''
@@ -85,7 +84,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     wrapper.branchArrays["Evt_ID"][0] = getattr(event, "Evt_ID")
     wrapper.branchArrays["Evt_Run"][0]   = getattr(event, "Evt_Run")
     wrapper.branchArrays["Evt_Lumi"][0]  = getattr(event, "Evt_Lumi")
-
+    
     # cross section norm
     wrapper.branchArrays["xsNorm"][0] = genWeights.getXS("incl")
 
@@ -116,14 +115,27 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         wrapper.branchArrays["fsrDownRel"][0] = getattr(event, "Weight_fsrDown")
     except: pass
 
-    # puSF_old = pileupSFs.getSF(getattr(event, "nTruePU"), "central")
-    # wrapper.branchArrays["old_pileup"][0] = puSF_old
-    # wrapper.branchArrays["old_pileup_up_rel"][0] = pileupSFs.getSF(getattr(event, "nTruePU"), "up")/puSF_old
-    # wrapper.branchArrays["old_pileup_down_rel"][0] = pileupSFs.getSF(getattr(event, "nTruePU"), "down")/puSF_old
+    pu = puSF[year].evaluate(float(event.nTruePU), "nominal")
+    wrapper.branchArrays["pileup"][0] = pu
+    wrapper.branchArrays["pileup_up_rel"][0] = puSF[dataEra].evaluate(float(event.nTruePU), "up")/pu
+    wrapper.branchArrays["pileup_down_rel"][0] = puSF[dataEra].evaluate(float(event.nTruePU), "down")/pu
 
-    puSF = data[dataEra]["PU"].evaluate("central", float(event.nTruePU))
-    wrapper.branchArrays["pileup"][0] = puSF
-    wrapper.branchArrays["pileup_up_rel"][0] = data[dataEra]["PU"].evaluate("up", float(event.nTruePU))/puSF
-    wrapper.branchArrays["pileup_down_rel"][0] = data[dataEra]["PU"].evaluate("down", float(event.nTruePU))/puSF
+
+    # simple pdf weight
+    # TODO update 
+    # nom_pdf = event.Weight_pdf[0]
+    # residuals = np.array([nom_pdf - event.Weight_pdf[i+1] for i in range(len(event.Weight_pdf)-1)])
+    # if sample.startswith("TTbb"):
+    #     variation = (np.mean(residuals**2, axis = 0))**0.5
+    # else:
+    #     variation = (residuals)**2
+    #     variation = (variation.sum(axis=0))**0.5
+    # wrapper.branchArrays["pdf_up"][0]       =  nom_pdf+variation
+    # wrapper.branchArrays["pdf_up_rel"][0]   = (nom_pdf+variation)/nom_pdf
+    # wrapper.branchArrays["pdf_down"][0]     =  nom_pdf-variation
+    # wrapper.branchArrays["pdf_down_rel"][0] = (nom_pdf-variation)/nom_pdf
+
+        
+    
     return event
 
