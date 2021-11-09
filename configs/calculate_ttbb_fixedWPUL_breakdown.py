@@ -4,6 +4,7 @@ import weightModules
 from array import array
 import os
 from correctionlib import _core
+jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration", "POG")
 
 filepath = os.path.abspath(__file__)
 karimpath = os.path.dirname(os.path.dirname(filepath))
@@ -11,13 +12,15 @@ karimpath = os.path.dirname(os.path.dirname(filepath))
 btagSF = {}
 btagEff = {}
 for year in ["2017", "2018"]:
+    # efficiencies
     sfDir = os.path.join(karimpath, "data", "UL_"+year[2:])
- 
-    btagSFjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagging_wp.json"))
-    btagSF[year]   = btagSFjson["deepJet_wp"]   
-
     btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_ttbb_deepJet.json"))
     btagEff[year] = btagEffjson["btagEff"]
+
+    # scale factors
+    btagSFjson = _core.CorrectionSet.from_file(
+        os.path.join(jsonDir, "BTV", year+"_UL", "btagging.json.gz"))
+    btagSF[year]   = btagSFjson["deepJet_wp"]
 
 sys_bd = ["isr", "fsr", "hdamp", "jes", "jer", "pileup", "qcdscale", "statistic", "topmass", "type3"]
 SFb_sys = ["up_"+sys for sys in sys_bd]+["down_"+sys for sys in sys_bd]

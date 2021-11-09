@@ -5,39 +5,36 @@ from array import array
 import os
 import sys
 from correctionlib import _core
+jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration", "POG")
 
 filepath = os.path.abspath(__file__)
 karimpath = os.path.dirname(os.path.dirname(filepath))
 
-year = "18"
-yearL = "2018"
-sfDir = os.path.join(karimpath, "data", "UL_"+year)
-sfDirLeg = os.path.join(karimpath, "data", "legacy_"+yearL)
 
-
-
-btagSF = {}
-mistagSF = {}
-btagEff = {}
+itFit = {}
 for year in ["2017", "2018"]:
-    sfDir = os.path.join(karimpath, "data", "UL_"+year[2:])
-    
-    itFitSFjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btaggingSF_deepJet_iterativeFit.json"))
-    itFit = itFitSFjson["iterativeFit"]
+    btagSFjson = _core.CorrectionSet.from_file(
+        os.path.join(jsonDir, "BTV", year+"_UL", "btagging.json.gz"))
+    itFit[year] = btagSFjson["deepJet_shape"]
+
 
 # itFit
-uncs = [
+uncs_b = [
     "hfstats2",
     "hfstats1",
     "lfstats2",
     "lfstats1",
-    "cferr2",
-    "cferr1",
     "hf",
     "lf"
     ]
-btagSF_uncs = ["up_"+u   for u in uncs] + \
-              ["down_"+u for u in uncs]
+uncs_c = [
+    "cferr2",
+    "cferr1",
+    ]
+bSF_uncs = ["up_"+u   for u in uncs_b] + \
+          ["down_"+u for u in uncs_b]
+cSF_uncs = ["up_"+u   for u in uncs_c] + \
+          ["down_"+u for u in uncs_c]
 
 def get_additional_variables():
     '''
@@ -56,7 +53,7 @@ def set_branches(wrapper, jec):
 
     wrapper.SetFloatVar("itFitSF"+suffix)
     if jec == "nom":
-        for u in btagSF_uncs:
+        for u in bSF_uncs+cSF_uncs:
             wrapper.SetFloatVar("itFitSF_{}_rel".format(u))
 
 def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights = None):
@@ -73,43 +70,40 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
 
     sf = 1.
     sf_uncs = {}
-    for u in btagSF_uncs:
+    for u in bSF_uncs+cSF_uncs:
         sf_uncs[u] = 1.
 
     for idx in range(getattr(event, "nJets"+suffix)):
         flav = getattr(event, "Jet_Flav"+suffix)[idx]
 
-        if not (flav == 4):
-            nom = itFit.evaluate("central", flav,
-                abs(getattr(event, "Jet_Eta"+suffix)[idx]),
-                getattr(event, "Jet_Pt"+suffix)[idx],
-                getattr(event, "Jet_btagValue"+suffix)[idx])
-            sf *= nom
-        else:
-            nom = 1.
+        nom = itFit[dataEra].evaluate("central", flav,
+            abs(getattr(event, "Jet_Eta"+suffix)[idx]),
+            getattr(event, "Jet_Pt"+suffix)[idx],
+            getattr(event, "Jet_btagValue"+suffix)[idx])
+        sf *= nom
 
         if jec == "nom":
             # scale factor uncertainties
-            for u in btagSF_uncs:
-                # cferr only exists for c-jets
-                if (flav == 4):
-                    if "cferr" in u:
-                        sf_uncs[u] *= itFit.evaluate(u, 4,
-                            abs(getattr(event, "Jet_Eta"+suffix)[idx]),
-                            getattr(event, "Jet_Pt"+suffix)[idx],
-                            getattr(event, "Jet_btagValue"+suffix)[idx])
-                else:
-                    if "cferr" in u:
-                        sf_uncs[u] *= nom
-                    else:
-                        sf_uncs[u] *= itFit.evaluate(u, flav,
-                            abs(getattr(event, "Jet_Eta"+suffix)[idx]),
-                            getattr(event, "Jet_Pt"+suffix)[idx],
-                            getattr(event, "Jet_btagValue"+suffix)[idx])
+            if (flav == 4):
+                for u in bSF_uncs:
+                    sf_uncs[u] *= nom
+                for u in cSF_uncs:
+                    sf_uncs[u] *= itFit[dataEra].evaluate(u, flav,
+                        abs(getattr(event, "Jet_Eta"+suffix)[idx]),
+                        getattr(event, "Jet_Pt"+suffix)[idx],
+                        getattr(event, "Jet_btagValue"+suffix)[idx])
+            else:
+                for u in cSF_uncs:
+                    sf_uncs[u] *= nom
+                for u in bSF_uncs:
+                    sf_uncs[u] *= itFit[dataEra].evaluate(u, flav,
+                        abs(getattr(event, "Jet_Eta"+suffix)[idx]),
+                        getattr(event, "Jet_Pt"+suffix)[idx],
+                        getattr(event, "Jet_btagValue"+suffix)[idx])
 
     wrapper.branchArrays["itFitSF"+suffix][0] = sf
     if jec == "nom":
-        for u in btagSF_uncs:
+        for u in bSF_uncs+cSF_uncs:
             wrapper.branchArrays["itFitSF_{}_rel".format(u)][0] = sf_uncs[u]/sf
 
 

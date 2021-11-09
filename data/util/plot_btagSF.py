@@ -68,7 +68,8 @@ for pT in pTvalues:
     
 import matplotlib.pyplot as plt
 
-plt.title("Working Point: {} ({})".format(opts.wp, opts.year))
+plt.title("WP: {} ({})".format(opts.wp, opts.year), loc = "right")
+plt.title("CMS Simulation Preliminary", loc = "left")
 plt.plot([0., 1000], [1., 1.], color = "black", linestyle = "-", markersize = 0)
 #plt.plot(pTvalues, sf_b_mj, color = "blue",  label = "SF b (mujets)", linestyle = "-", linewidth = 2, markersize = 0)
 #plt.fill_between(pTvalues, sf_b_down_mj, sf_b_up_mj, alpha = 0.4, color = "blue", label = "unc SFb (mujets)")
