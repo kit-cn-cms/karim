@@ -6,11 +6,16 @@ import os
 from pprint import pprint
 filepath = os.path.abspath(__file__)
 karimpath = os.path.dirname(os.path.dirname(filepath))
-dataEra = "18"
-sfDir = os.path.join(karimpath, "data", "UL_"+dataEra)
 
 from correctionlib import _core
+jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration", "POG")
 
+# muTrigName = {
+#     "2016preVFP":   "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight",
+#     "2016postVFP":  "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight",
+#     "2017":         "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight",
+#     "2018":         "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",
+#     }
 
 mudataEra = {
     "2016preVFP":   "2016_UL_HIPM",
@@ -31,28 +36,19 @@ for dataEra in ["2018", "2017", "2016preVFP", "2016postVFP"]:
     sfDir = os.path.join(karimpath, "data", "UL_"+dataEraS)
 
     # electron ID/RECO/ISO
-    ele_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "electron.json"))
+    ele_evaluator = _core.CorrectionSet.from_file(os.path.join(jsonDir, "EGM", dataEra+"_UL", "electron.json.gz"))
     data[dataEra]["electron"] = ele_evaluator["UL-Electron-ID-SF"]
-    photon_evaluator = _core.CorrectionSet.from_file(os.path.join(sfDir, "photon.json"))
+    photon_evaluator = _core.CorrectionSet.from_file(os.path.join(jsonDir, "EGM", dataEra+"_UL", "photon.json.gz"))
     data[dataEra]["photon"] = photon_evaluator["UL-Photon-ID-SF"]
 
-    # muon ID scale factors
-    muIDFile = "Efficiencies_muon_generalTracks_Z_Run{}_ID.csv".format(mudataEra[dataEra])
-    data[dataEra]["muIDT"] = weightModules.LeptonSFs(
-        csv     = os.path.join(sfDir, muIDFile),
-        sfName  = "NUM_TightID_DEN_TrackerMuons_abseta_pt")
-    data[dataEra]["muIDL"] = weightModules.LeptonSFs(
-        csv     = os.path.join(sfDir, muIDFile),
-        sfName  = "NUM_LooseID_DEN_TrackerMuons_abseta_pt")
-
-    # muon Iso scale factors
-    muISOFile = "Efficiencies_muon_generalTracks_Z_Run{}_ISO.csv".format(mudataEra[dataEra])
-    data[dataEra]["muISOT"] = weightModules.LeptonSFs(
-        csv     = os.path.join(sfDir, muISOFile),
-        sfName  = "NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt")
-    data[dataEra]["muISOL"] = weightModules.LeptonSFs(
-        csv     = os.path.join(sfDir, muISOFile),
-        sfName  = "NUM_LooseRelIso_DEN_LooseID_abseta_pt")
+    # muon Trig/ID/ISO
+    mu_evaluator = _core.CorrectionSet.from_file(
+        os.path.join(jsonDir, "MUO", dataEra+"_UL", "muon_Z.json.gz"))
+    # data[dataEra]["muTrig"] = mu_evaluator[muTrigName[dataEra]]
+    data[dataEra]["muIDT"]   = mu_evaluator["NUM_TightID_DEN_TrackerMuons"]
+    data[dataEra]["muIDL"]   = mu_evaluator["NUM_LooseID_DEN_TrackerMuons"]
+    data[dataEra]["muISOT"]  = mu_evaluator["NUM_TightRelIso_DEN_TightIDandIPCut"]
+    data[dataEra]["muISOL"]  = mu_evaluator["NUM_LooseRelIso_DEN_TightIDandIPCut"]
 
 pprint(data)
 # exit()
@@ -263,16 +259,26 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     muIsoSF_tight_down = 1.
 
     for iMu in range(getattr(event, "N_TightMuons")):
-        idsf    = data[dataEra]["muIDT"].getSFs(  getattr(event, "TightMuon_Pt")[iMu], abs(getattr(event, "TightMuon_Eta")[iMu]))
-        isosf   = data[dataEra]["muISOT"].getSFs( getattr(event, "TightMuon_Pt")[iMu], abs(getattr(event, "TightMuon_Eta")[iMu]))
+        if dataEra == "2018":
+            idsf     = data[dataEra]["muIDT"].evaluate(min(119., event.TightMuon_Pt[iMu]), "nominal")
+            idsfErr  = data[dataEra]["muIDT"].evaluate(min(119., event.TightMuon_Pt[iMu]), "syst")
+            isosf    = data[dataEra]["muISOT"].evaluate(min(119., event.TightMuon_Pt[iMu]), "nominal")
+            isosfErr = data[dataEra]["muISOT"].evaluate(min(119., event.TightMuon_Pt[iMu]), "syst")
+        else:
+            idsf     = data[dataEra]["muIDT"].evaluate(abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "nominal")
+            idsfErr  = data[dataEra]["muIDT"].evaluate(abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "syst")
+            isosf    = data[dataEra]["muISOT"].evaluate(abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "nominal")
+            isosfErr = data[dataEra]["muISOT"].evaluate(abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "syst")
 
-        muIDSF_tight        *= idsf.loc["central"]
-        muIDSF_tight_up     *= idsf.loc["up"]
-        muIDSF_tight_down   *= idsf.loc["down"]
 
-        muIsoSF_tight       *= isosf.loc["central"]
-        muIsoSF_tight_up    *= isosf.loc["up"]
-        muIsoSF_tight_down  *= isosf.loc["down"]
+        muIDSF_tight        *= idsf
+        muIsoSF_tight       *= isosf
+
+        muIDSF_tight_up     *= (idsf + idsfErr)
+        muIDSF_tight_down   *= (idsf - idsfErr)
+
+        muIsoSF_tight_up    *= (isosf + isosfErr)
+        muIsoSF_tight_down  *= (isosf - isosfErr)
 
     wrapper.branchArrays["muIDSF_tight"][0]   = muIDSF_tight
     wrapper.branchArrays["muIDSF_tight_up"][0]   = muIDSF_tight_up
@@ -291,16 +297,27 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     muIsoSF_loose_down = 1.
 
     for iMu in range(getattr(event, "N_LooseMuons")):
-        idsf    = data[dataEra]["muIDL"].getSFs(  getattr(event, "LooseMuon_Pt")[iMu], abs(getattr(event, "LooseMuon_Eta")[iMu]))
-        isosf   = data[dataEra]["muISOL"].getSFs( getattr(event, "LooseMuon_Pt")[iMu], abs(getattr(event, "LooseMuon_Eta")[iMu]))
+        if dataEra == "2018":
+            idsf     = data[dataEra]["muIDT"].evaluate(min(119., event.LooseMuon_Pt[iMu]), "nominal")
+            idsfErr  = data[dataEra]["muIDT"].evaluate(min(119., event.LooseMuon_Pt[iMu]), "syst")
+            isosf    = data[dataEra]["muISOT"].evaluate(min(119., event.LooseMuon_Pt[iMu]), "nominal")
+            isosfErr = data[dataEra]["muISOT"].evaluate(min(119., event.LooseMuon_Pt[iMu]), "syst")
+        else:
+            idsf     = data[dataEra]["muIDT"].evaluate(abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "nominal")
+            idsfErr  = data[dataEra]["muIDT"].evaluate(abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "syst")
+            isosf    = data[dataEra]["muISOT"].evaluate(abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "nominal")
+            isosfErr = data[dataEra]["muISOT"].evaluate(abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "syst")
 
-        muIDSF_loose        *= idsf.loc["central"]
-        muIDSF_loose_up     *= idsf.loc["up"]
-        muIDSF_loose_down   *= idsf.loc["down"]
 
-        muIsoSF_loose       *= isosf.loc["central"]
-        muIsoSF_loose_up    *= isosf.loc["up"]
-        muIsoSF_loose_down  *= isosf.loc["down"]
+        muIDSF_loose       *= idsf
+        muIsoSF_loose      *= isosf
+
+        muIDSF_loose_up     *= (idsf + idsfErr)
+        muIDSF_loose_down   *= (idsf - idsfErr)
+
+        muIsoSF_loose_up    *= (isosf + isosfErr)
+        muIsoSF_loose_down  *= (isosf - isosfErr)
+
 
     wrapper.branchArrays["muIDSF_loose"][0]   = muIDSF_loose
     wrapper.branchArrays["muIDSF_loose_up"][0]   = muIDSF_loose_up
