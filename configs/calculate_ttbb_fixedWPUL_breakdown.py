@@ -20,7 +20,7 @@ for year in ["2017", "2018"]:
     # scale factors
     btagSFjson = _core.CorrectionSet.from_file(
         os.path.join(jsonDir, "BTV", year+"_UL", "btagging.json.gz"))
-    btagSF[year]   = btagSFjson["deepJet_wp"]
+    btagSF[year]   = btagSFjson
 
 sys_bd = ["isr", "fsr", "hdamp", "jes", "jer", "pileup", "qcdscale", "statistic", "topmass", "type3"]
 SFb_sys = ["up_"+sys for sys in sys_bd]+["down_"+sys for sys in sys_bd]
@@ -82,19 +82,19 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         eff_T = btagEff[dataEra].evaluate("T", flav, eta, pt)
 
         if flav == 0:
-            sf_M = btagSF[dataEra].evaluate("central", "incl", "M", flav, eta, pt)
-            sf_T = btagSF[dataEra].evaluate("central", "incl", "T", flav, eta, pt)
+            sf_M = btagSF[dataEra]["deepJet_incl"].evaluate("central", "M", flav, eta, pt)
+            sf_T = btagSF[dataEra]["deepJet_incl"].evaluate("central", "T", flav, eta, pt)
             if jec == "nom":
                 for sys in SFl_sys:
-                    sfl_M[sys] = btagSF[dataEra].evaluate(sys, "incl", "M", flav, eta, pt)
-                    sfl_T[sys] = btagSF[dataEra].evaluate(sys, "incl", "T", flav, eta, pt)
+                    sfl_M[sys] = btagSF[dataEra]["deepJet_incl"].evaluate(sys, "M", flav, eta, pt)
+                    sfl_T[sys] = btagSF[dataEra]["deepJet_incl"].evaluate(sys, "T", flav, eta, pt)
         else:
-            sf_M = btagSF[dataEra].evaluate("central", "comb", "M", flav, eta, pt)
-            sf_T = btagSF[dataEra].evaluate("central", "comb", "T", flav, eta, pt)
+            sf_M = btagSF[dataEra]["deepJet_comb"].evaluate("central", "M", flav, eta, pt)
+            sf_T = btagSF[dataEra]["deepJet_comb"].evaluate("central", "T", flav, eta, pt)
             if jec == "nom":
                 for sys in SFb_sys:
-                    sfb_M[sys] = btagSF[dataEra].evaluate(sys, "comb", "M", flav, eta, pt)
-                    sfb_T[sys] = btagSF[dataEra].evaluate(sys, "comb", "T", flav, eta, pt)
+                    sfb_M[sys] = btagSF[dataEra]["deepJet_comb"].evaluate(sys, "M", flav, eta, pt)
+                    sfb_T[sys] = btagSF[dataEra]["deepJet_comb"].evaluate(sys, "T", flav, eta, pt)
 
         if passes_T:
             P_MC_TM   *= eff_T

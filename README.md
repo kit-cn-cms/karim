@@ -18,13 +18,14 @@ This enables a fast exchange and update of variables in the ntuples which are ba
 
 ## Setup
 This has been tested on CentOS7 on the corresponding NAF nodes `user@naf-cms-el7.desy.de`
-Either setup a local `CMSSW_10_6_8_patch1` version, or execute the following before every use
+Either setup a local `CMSSW_11_3_1` version, or execute the following before every use
 ```
 export VO_CMS_SW_DIR=/cvmfs/cms.cern.ch
 source $VO_CMS_SW_DIR/cmsset_default.sh
 export SCRAM_ARCH=slc7_amd64_gcc700
-cd /nfs/dust/cms/user/vdlinden/legacyTTH/CMSSW/CMSSW_10_6_8_patch1/src
+cd /nfs/dust/cms/user/vdlinden/nanoAOD/CMSSW_11_3_1/src
 eval `scram runtime -sh`
+
 cd -
 ```
 If `scripts/karim.py` is executed locally make sure the Keras backend is set to `tensorflow`:
@@ -32,6 +33,15 @@ If `scripts/karim.py` is executed locally make sure the Keras backend is set to 
 export KERAS_BACKEND=tensorflow
 ```
 All of the above is automatically set for shell scripts submitted to the NAF batch system. No further python packages should be required.
+
+For reading scale factors an up-to-date installation of the jsonPOG correction lib is needed. This can be for example installed via
+```
+pip3 install git+https://github.com/cms-nanoAOD/correctionlib.git@master
+```
+and should regularly be upgraded via
+```
+pip3 install --upgrade git+https://github.com/cms-nanoAOD/correctionlib.git@master
+```
 
 
 
