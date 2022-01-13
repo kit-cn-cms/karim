@@ -141,18 +141,20 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
         else:
             pt = 499.
         idsf = data[dataEra]["electron"].evaluate(dataEra,"sf","Tight", getattr(event, "TightElectron_Eta")[iEl], pt)
-        idsfErr = data[dataEra]["electron"].evaluate(dataEra,"syst","Tight", getattr(event, "TightElectron_Eta")[iEl], pt)
+        idsfErr_up = data[dataEra]["electron"].evaluate(dataEra,"sfup","Tight", getattr(event, "TightElectron_Eta")[iEl], pt)
+        idsfErr_down = data[dataEra]["electron"].evaluate(dataEra,"sfdown","Tight", getattr(event, "TightElectron_Eta")[iEl], pt)
 
         recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoAbove20", getattr(event, "TightElectron_Eta")[iEl], pt)
-        recosfErr    = data[dataEra]["electron"].evaluate(dataEra,"syst","RecoAbove20", getattr(event, "TightElectron_Eta")[iEl], pt)
+        recosfErr_up    = data[dataEra]["electron"].evaluate(dataEra,"sfup","RecoAbove20", getattr(event, "TightElectron_Eta")[iEl], pt)
+        recosfErr_down    = data[dataEra]["electron"].evaluate(dataEra,"sfdown","RecoAbove20", getattr(event, "TightElectron_Eta")[iEl], pt)
 
         elIDSF_tight        *= idsf
-        elIDSF_tight_up     *= (idsf + idsfErr)
-        elIDSF_tight_down   *= (idsf - idsfErr)
+        elIDSF_tight_up     *= idsfErr_up
+        elIDSF_tight_down   *= idsfErr_down
 
         elRecoSF_tight      *= recosf
-        elRecoSF_tight_up   *= (recosf + recosfErr)
-        elRecoSF_tight_down *= (recosf - recosfErr)
+        elRecoSF_tight_up   *= recosfErr_up
+        elRecoSF_tight_down *= recosfErr_down
 
     wrapper.branchArrays["eleIDSF_tight"][0]   = elIDSF_tight
     wrapper.branchArrays["eleIDSF_tight_up"][0]   = elIDSF_tight_up
@@ -178,22 +180,25 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
         else:
             pt = 499.
         idsf = data[dataEra]["electron"].evaluate(dataEra,"sf","Loose", getattr(event, "LooseElectron_Eta")[iEl], pt)
-        idsfErr = data[dataEra]["electron"].evaluate(dataEra,"syst","Loose", getattr(event, "LooseElectron_Eta")[iEl], pt)
+        idsfErr_up = data[dataEra]["electron"].evaluate(dataEra,"sfup","Loose", getattr(event, "LooseElectron_Eta")[iEl], pt)
+        idsfErr_down = data[dataEra]["electron"].evaluate(dataEra,"sfdown","Loose", getattr(event, "LooseElectron_Eta")[iEl], pt)
 
         if pt >= 20.:
             recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoAbove20", getattr(event, "LooseElectron_Eta")[iEl], pt)
-            recosfErr    = data[dataEra]["electron"].evaluate(dataEra,"syst","RecoAbove20", getattr(event, "LooseElectron_Eta")[iEl], pt)
+            recosfErr_up    = data[dataEra]["electron"].evaluate(dataEra,"sfup","RecoAbove20", getattr(event, "LooseElectron_Eta")[iEl], pt)
+            recosfErr_down    = data[dataEra]["electron"].evaluate(dataEra,"sfdown","RecoAbove20", getattr(event, "LooseElectron_Eta")[iEl], pt)
         else:
             recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoBelow20", getattr(event, "LooseElectron_Eta")[iEl], pt)
-            recosfErr    = data[dataEra]["electron"].evaluate(dataEra,"syst","RecoBelow20", getattr(event, "LooseElectron_Eta")[iEl], pt)
+            recosfErr_up    = data[dataEra]["electron"].evaluate(dataEra,"sfup","RecoBelow20", getattr(event, "LooseElectron_Eta")[iEl], pt)
+            recosfErr_down    = data[dataEra]["electron"].evaluate(dataEra,"sfdown","RecoBelow20", getattr(event, "LooseElectron_Eta")[iEl], pt)
 
         elIDSF_loose        *= idsf
-        elIDSF_loose_up     *= (idsf + idsfErr)
-        elIDSF_loose_down   *= (idsf - idsfErr)
+        elIDSF_loose_up     *= idsfErr_up
+        elIDSF_loose_down   *= idsfErr_down
 
         elRecoSF_loose      *= recosf
-        elRecoSF_loose_up   *= (recosf + recosfErr)
-        elRecoSF_loose_down *= (recosf - recosfErr)
+        elRecoSF_loose_up   *= recosfErr_up
+        elRecoSF_loose_down *= recosfErr_down
 
     wrapper.branchArrays["eleIDSF_loose"][0]   = elIDSF_loose
     wrapper.branchArrays["eleIDSF_loose_up"][0]   = elIDSF_loose_up
@@ -259,26 +264,22 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     muIsoSF_tight_down = 1.
 
     for iMu in range(getattr(event, "N_TightMuons")):
-        if dataEra == "2018":
-            idsf     = data[dataEra]["muIDT"].evaluate(min(119., event.TightMuon_Pt[iMu]), "nominal")
-            idsfErr  = data[dataEra]["muIDT"].evaluate(min(119., event.TightMuon_Pt[iMu]), "syst")
-            isosf    = data[dataEra]["muISOT"].evaluate(min(119., event.TightMuon_Pt[iMu]), "nominal")
-            isosfErr = data[dataEra]["muISOT"].evaluate(min(119., event.TightMuon_Pt[iMu]), "syst")
-        else:
-            idsf     = data[dataEra]["muIDT"].evaluate(abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "nominal")
-            idsfErr  = data[dataEra]["muIDT"].evaluate(abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "syst")
-            isosf    = data[dataEra]["muISOT"].evaluate(abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "nominal")
-            isosfErr = data[dataEra]["muISOT"].evaluate(abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "syst")
+        idsf     = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "sf")
+        idsfErr_up  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "systup")
+        idsfErr_down  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "systdown")
+        isosf    = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "sf")
+        isosfErr_up = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "systup")
+        isosfErr_down = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "systdown")
 
 
         muIDSF_tight        *= idsf
         muIsoSF_tight       *= isosf
 
-        muIDSF_tight_up     *= (idsf + idsfErr)
-        muIDSF_tight_down   *= (idsf - idsfErr)
+        muIDSF_tight_up     *= idsfErr_up
+        muIDSF_tight_down   *= idsfErr_down
 
-        muIsoSF_tight_up    *= (isosf + isosfErr)
-        muIsoSF_tight_down  *= (isosf - isosfErr)
+        muIsoSF_tight_up    *= isosfErr_up
+        muIsoSF_tight_down  *= isosfErr_down
 
     wrapper.branchArrays["muIDSF_tight"][0]   = muIDSF_tight
     wrapper.branchArrays["muIDSF_tight_up"][0]   = muIDSF_tight_up
@@ -297,26 +298,22 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     muIsoSF_loose_down = 1.
 
     for iMu in range(getattr(event, "N_LooseMuons")):
-        if dataEra == "2018":
-            idsf     = data[dataEra]["muIDT"].evaluate(min(119., event.LooseMuon_Pt[iMu]), "nominal")
-            idsfErr  = data[dataEra]["muIDT"].evaluate(min(119., event.LooseMuon_Pt[iMu]), "syst")
-            isosf    = data[dataEra]["muISOT"].evaluate(min(119., event.LooseMuon_Pt[iMu]), "nominal")
-            isosfErr = data[dataEra]["muISOT"].evaluate(min(119., event.LooseMuon_Pt[iMu]), "syst")
-        else:
-            idsf     = data[dataEra]["muIDT"].evaluate(abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "nominal")
-            idsfErr  = data[dataEra]["muIDT"].evaluate(abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "syst")
-            isosf    = data[dataEra]["muISOT"].evaluate(abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "nominal")
-            isosfErr = data[dataEra]["muISOT"].evaluate(abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "syst")
+        idsf     = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "sf")
+        idsfErr_up  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systup")
+        idsfErr_down  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systdown")
+        isosf    = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "sf")
+        isosfErr_up = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systup")
+        isosfErr_down = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systdown")
 
 
         muIDSF_loose       *= idsf
         muIsoSF_loose      *= isosf
 
-        muIDSF_loose_up     *= (idsf + idsfErr)
-        muIDSF_loose_down   *= (idsf - idsfErr)
+        muIDSF_loose_up     *= idsfErr_up
+        muIDSF_loose_down   *= idsfErr_down
 
-        muIsoSF_loose_up    *= (isosf + isosfErr)
-        muIsoSF_loose_down  *= (isosf - isosfErr)
+        muIsoSF_loose_up    *= isosfErr_up
+        muIsoSF_loose_down  *= isosfErr_down
 
 
     wrapper.branchArrays["muIDSF_loose"][0]   = muIDSF_loose
