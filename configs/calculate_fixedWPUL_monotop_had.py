@@ -25,7 +25,7 @@ for year in ["2018"]:
         os.path.join(jsonDir, "BTV", year+"_UL", "btagging.json.gz"))
     btagSF[year]   = btagSFjson
 
-SFb_sys = ["up", "down"]
+SFb_sys = ["up_correlated","up_uncorrelated","down_correlated","down_uncorrelated"]
 SFl_sys = ["up_correlated","up_uncorrelated","down_correlated","down_uncorrelated"]
 
 def get_additional_variables():
