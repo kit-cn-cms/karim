@@ -58,6 +58,7 @@ class Hypotheses:
         nJets = getattr(event, self.config.jetLength.replace("SYS", jec))
         error = False
         if not self.config.base_selection(event, jec) or nJets < self.hypothesisJets:
+            return None, True
             error = True
             data = np.zeros(shape = (1, len(self.variables)))
             idy = 0

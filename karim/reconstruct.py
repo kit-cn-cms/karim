@@ -40,7 +40,7 @@ def evaluate_reconstruction(filename, modelname, configpath, friendTrees, outpat
                 for ij, jec in enumerate(jecs):
                     #print("jec {}".format(jec))
                     entry, error = hypotheses.GetEntry(event, jec)
-                    if first:
+                    if first and not error:
                         # check if all variables for DNN evaluation are present in dataframe
                         check_entry(entry, model.variables)
 
@@ -69,22 +69,23 @@ def evaluate_reconstruction(filename, modelname, configpath, friendTrees, outpat
                         print(outputData.shape)
                         first = False
 
-                    lo = ij*nVarPerJEC
-                    hi = (ij+1)*nVarPerJEC-1
                     if error:
+                        # just leave everything at 0
                         #print("hypothesis not viable")
                         # for some reason no hypotheses are viable
                         #   e.g. not enough jets
-                        if not apply_selection:
-                            outputData[fillIdx, lo:hi] = entry[config.outVars].iloc[0].values
-                            # fill dummy output values of DNN
-                            outputData[fillIdx, hi] = -1.
+                        #if not apply_selection:
+                        #    outputData[fillIdx, lo:hi] = entry[config.outVars].iloc[0].values
+                        #    # fill dummy output values of DNN
+                        #    outputData[fillIdx, hi] = -1.
                         continue
                     else:
+                        lo = ij*nVarPerJEC
+                        hi = (ij+1)*nVarPerJEC-1
                         # print entry_reco_selection
                         bestIndex, outputValue = model.findBest(entry)
                         # fill output data array
-                        outputData[fillIdx, lo:hi] = entry[config.outVars].iloc[bestIndex].values
+                        outputData[fillIdx, lo:hi] = entry.iloc[bestIndex][config.outVars].values
                         # fill output values of DNN
                         outputData[fillIdx, hi] = outputValue
                         if fillIdx<=1000:
