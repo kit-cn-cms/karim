@@ -182,10 +182,12 @@ class OutputFile(object):
         currently all trees are of datatype float
         '''
         self.branchArrays = []
+        print("setting up branches:")
         for i, v in enumerate(variables):
             outvar = v.replace("[","_").replace("]","")
             self.branchArrays.append(
                 array("f", [0.]))
+            print(outvar)
             self.tree.Branch(outvar, self.branchArrays[i], "{}/F".format(outvar))
 
     def FillTree(self, event = None):

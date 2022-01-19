@@ -4,12 +4,27 @@ import json
 import numpy as np
 import pandas as pd
 
+class TestModel:
+    def __init__(self):
+        self.config = {}
+        self.testVariables = [
+            "nJets_SYS",
+            "Lep_Pt[0]"
+            ]
+
 class Model:
     def __init__(self, inputPath):
         '''
         load dnn model with Keras
         '''
         self.modelPath = inputPath
+
+        self.testModel = False
+        if inputPath == "test":
+            self.testModel = True
+            self.model = TestModel()
+            self.config = self.model.config
+            return
 
         if os.path.exists("/".join([self.modelPath, "checkpoints"])):
             self.modelPath = "/".join([self.modelPath, "checkpoints"])
@@ -44,6 +59,11 @@ class Model:
         read list of variables used for DNN evaluation
         read norm table with mean and std.dev values for all of theses variables
         '''
+        if self.testModel:
+            self.variable_norms = None
+            self.variables = self.model.testVariables
+            return 
+
         # load variable normalization
         normFile = self.modelPath+"/variable_norm.csv"
         if not os.path.exists(normFile):
@@ -60,6 +80,10 @@ class Model:
         
         output: index, value of best combination
         '''
+        if self.testModel:
+            bestIndex = np.random.randint(entry.shape[0])
+            return bestIndex, np.random.random()
+
         matrix = entry[self.variables].values
         idx = 0
         for _, row in self.variable_norms.iterrows():
@@ -79,6 +103,11 @@ class Model:
     
         output: dnn predictions, max value of prediction vectors
         '''
+        if self.testModel:
+            predictions = np.random.random(entry.shape[0])
+            maxIndex = np.argmax(predictions, axis = 1)
+            return predictions, maxIndex
+
         if not type(entry) == np.ndarray:
             matrix = entry[self.variables].values
         else:

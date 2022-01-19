@@ -124,6 +124,7 @@ for ntuple in args:
             configpath  = os.path.abspath(opts.config_path),
             friendTrees = friendTrees,
             dataEra     = opts.dataEra,
+            jecDependent = opts.jecDependent,
             outpath     = "/".join([outfilePath, outfileName]),
             )
     elif opts.mode == "Evaluation":

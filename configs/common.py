@@ -2,7 +2,10 @@ import ROOT
 import numpy as np
 
 class Vectors:
-    def __init__(self, event, name = "", objList = []):
+    def __init__(self, event, name = "", objList = [], jecDependent = False):
+        if jecDependent: suffix = "_SYS"
+        else: suffix = ""
+        self.suffix = suffix
         self.vectors = {}
         self.isTree = True
         self.length = 1
@@ -16,19 +19,19 @@ class Vectors:
         if self.isTree:
             for obj in objList:
                 self.vectors[obj][0].SetPtEtaPhiE(
-                    eval("event."+name+"_"+obj+"_Pt"),
-                    eval("event."+name+"_"+obj+"_Eta"),
-                    eval("event."+name+"_"+obj+"_Phi"),
-                    eval("event."+name+"_"+obj+"_E")
+                    eval("event."+name+"_"+obj+"_Pt"+suffix),
+                    eval("event."+name+"_"+obj+"_Eta"+suffix),
+                    eval("event."+name+"_"+obj+"_Phi"+suffix),
+                    eval("event."+name+"_"+obj+"_E"+suffix)
                     )
         else:
             for i, entry in event.iterrows():
                 for obj in objList:
                     self.vectors[obj][i].SetPtEtaPhiE( 
-                        entry[name+"_"+obj+"_Pt"], 
-                        entry[name+"_"+obj+"_Eta"], 
-                        entry[name+"_"+obj+"_Phi"], 
-                        entry[name+"_"+obj+"_E"] 
+                        entry[name+"_"+obj+"_Pt"+suffix], 
+                        entry[name+"_"+obj+"_Eta"+suffix], 
+                        entry[name+"_"+obj+"_Phi"+suffix], 
+                        entry[name+"_"+obj+"_E"+suffix] 
                         ) 
 
     def add(self, objList, out):
