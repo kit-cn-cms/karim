@@ -5,23 +5,34 @@ from array import array
 import os
 import sys
 from correctionlib import _core
+import json
+jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration", "POG")
 
 filepath = os.path.abspath(__file__)
 karimpath = os.path.dirname(os.path.dirname(filepath))
 
 btagSF = {}
-mistagSF = {}
+# mistagSF = {}
 btagEff = {}
-# for year in ["2017", "2018"]:
-for year in ["2018"]:
+#for year in ["2018"]:
+for year in ["2017", "2018"]:
+    # eficiencies
     sfDir = os.path.join(karimpath, "data", "UL_"+year[2:])
-    
+    btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_monotop_lep_deepJet.json"))
+    btagEff[year] = btagEffjson["btagEff"]
+
+    # scale factors
+    btagSFjson = _core.CorrectionSet.from_file(
+        os.path.join(jsonDir, "BTV", year+"_UL", "btagging.json.gz"))
+
+    btagSF[year]   = btagSFjson["deepJet_wp"]
+
+    '''
     btagSFjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btaggingSF_deepJet.json"))
     btagSF[year] = btagSFjson["comb"]
     mistagSF[year] = btagSFjson["incl"]
+    '''
 
-    btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_monotop_lep_deepJet.json"))
-    btagEff[year] = btagEffjson["btagEff"]
 
 SFb_sys = ["up","down"]
 SFl_sys = ["up","down"]
@@ -99,15 +110,15 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         eff_M = btagEff[dataEra].evaluate("M", flav, eta, pt)
 
         if flav == 0:
-            sf_M = mistagSF[dataEra].evaluate("M", "central", flav, eta, pt)
+            sf_M = btagSF[dataEra].evaluate("central", "incl", "M", flav, eta, pt)
             if jec == "nom":
                 for sys in SFl_sys:
-                    sfl_M[sys] = mistagSF[dataEra].evaluate("M", sys, flav, eta, pt)
+                    sfl_M[sys] = btagSF[dataEra].evaluate(sys, "incl", "M", flav, eta, pt)
         else:
-            sf_M = btagSF[dataEra].evaluate("M", "central", flav, eta, pt)
+            sf_M = btagSF[dataEra].evaluate("central", "comb", "M", flav, eta, pt)
             if jec == "nom":
                 for sys in SFb_sys:
-                    sfb_M[sys] = btagSF[dataEra].evaluate("M", sys, flav, eta, pt)
+                    sfb_M[sys] = btagSF[dataEra].evaluate(sys, "comb", "M", flav, eta, pt)
 
         if passes_M:
             P_MC   *= eff_M
