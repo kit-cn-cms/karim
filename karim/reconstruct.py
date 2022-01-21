@@ -40,12 +40,14 @@ def evaluate_reconstruction(filename, modelname, configpath, friendTrees, outpat
                 for ij, jec in enumerate(jecs):
                     #print("jec {}".format(jec))
                     entry, error = hypotheses.GetEntry(event, jec)
+                    if not error:
+                        (permutations, data, df) = entry
                     if first and not error:
                         # check if all variables for DNN evaluation are present in dataframe
-                        check_entry(entry, model.variables)
+                        #check_entry(entry, model.variables)
 
                         # get list of all dataframe variables
-                        outputVariables = entry.columns.values
+                        outputVariables = df.columns.values
                         check_outVars(outputVariables, config.outVars)
                         # trim output variables
                         outputVariables = [v for v in outputVariables if v in config.outVars]
@@ -83,9 +85,12 @@ def evaluate_reconstruction(filename, modelname, configpath, friendTrees, outpat
                         lo = ij*nVarPerJEC
                         hi = (ij+1)*nVarPerJEC-1
                         # print entry_reco_selection
-                        bestIndex, outputValue = model.findBest(entry)
+                        bestNode, outputValue = model.findBest(data)
                         # fill output data array
-                        outputData[fillIdx, lo:hi] = entry.iloc[bestIndex][config.outVars].values
+                        bestIndex = permutations[config.permutationIndices[bestNode]]
+                        #print(bestIndex)
+                        
+                        outputData[fillIdx, lo:hi] = df.iloc[bestIndex][config.outVars].values
                         # fill output values of DNN
                         outputData[fillIdx, hi] = outputValue
                         if fillIdx<=1000:

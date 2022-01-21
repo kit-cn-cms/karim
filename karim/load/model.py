@@ -74,56 +74,20 @@ class Model:
         print(self.variable_norms)
         self.variables = list(self.variable_norms.index.values)
 
-    def findBest(self, entry):
+    def findBest(self, data):
         '''
         evaluate DNN for all entries given
         
-        output: index, value of best combination
+        output: node index of highest output value
         '''
         if self.testModel:
-            bestIndex = np.random.randint(entry.shape[0])
-            return bestIndex, np.random.random()
+            predictions = np.random.random(15)
+            bestIndex = np.argmax(predictions)
+            return bestIndex, predictions[bestIndex]
 
-        matrix = entry[self.variables].values
-        idx = 0
-        for _, row in self.variable_norms.iterrows():
-            matrix[:,idx]-=row["mu"]
-            matrix[:,idx]/=row["std"] 
-            idx+=1
-        predictions = self.model.predict(matrix)
-        bestIndex = np.argmax(predictions[:,0])
-        return bestIndex, predictions[bestIndex][0]
+        predictions = self.model.predict(data)
+        bestIndex = np.argmax(predictions)
+        return bestIndex, predictions[bestIndex]
 
     
-    def evaluate(self, entry):
-        '''
-        evaluate dnn with inputs
-        inputs are either ndarray of events already cut to the dnn input variables
-        or dataframe with correct input variable column names
-    
-        output: dnn predictions, max value of prediction vectors
-        '''
-        if self.testModel:
-            predictions = np.random.random(entry.shape[0])
-            maxIndex = np.argmax(predictions, axis = 1)
-            return predictions, maxIndex
-
-        if not type(entry) == np.ndarray:
-            matrix = entry[self.variables].values
-        else:
-            matrix = entry
-
-        # norm variables
-        idx=0
-        for _, row in self.variable_norms.iterrows():
-            matrix[:,idx]-=row["mu"]
-            matrix[:,idx]/=row["std"] 
-            idx+=1
-
-        # predict
-        predictions = self.model.predict(matrix)
-
-        # get maximum index 
-        maxIndex = np.argmax(predictions, axis = 1)
-        return predictions, maxIndex
 

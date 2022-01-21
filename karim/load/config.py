@@ -21,6 +21,7 @@ class Config:
             self.objects    = config.get_objects()
             self.features   = config.get_features()
             self.outVars    = list(sorted(config.get_output_variables()))
+            self.permutationIndices = config.get_output_indices()
             self.jetColl, self.jetLength = config.get_jet_collection()
 
             self.template = "{name}_OBJECT_FEATURE".format(name = self.naming)

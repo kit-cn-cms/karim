@@ -77,14 +77,17 @@ class Hypotheses:
         else:
             if not self.permutations is None:
                 # fill data matrix with permutations
-                nJets = min(nJets, 20)
+                nJets = min(nJets, 10)
                 data = np.zeros(shape = (len(self.permutations[nJets]), len(self.variables)))
             else:
                 data = np.zeros(shape = (1, len(self.variables)))
 
-            ordered_indices = {}
-            used_indices = np.zeros(shape = (len(self.permutations[nJets]), self.hypothesisJets))
-            assigned_indices = {}
+            # get pT and btag indices
+            ptValues = list(getattr(event, self.config.jetColl+"_Pt_"+jec))
+            btagValues = list(getattr(event, self.config.jetColl+"_btagValue_"+jec))
+            sorted_pt = np.argsort(np.argsort(np.array(ptValues))[::-1])
+            sorted_btag = np.argsort(np.argsort(np.array(btagValues))[::-1])
+            matrix_pt = np.zeros([nJets for _ in range(len(self.config.objects))], dtype = int)
 
             idy = 0
             for feat in self.config.features:
@@ -97,13 +100,14 @@ class Hypotheses:
             for i, obj in enumerate(self.config.objects):
                 for idx, p in enumerate(self.permutations[nJets]):
                     data[idx, idy] = p[i]
-                    used_indices[idx, idz] = p[i]
                 idz += 1
                 idy += 1
             
-            # figure out indices of additional object information
-            for idx in range(len(self.permutations[nJets])):
-                used = used_indices[idx]
+            for idx, p in enumerate(self.permutations[nJets]):
+                # hard coded two dimensional because I dont know how to acces something like
+                # matrix[ list_of_indices ] correctly
+                matrix_pt[(sorted_pt[p[0]], sorted_pt[p[1]])] = idx
+                      
 
             # add additional variables
             for i, av in enumerate(self.config.additional_variables):
@@ -124,5 +128,5 @@ class Hypotheses:
                 idy += 1
 
         df = pd.DataFrame(data, columns = self.variables)
-        return self.config.calculate_variables(df), error
+        return self.config.calculate_variables(df, matrix_pt, sorted_btag), error
 
