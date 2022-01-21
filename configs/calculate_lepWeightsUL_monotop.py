@@ -18,8 +18,8 @@ jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration
 #     }
 
 mudataEra = {
-    "2016preVFP":   "2016_UL_HIPM",
-    "2016postVFP":  "2016_UL",
+    "2016preVFP":   "2016preVFP_UL",
+    "2016postVFP":  "2016postVFP_UL",
     "2017":         "2017_UL",
     "2018":         "2018_UL",
     }
