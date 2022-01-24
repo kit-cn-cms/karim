@@ -14,7 +14,7 @@ btagEff = {}
 jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration", "POG")
 
 
-for year in ["2016preVFP", "2016postVFP", "2018"]:
+for year in ["2016preVFP", "2016postVFP", "2017", "2018"]:
     # efficiencies
     sfDir = os.path.join(karimpath, "data", "UL_"+year[2:])
     btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_monotop_had_deepJet.json"))
