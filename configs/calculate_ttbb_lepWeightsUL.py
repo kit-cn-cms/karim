@@ -16,6 +16,13 @@ muTrigName = {
     "2018":         "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",
     }
 
+#dataEra = {
+#   "2016preVFP":   "2016preVFP_UL",
+#   "2016postVFP":  "2016postVFP_UL", 
+#   "2017":         "2017_UL",
+#   "2018":         "2018_UL",
+#   }
+
 data = {}
 for year in ["2018", "2017", "2016preVFP", "2016postVFP"]:
     yearS = year[2:]
@@ -108,15 +115,21 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     elRecoSF_up = 1.
     elRecoSF_down = 1.
 
-    for iEl in range(event.nEle):
-        idsf      = data[dataEra]["electron"].evaluate(dataEra,"sf","Tight", 
-                    event.Ele_EtaSC[iEl], min(499., event.Ele_Pt[iEl]))
-        idsfErr   = data[dataEra]["electron"].evaluate(dataEra,"syst","Tight", 
-                    event.Ele_EtaSC[iEl], min(499., event.Ele_Pt[iEl]))
-        recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoAbove20", 
-                    event.Ele_EtaSC[iEl], min(499., event.Ele_Pt[iEl]))
-        recosfErr = data[dataEra]["electron"].evaluate(dataEra,"syst","RecoAbove20", 
-                    event.Ele_EtaSC[iEl], min(499., event.Ele_Pt[iEl]))
+    for iEl in range(event.nEle_tight):
+        idsf      = data[dataEra]["electron"].evaluate(dataEra, "sf","Tight", 
+                    event.Ele_Eta_tight[iEl], event.Ele_Pt_tight[iEl])
+        #idsfErr   = data[dataEra]["electron"].evaluate(dataEra+"UL","syst","Tight", 
+                    #event.Ele_EtaSC[iEl], min(499., event.Ele_Pt_tight[iEl]))
+        #recosf    = data[dataEra]["electron"].evaluate(dataEra, dataEra+"UL","nominal","RecoAbove20", 
+                    #event.Ele_EtaSC[iEl], min(499., event.Ele_Pt_tight[iEl]))
+        #recosfErr = data[dataEra]["electron"].evaluate(dataEra+"UL","syst","RecoAbove20", 
+                    #event.Ele_EtaSC[iEl], min(499., event.Ele_Pt_tight[iEl]))
+        idsfErr   = data[dataEra]["electron"].evaluate(dataEra, "sfup","Tight", 
+                    event.Ele_Eta_tight[iEl], event.Ele_Pt_tight[iEl])
+        recosf    = data[dataEra]["electron"].evaluate(dataEra, "sf","RecoAbove20", 
+                    event.Ele_Eta_tight[iEl], event.Ele_Pt_tight[iEl])
+        recosfErr = data[dataEra]["electron"].evaluate(dataEra, "sfdown","RecoAbove20", 
+                    event.Ele_Eta_tight[iEl], event.Ele_Pt_tight[iEl])
 
         elIDSF        *= idsf
         elRecoSF      *= recosf
@@ -128,12 +141,26 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
         elRecoSF_down *= (recosf - recosfErr)
 
         elTrigSF      *= data[dataEra]["eleTrig"].evaluate("central", 
-                            event.Ele_Pt[iEl], event.Ele_EtaSC[iEl])
+                         event.Ele_Pt_tight[iEl], event.Ele_Eta_tight[iEl])
         elTrigSF_up   *= data[dataEra]["eleTrig"].evaluate("up", 
-                            event.Ele_Pt[iEl], event.Ele_EtaSC[iEl])
+                         event.Ele_Pt_tight[iEl], event.Ele_Eta_tight[iEl])
         elTrigSF_down *= data[dataEra]["eleTrig"].evaluate("down", 
-                            event.Ele_Pt[iEl], event.Ele_EtaSC[iEl])
-
+                         event.Ele_Pt_tight[iEl], event.Ele_Eta_tight[iEl])
+        #elTrigSF      *= data["eleTrig"].evaluate("central", 
+        #                    event.Ele_Pt_tight[iEl], event.Ele_EtaSC[iEl])
+        #elTrigSF_up   *= data["eleTrig"].evaluate("up", 
+        #                    event.Ele_Pt_tight[iEl], event.Ele_EtaSC[iEl])
+        #elTrigSF_down *= data["eleTrig"].evaluate("down", 
+                           # event.Ele_Pt_tight[iEl], event.Ele_EtaSC[iEl])
+        #print('eltrigSF is '+str(elTrigSF))
+        
+        #printing values of eta and pt of those electrons where elTrigSF=0
+        if elTrigSF==0:
+            print('elTrigSF 0 for '+str(event.nEle_tight)+" for eta "+str(event.Ele_Eta_tight[iEl])+" for pt "+str(event.Ele_Pt_tight[iEl]))
+        #setting values of those electrons' SF=1 (Ele_Eta creates this issue, Ele_EtaSC has to be used)
+        for event.Ele_Eta_tight[iEl] in np.arange(abs(1.4442),abs(1.566)):
+            elTrigSF = 1
+            
     # apply HLT zvtx correction
     if dataEra == "2017":
         elTrigSF      *= 0.991
@@ -145,7 +172,7 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     wrapper.branchArrays["elRecoSF"][0] = elRecoSF
 
     # relative SFs only when exactly one electron is present
-    if event.nEle == 1 and event.nLooseLep == 1:
+    if event.nEle_tight == 1 and event.nLep_loose == 1:
         wrapper.branchArrays["elTrigSF_up_rel"][0]   = elTrigSF_up/elTrigSF
         wrapper.branchArrays["elTrigSF_down_rel"][0] = elTrigSF_down/elTrigSF
 
@@ -177,26 +204,16 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     muIsoSF_up = 1.
     muIsoSF_down = 1.
 
-    for iMu in range(getattr(event, "nMu")):
-        if dataEra == "2018":
-            idsf     = data[dataEra]["muID"].evaluate(  
-                        min(119., event.Mu_Pt[iMu]), "nominal")
-            idsfErr  = data[dataEra]["muID"].evaluate(  
-                        min(119., event.Mu_Pt[iMu]), "syst")
-            isosf    = data[dataEra]["muISO"].evaluate( 
-                        min(119., event.Mu_Pt[iMu]), "nominal")
-            isosfErr = data[dataEra]["muISO"].evaluate( 
-                        min(119., event.Mu_Pt[iMu]), "syst")
-        else:
-            idsf     = data[dataEra]["muID"].evaluate(  
-                        abs(event.Mu_Eta[iMu]), min(119., event.Mu_Pt[iMu]), "nominal")
-            idsfErr  = data[dataEra]["muID"].evaluate(  
-                        abs(event.Mu_Eta[iMu]), min(119., event.Mu_Pt[iMu]), "syst")
-            isosf    = data[dataEra]["muISO"].evaluate( 
-                        abs(event.Mu_Eta[iMu]), min(119., event.Mu_Pt[iMu]), "nominal")
-            isosfErr = data[dataEra]["muISO"].evaluate( 
-                        abs(event.Mu_Eta[iMu]), min(119., event.Mu_Pt[iMu]), "syst")
-
+    for iMu in range(getattr(event, "nMu_tight")):
+        idsf     = data[dataEra]["muID"].evaluate(
+                    dataEra+"_UL", abs(event.Mu_Eta_tight[iMu]), event.Mu_Pt_tight[iMu], "sf")
+        idsfErr  = data[dataEra]["muID"].evaluate(  
+                    dataEra+"_UL", abs(event.Mu_Eta_tight[iMu]), event.Mu_Pt_tight[iMu], "systup")
+        isosf    = data[dataEra]["muISO"].evaluate( 
+                    dataEra+"_UL", abs(event.Mu_Eta_tight[iMu]), event.Mu_Pt_tight[iMu], "sf")
+        isosfErr = data[dataEra]["muISO"].evaluate( 
+                    dataEra+"_UL", abs(event.Mu_Eta_tight[iMu]), event.Mu_Pt_tight[iMu], "systdown")
+        
 
         muIDSF        *= idsf
         muIsoSF       *= isosf
@@ -207,20 +224,64 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
         muIsoSF_up    *= (isosf + isosfErr)
         muIsoSF_down  *= (isosf - isosfErr)
 
+        
         trig    = data[dataEra]["muTrig"].evaluate(
-                    abs(event.Mu_Eta[iMu]), min(199., event.Mu_Pt[iMu]), "nominal")
+                       dataEra+"_UL", abs(event.Mu_Eta_tight[iMu]), max(29.,event.Mu_Pt_tight[iMu]), "sf")
         trigErr = data[dataEra]["muTrig"].evaluate(
-                    abs(event.Mu_Eta[iMu]), min(199., event.Mu_Pt[iMu]), "syst")
-        muTrigSF      *= trig
-        muTrigSF_up   *= (trig+trigErr)
-        muTrigSF_down *= (trig-trigErr)
+                       dataEra+"_UL", abs(event.Mu_Eta_tight[iMu]), max(29.,event.Mu_Pt_tight[iMu]), "syst")
+        
+        #idsf     = data["muID"].evaluate(  
+        #           event.Mu_Pt_tight[iMu], "nominal")
+        #idsfErr  = data["muID"].evaluate(  
+        #           event.Mu_Pt_tight[iMu], "syst")
+        #isosf    = data["muISO"].evaluate( 
+        #           event.Mu_Pt_tight[iMu], "nominal")
+        #isosfErr = data["muISO"].evaluate( 
+        #           event.Mu_Pt_tight[iMu], "syst")
+      
+
+        #else:
+        #    idsf     = data[dataEra]["muID"].evaluate(  
+        #                abs(event.Mu_Eta_tight[iMu]), event.Mu_Pt_tight[iMu], "nominal")
+        #    idsfErr  = data[dataEra]["muID"].evaluate(  
+        #                abs(event.Mu_Eta_tight[iMu]), event.Mu_Pt_tight[iMu], "syst")
+        #    isosf    = data[dataEra]["muISO"].evaluate( 
+        #                abs(event.Mu_Eta_tight[iMu]), event.Mu_Pt_tight[iMu], "nominal")
+        #    isosfErr = data[dataEra]["muISO"].evaluate( 
+        #                abs(event.Mu_Eta_tight[iMu]), event.Mu_Pt_tight[iMu], "syst")
+        #
+        #
+        #muIDSF        *= idsf
+        #muIsoSF       *= isosf
+        #
+        #muIDSF_up     *= (idsf + idsfErr)
+        #muIDSF_down   *= (idsf - idsfErr)
+        #
+        #muIsoSF_up    *= (isosf + isosfErr)
+        #muIsoSF_down  *= (isosf - isosfErr)
+        #
+        ##trig    = data[dataEra]["muTrig"].evaluate(
+        ##            abs(event.Mu_Eta_tight[iMu]), min(199., event.Mu_Pt_tight[iMu]), "nominal")
+        ##trigErr = data[dataEra]["muTrig"].evaluate(
+        ##            abs(event.Mu_Eta_tight[iMu]), min(199., event.Mu_Pt_tight[iMu]), "syst")
+        ##muTrigSF      *= trig
+        ##muTrigSF_up   *= (trig+trigErr)
+        ##muTrigSF_down *= (trig-trigErr)
+        #trig    = data[dataEra]["muTrig"].evaluate(
+        #            abs(event.Mu_Eta_tight[iMu]), event.Mu_Pt_tight[iMu], "nominal")
+        #trigErr = data[dataEra]["muTrig"].evaluate(
+        #            abs(event.Mu_Eta_tight[iMu]), event.Mu_Pt_tight[iMu], "syst")
+        #muTrigSF      *= trig
+        #muTrigSF_up   *= (trig+trigErr)
+        
+
 
     wrapper.branchArrays["muTrigSF"][0] = muTrigSF
     wrapper.branchArrays["muIDSF"][0]   = muIDSF
     wrapper.branchArrays["muIsoSF"][0]  = muIsoSF
 
     # relative SFs only when exactly one muon is present
-    if event.nMu == 1 and event.nLooseLep == 1:
+    if event.nMu_tight == 1 and event.nLep_loose == 1:
         wrapper.branchArrays["muTrigSF_up_rel"][0]   = muTrigSF_up/muTrigSF
         wrapper.branchArrays["muTrigSF_down_rel"][0] = muTrigSF_down/muTrigSF
             
@@ -241,3 +302,4 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
 
     return event
 
+    print(elTrigSF)
