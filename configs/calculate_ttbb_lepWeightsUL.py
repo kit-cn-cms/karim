@@ -319,4 +319,4 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
 
     return event
 
-    print(elTrigSF)
+    
