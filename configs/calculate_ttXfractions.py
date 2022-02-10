@@ -32,16 +32,14 @@ def set_branches(wrapper):
     wrapper.SetIntVar("nGenBJets")
     wrapper.SetIntVar("nGenCJets")
 
+    wrapper.SetIntVar("allisZbb")
+    wrapper.SetIntVar("allisZcc")
     wrapper.SetIntVar("isZbb")
     wrapper.SetIntVar("isZcc")
     wrapper.SetFloatVar("nZbb")
     wrapper.SetFloatVar("nZcc")
-   # wrapper.SetFloatVar("Zbb_frac")
-   # wrapper.SetFloatVar("Zcc_frac")
-    
-   # wrapper.SetIntVar("isZbb","nGenBJets")
-   # wrapper.SetIntVar("isZcc","nGenCJets")
-   #wrapper.SetFloatVar("Weight_GEN")
+             
+   
 
 def calculate_variables():
 
@@ -50,41 +48,47 @@ def calculate_variables():
     zJetFlavours = []
     nZbb  = 0
     nZcc  = 0
-    for i in nGenJets:
-        if genJet_jetMatcherClass[i] == 5: zjetFlavours.append(genjet_hadronFlavour[i])
+    for i in range(event.nGenJets):
+        if event.genJet_jetMatcherClass[i] == 5: zjetFlavours.append(event.genjet_hadronFlavour[i])
 
 
     #2 jets coming from the Z, so in the best case, the events have nZbb = 2 when isZbb = 1
-    zJetFlavours_combn = [i for i in combinations(zJetFlavours,2)]
+    #zJetFlavours_combn = [i for i in combinations(zJetFlavours,2)]
     
-    if all(zJetFlavours==5):   
-        isZbb = 1
-    elif all(zJetFlavours==4): 
-        isZcc = 1
+    if all(f==5 for f in zJetFlavours):   
+        allisZbb = 1
+    elif all([f==4 for f in zJetFlavours): 
+        allisZcc = 1
     else:
-        isZbb = 0
-        isZcc = 0
+        allisZbb = 0
+        allisZcc = 0
 
-    for i in range(0,len(zJetFlavours_combn)):
-        if zJetFlavours_combn[i]==(5,5):
-            #isZbb[i] = 1
-            nZbb    += 1
-            isZbb    = 1
-        elif zJetFlavours_combn[i]==(4,4):
-            #isZcc[i] = 1
-            nZcc    += 1
-            isZcc    = 1
-        else:
-            isZbb = 0
-            isZcc = 0
+    #for i in range(0,len(zJetFlavours_combn)):
+    #    if zJetFlavours_combn[i]==(5,5):
+    #        #isZbb[i] = 1
+    #        nbfromZ    += 1
+    #    elif zJetFlavours_combn[i]==(4,4):
+    #        #isZcc[i] = 1
+    #        ncfromZ    += 1
+    #    
+    for i in range(0,len(zJetFlavours)):
+        if zJetFlavour[i]==5:
+             nZbb += 1
+        elif zJetFlavour[i]==4:
+             nZcc += 1
 
-    #isZbb = nZbb/event.Weight_GEN
-    #isZcc = nZcc/event.Weight_GEN
+    if nZbb % 2 ==0: isZbb = nZbb/2
+    else:            isZbb = (nZbb/2)+1
+    if nZcc % 2==0:  isZbb = nZcc/2
+    else:            isZcc= (nZcc/2)+1
+             
   
-    wrapper.branchArrays["isZbb"][0] = isZbb
-    wrapper.branchArrays["isZcc"][0] = isZcc
-    wrapper.branchArrays["nZbb"][0]  = nZbb
-    wrapper.branchArrays["nZcc"][0]  = nZcc
+    wrapper.branchArrays["allisZbb"][0] = allisZbb
+    wrapper.branchArrays["allisZcc"][0] = allisZcc
+    wrapper.branchArrays["isZbb"][0]    = isZbb
+    wrapper.branchArrays["isZcc"][0]    = isZcc
+    wrapper.branchArrays["nZbb"][0]     = nZbb
+    wrapper.branchArrays["nZcc"][0]     = nZcc
 
     return event
 
