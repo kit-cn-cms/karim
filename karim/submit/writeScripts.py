@@ -13,6 +13,7 @@ eval `scram runtime -sh`
 cd -
 
 export KERAS_BACKEND=tensorflow
+source /nfs/dust/cms/user/jdriesch/test/venv_python38_gpu/bin/activate
 """
 recoTemplate = """
 python3 {basepath}/scripts/karim.py -M {mode} -m {dnnModel} -c {config} -o {outPath} {dataEra} {friendTrees} {files}
@@ -35,7 +36,8 @@ def writeScripts(inputSample, scriptDir, options, basepath):
     split input sample in chunks according to maximum number of events per job
     create shell script to submit job
     '''
-    rootfiles = glob.glob("/".join([inputSample, "tree*{}*.root".format(options.name_requirement)]))
+    # rootfiles = glob.glob("/".join([inputSample, "tree*{}*.root".format(options.name_requirement)]))
+    rootfiles = glob.glob("/".join([inputSample, "MC*{}*.root".format(options.name_requirement)]))
     print(" ===== SAMPLE ===== ")
     print(inputSample)
     print(" ================== ")

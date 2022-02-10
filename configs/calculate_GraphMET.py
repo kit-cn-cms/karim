@@ -36,7 +36,7 @@ def evaluate(model, device, loss_fn, dataloader, metrics, deltaR, deltaR_dz, mod
             METy = -scatter_add(weights*data.x[:,1], data.batch)
     
     MET_pt = (METx**2 + METy**2)**.5
-    MET_phi = torch.atan(METy*1./ METx)
+    MET_phi = torch.atan2(METy,METx)
 
     return MET_pt, MET_phi
 
@@ -84,6 +84,20 @@ def set_branches(wrapper, jec=None):
     wrapper.SetIntVar("Evt_ID")   
     wrapper.SetIntVar("Evt_Run")   
     wrapper.SetIntVar("Evt_Lumi")   
+    
+    wrapper.SetFloatVar("DeepMETResolutionTune_phi")
+    wrapper.SetFloatVar("DeepMETResolutionTune_pt")
+    wrapper.SetFloatVar("DeepMETResponseTune_phi")
+    wrapper.SetFloatVar("DeepMETResponseTune_pt")
+
+    wrapper.SetFloatVar("GenMET_phi")
+    wrapper.SetFloatVar("GenMET_pt")
+
+    wrapper.SetFloatVar("PuppiMET_phi")
+    wrapper.SetFloatVar("PuppiMET_pt")
+
+    wrapper.SetFloatVar("MET_phi")
+    wrapper.SetFloatVar("MET_pt")
 
     wrapper.SetFloatVar("GraphMET_pt")
     wrapper.SetFloatVar("GraphMET_phi")
@@ -92,9 +106,28 @@ def set_branches(wrapper, jec=None):
 def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights = None):
 
     # add basic information for friend trees
-    wrapper.branchArrays["Evt_ID"][0] = getattr(event, "Evt_ID")
-    wrapper.branchArrays["Evt_Run"][0]   = getattr(event, "Evt_Run")
-    wrapper.branchArrays["Evt_Lumi"][0]  = getattr(event, "Evt_Lumi")
+    # wrapper.branchArrays["Evt_ID"][0] = getattr(event, "Evt_ID")
+    # wrapper.branchArrays["Evt_Run"][0]   = getattr(event, "Evt_Run")
+    # wrapper.branchArrays["Evt_Lumi"][0]  = getattr(event, "Evt_Lumi")
+
+    wrapper.branchArrays["Evt_ID"][0] = getattr(event, "event")
+    wrapper.branchArrays["Evt_Run"][0]   = getattr(event, "run")
+    wrapper.branchArrays["Evt_Lumi"][0]  = getattr(event, "luminosityBlock")
+
+    wrapper.branchArrays["DeepMETResolutionTune_phi"][0] = getattr(event, "DeepMETResolutionTune_phi")
+    wrapper.branchArrays["DeepMETResolutionTune_pt"][0] = getattr(event, "DeepMETResolutionTune_pt")
+    wrapper.branchArrays["DeepMETResponseTune_phi"][0] = getattr(event, "DeepMETResponseTune_phi")
+    wrapper.branchArrays["DeepMETResponseTune_pt"][0] = getattr(event, "DeepMETResponseTune_pt")
+
+    wrapper.branchArrays["GenMET_phi"][0] = getattr(event, "GenMET_phi")
+    wrapper.branchArrays["GenMET_pt"][0] = getattr(event, "GenMET_pt")
+
+    wrapper.branchArrays["PuppiMET_phi"][0] = getattr(event, "PuppiMET_phi")
+    wrapper.branchArrays["PuppiMET_pt"][0] = getattr(event, "PuppiMET_pt")
+
+    wrapper.branchArrays["MET_phi"][0] = getattr(event, "MET_phi")
+    wrapper.branchArrays["MET_pt"][0] = getattr(event, "MET_pt")
+
 
     # load PF data from one event into torch dataloader
     data = load_pfinfo(event, batch_size=1, shuffle=False)

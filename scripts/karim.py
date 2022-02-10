@@ -132,7 +132,7 @@ for ntuple in args:
             modelconfigpath = opts.model,
             configpath      = os.path.abspath(opts.config_path),
             friendTrees     = friendTrees,
-            dataEra     = opts.dataEra,
+            dataEra         = opts.dataEra,
             outpath         = "/".join([outfilePath, outfileName]),
             apply_selection = opts.apply_selection,
             write_input_vars= opts.write_input_vars
