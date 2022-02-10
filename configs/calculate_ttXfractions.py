@@ -3,6 +3,7 @@ import common
 import weightModules
 from array import array
 import os
+from itertools import combinations 
 
 def get_additional_variables():
     '''                                                                                                                                                                 
@@ -31,8 +32,8 @@ def set_branches(wrapper):
     wrapper.SetIntVar("nGenBJets")
     wrapper.SetIntVar("nGenCJets")
 
-    wrapper.SetFloatVar("isZbb")
-    wrapper.SetFloatVar("isZcc")
+    wrapper.SetIntVar("isZbb")
+    wrapper.SetIntVar("isZcc")
     wrapper.SetFloatVar("nZbb")
     wrapper.SetFloatVar("nZcc")
    # wrapper.SetFloatVar("Zbb_frac")
@@ -43,28 +44,43 @@ def set_branches(wrapper):
    #wrapper.SetFloatVar("Weight_GEN")
 
 def calculate_variables():
+
+    wrapper.branchArrays["event"][0] = getattr(event, "event")
+
     zJetFlavours = []
-    isZbb = 1.
-    isZcc = 1.
     nZbb  = 0
     nZcc  = 0
     for i in nGenJets:
         if genJet_jetMatcherClass[i] == 5: zjetFlavours.append(genjet_hadronFlavour[i])
 
-    if all(zJetFlavours==5):   isZbb = 1
-    elif all(zJetFlavours==4): isZcc = 1
 
-    for i in zJetFlavours:
-        if zJetFlavours[i]==5:
+    #2 jets coming from the Z, so in the best case, the events have nZbb = 2 when isZbb = 1
+    zJetFlavours_combn = [i for i in combinations(zJetFlavours,2)]
+    
+    if all(zJetFlavours==5):   
+        isZbb = 1 
+    elif all(zJetFlavours==4): 
+        isZcc = 1
+        #isZbb = 0
+
+    for i in range(0,len(zJetFlavours_combn)):
+        if zJetFlavours_combn[i]==(5,5):
             #isZbb[i] = 1
             nZbb    += 1
-        if zJetFlavours[i]==4:
+            isZbb    = 1
+        elif zJetFlavours_combn[i]==(4,4):
             #isZcc[i] = 1
             nZcc    += 1
-    
-    isZbb = nZbb/len(event.Weight_GEN)
-    isZcc = nZcc/len(event.Weight_GEN)
-    
+            isZcc    = 1
+ 
+    #isZbb = nZbb/event.Weight_GEN
+    #isZcc = nZcc/event.Weight_GEN
+  
+    wrapper.branchArrays["isZbb"][0] = isZbb
+    wrapper.branchArrays["isZcc"][0] = isZcc
+    wrapper.branchArrays["nZbb"][0]  = nZbb
+    wrapper.branchArrays["nZcc"][0]  = nZcc
+
     return event
 
     
