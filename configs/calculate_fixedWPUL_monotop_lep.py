@@ -5,18 +5,17 @@ from array import array
 import os
 import sys
 from correctionlib import _core
-import json
-jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration", "POG")
 
 filepath = os.path.abspath(__file__)
 karimpath = os.path.dirname(os.path.dirname(filepath))
 
 btagSF = {}
-# mistagSF = {}
 btagEff = {}
-#for year in ["2018"]:
-for year in ["2017", "2018"]:
-    # eficiencies
+jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration", "POG")
+
+
+for year in ["2016preVFP", "2016postVFP", "2017", "2018"]:
+    # efficiencies
     sfDir = os.path.join(karimpath, "data", "UL_"+year[2:])
     btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_monotop_lep_deepJet.json"))
     btagEff[year] = btagEffjson["btagEff"]
@@ -24,18 +23,10 @@ for year in ["2017", "2018"]:
     # scale factors
     btagSFjson = _core.CorrectionSet.from_file(
         os.path.join(jsonDir, "BTV", year+"_UL", "btagging.json.gz"))
+    btagSF[year]   = btagSFjson
 
-    btagSF[year]   = btagSFjson["deepJet_wp"]
-
-    '''
-    btagSFjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btaggingSF_deepJet.json"))
-    btagSF[year] = btagSFjson["comb"]
-    mistagSF[year] = btagSFjson["incl"]
-    '''
-
-
-SFb_sys = ["up","down"]
-SFl_sys = ["up","down"]
+SFb_sys = ["up_correlated","up_uncorrelated","down_correlated","down_uncorrelated"]
+SFl_sys = ["up_correlated","up_uncorrelated","down_correlated","down_uncorrelated"]
 
 def get_additional_variables():
     '''
@@ -110,15 +101,15 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         eff_M = btagEff[dataEra].evaluate("M", flav, eta, pt)
 
         if flav == 0:
-            sf_M = btagSF[dataEra].evaluate("central", "incl", "M", flav, eta, pt)
+            sf_M = btagSF[dataEra]["deepJet_incl"].evaluate("central", "M", flav, eta, pt)
             if jec == "nom":
                 for sys in SFl_sys:
-                    sfl_M[sys] = btagSF[dataEra].evaluate(sys, "incl", "M", flav, eta, pt)
+                    sfl_M[sys] = btagSF[dataEra]["deepJet_incl"].evaluate(sys, "M", flav, eta, pt)
         else:
-            sf_M = btagSF[dataEra].evaluate("central", "comb", "M", flav, eta, pt)
+            sf_M = btagSF[dataEra]["deepJet_comb"].evaluate("central", "M", flav, eta, pt)
             if jec == "nom":
                 for sys in SFb_sys:
-                    sfb_M[sys] = btagSF[dataEra].evaluate(sys, "comb", "M", flav, eta, pt)
+                    sfb_M[sys] = btagSF[dataEra]["deepJet_comb"].evaluate(sys, "M", flav, eta, pt)
 
         if passes_M:
             P_MC   *= eff_M
@@ -157,4 +148,3 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
             wrapper.branchArrays["fixedWPSFb_"+sys+"_rel"][0] = Pb_DATA[sys]/P_DATA
 
     return event
-
