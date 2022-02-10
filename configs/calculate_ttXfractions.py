@@ -58,10 +58,12 @@ def calculate_variables():
     zJetFlavours_combn = [i for i in combinations(zJetFlavours,2)]
     
     if all(zJetFlavours==5):   
-        isZbb = 1 
+        isZbb = 1
     elif all(zJetFlavours==4): 
         isZcc = 1
-        #isZbb = 0
+    else:
+        isZbb = 0
+        isZcc = 0
 
     for i in range(0,len(zJetFlavours_combn)):
         if zJetFlavours_combn[i]==(5,5):
@@ -72,7 +74,10 @@ def calculate_variables():
             #isZcc[i] = 1
             nZcc    += 1
             isZcc    = 1
- 
+        else:
+            isZbb = 0
+            isZcc = 0
+
     #isZbb = nZbb/event.Weight_GEN
     #isZcc = nZcc/event.Weight_GEN
   
