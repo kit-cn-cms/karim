@@ -37,15 +37,15 @@ def set_branches(wrapper, jec):
 
     wrapper.SetIntVar("allisZbb")
     wrapper.SetIntVar("allisZcc")
-    wrapper.SetIntVar("isZbb")
-    wrapper.SetIntVar("isZcc")
+    wrapper.SetFloatVar("isZbb")
+    wrapper.SetFloatVar("isZcc")
     wrapper.SetFloatVar("nZbb")
     wrapper.SetFloatVar("nZcc")
 
     wrapper.SetIntVar("allisHbb")
     wrapper.SetIntVar("allisHcc")
-    wrapper.SetIntVar("isHbb")
-    wrapper.SetIntVar("isHcc")
+    wrapper.SetFloatVar("isHbb")
+    wrapper.SetFloatVar("isHcc")
     wrapper.SetFloatVar("nHbb")
     wrapper.SetFloatVar("nHcc")
     #wrapper.SetFloatVarArray("zJetFlavours","genJet_hadronFlavour")
@@ -67,20 +67,20 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     nHbb  = 0
     nHcc  = 0
     for i in range(event.nGenJets):
-        if event.genJet_jetMatcherClass[i] == 5: zJetFlavours.append(event.genJet_hadronFlavour[i])
+        if event.genJet_jetMatcherClass[i] == 5:   zJetFlavours.append(event.genJet_hadronFlavour[i])
         elif event.genJet_jetMatcherClass[i] == 4: hJetFlavours.append(event.genJet_hadronFlavour[i])
 
 
     #2 jets coming from the Z, so in the best case, the events have nZbb = 2 when isZbb = 1
     #zJetFlavours_combn = [i for i in combinations(zJetFlavours,2)]
-    
-    if all([f==5 for f in zJetFlavours]):   
-        allisZbb = 1
-    elif all([f==4 for f in zJetFlavours]): 
-        allisZcc = 1
-    else:
-        allisZbb = 0
-        allisZcc = 0
+    if len(zJetFlavours>0):
+        if all([f==5 for f in zJetFlavours]):   
+            allisZbb = 1
+        elif all([f==4 for f in zJetFlavours]): 
+            allisZcc = 1
+        else:
+            allisZbb = 0
+            allisZcc = 0
 
     #for i in range(0,len(zJetFlavours_combn)):
     #    if zJetFlavours_combn[i]==(5,5):
@@ -90,6 +90,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     #        #isZcc[i] = 1
     #        ncfromZ    += 1
     #    
+    
     for i in range(0,len(zJetFlavours)):
         if zJetFlavours[i]==5:
              nZbb += 1
@@ -103,13 +104,14 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     
 
     ##ttH decay fractions
-    if all([f==5 for f in hJetFlavours]):   
-        allisHbb = 1
-    elif all([f==4 for f in hJetFlavours]): 
-        allisHcc = 1
-    else:
-        allisHbb = 0
-        allisHcc = 0
+    if len(hJetFlavours>0):
+        if all([f==5 for f in hJetFlavours]):   
+            allisHbb = 1
+        elif all([f==4 for f in hJetFlavours]): 
+            allisHcc = 1
+        else:
+            allisHbb = 0
+            allisHcc = 0
         
     for i in range(0,len(hJetFlavours)):
         if hJetFlavours[i]==5:
