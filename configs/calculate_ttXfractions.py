@@ -68,7 +68,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     nHcc  = 0
     for i in range(event.nGenJets):
         if event.genJet_jetMatcherClass[i] == 5: zJetFlavours.append(event.genJet_hadronFlavour[i])
-        if event.genJet_jetMatcherClass[i] == 4: hJetFlavours.append(event.genJet_hadronFlavour[i])
+        elif event.genJet_jetMatcherClass[i] == 4: hJetFlavours.append(event.genJet_hadronFlavour[i])
 
 
     #2 jets coming from the Z, so in the best case, the events have nZbb = 2 when isZbb = 1
