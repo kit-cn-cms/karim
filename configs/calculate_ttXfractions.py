@@ -81,6 +81,16 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         else:
             allisZbb = 0
             allisZcc = 0
+    ##ttH decay fractions
+    elif len(hJetFlavours)>0:
+        if all([f==5 for f in hJetFlavours]):   
+            allisHbb = 1
+        elif all([f==4 for f in hJetFlavours]): 
+            allisHcc = 1
+        else:
+            allisHbb = 0
+            allisHcc = 0
+    
 
     #for i in range(0,len(zJetFlavours_combn)):
     #    if zJetFlavours_combn[i]==(5,5):
@@ -96,7 +106,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
              nZbb += 1
         elif zJetFlavours[i]==4:
              nZcc += 1
-
+    
     #to account for b/cs out of the acceptance of the detector
     #if in an event, Z->b (one b is missed) if Z->0bs, then another type of decay, if Z->bb, then correctly identified.
     if (nZbb % 2) ==0: isZbb = nZbb
@@ -105,22 +115,12 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     else:              isZcc= (nZcc)+1
     
 
-    ##ttH decay fractions
-    if len(hJetFlavours)>0:
-        if all([f==5 for f in hJetFlavours]):   
-            allisHbb = 1
-        elif all([f==4 for f in hJetFlavours]): 
-            allisHcc = 1
-        else:
-            allisHbb = 0
-            allisHcc = 0
-        
     for i in range(0,len(hJetFlavours)):
         if hJetFlavours[i]==5:
              nHbb += 1
         elif hJetFlavours[i]==4:
              nHcc += 1
-
+    
     if (nHbb % 2) ==0: isHbb = nHbb
     else:              isHbb = (nHbb)+1
     if (nHcc % 2)==0:  isHcc = nHcc/2
@@ -141,7 +141,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     wrapper.branchArrays["nHbb"][0]     = nHbb
     wrapper.branchArrays["nHcc"][0]     = nHcc
 
-    print(nZbb)
+    print(nHbb)
     return event
     
     
