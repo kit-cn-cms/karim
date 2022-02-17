@@ -11,9 +11,9 @@ source /nfs/dust/cms/user/jdriesch/test/venv_python38_gpu/bin/activate
 This environment uses python 3.8 with cuda 10.2 and torch 1.8.0.
 However, if you want to create your own virtual environment, you can follow the steps in a new shell:
 1. ```source /cvmfs/sft.cern.ch/lcg/releases/LCG_101/Python/3.9.6/x86_64-centos7-gcc8-opt/Python-env.sh``` for python 3.9 or ```source /cvmfs/sft.cern.ch/lcg/releases/LCG_100/Python/3.8.6/x86_64-centos7-gcc8-opt/Python-env.sh``` for python 3.8
-3. Do ```python -m venv venv_python39_gpu``` in the directory where you want to put the virtual environment
-4. activate the virtual environment with ```source /PathToVENV/bin/activate```
-5. Install your packages, you might want to consider applying the following method for specific versions:
+2. Do ```python -m venv venv_python39_gpu``` in the directory where you want to put the virtual environment
+3. activate the virtual environment with ```source /PathToVENV/bin/activate```
+4. Install your packages, you might want to consider applying the following method for specific versions:
 ```
 export TORCHV="1.8.0"
 pip install cudatoolkit=10.2
@@ -25,9 +25,9 @@ pip install torch-cluster -f https://pytorch-geometric.com/whl/torch-${TORCHV}+$
 pip install torch-spline-conv -f https://pytorch-geometric.com/whl/torch-${TORCHV}+${CUDA}.html
 pip install torch-geometric==1.7.0
 ```
-6. deactivate your venv via ```deactivate```
-7. Write the following in the beginning of your activate script: ```source /cvmfs/sft.cern.ch/lcg/releases/LCG_101/ROOT/6.24.06/x86_64-centos7-gcc8-opt/ROOT-env.sh```
-8. The venv should now work
+5. deactivate your venv via ```deactivate```
+6. Write the following in the beginning of your activate script: ```source /cvmfs/sft.cern.ch/lcg/releases/LCG_101/ROOT/6.24.06/x86_64-centos7-gcc8-opt/ROOT-env.sh```
+7. The venv should now work
 
 # ATTENTION
 
