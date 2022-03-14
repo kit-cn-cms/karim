@@ -26,22 +26,8 @@ class Model:
             self.config = self.model.config
             return
 
-        if os.path.exists("/".join([self.modelPath, "checkpoints"])):
-            self.modelPath = "/".join([self.modelPath, "checkpoints"])
-        # load config file
-        configFile = self.modelPath+"/net_config.json"
-        if not os.path.exists(configFile):
-            sys.exit("could not find config file {}, cannot load DNN".format(configFile))
-
-        with open(configFile) as f:
-            self.config = f.read()
-        self.config = json.loads(self.config)
-
-
         # load trained model
-        checkpointPath = self.modelPath+"/trained_model.h5py"
-        if not os.path.exists(checkpointPath):
-            sys.exit("could not find trained model {}".format(checkpointPath))
+        checkpointPath = self.modelPath
 
         print("\nloading DNN model from {}\n".format(self.modelPath))
         try:
@@ -64,30 +50,18 @@ class Model:
             self.variables = self.model.testVariables
             return 
 
-        # load variable normalization
-        normFile = self.modelPath+"/variable_norm.csv"
-        if not os.path.exists(normFile):
-            sys.exit("could not find file with variable norms {}".format(normFile))
-        
-        self.variable_norms = pd.read_csv(normFile, index_col=0)
-        print("\nvariable norms:")
-        print(self.variable_norms)
-        self.variables = list(self.variable_norms.index.values)
-
     def findBest(self, data):
         '''
         evaluate DNN for all entries given
         
         output: node index of highest output value
         '''
+
         if self.testModel:
             predictions = np.random.random(15)
             bestIndex = np.argmax(predictions)
             return bestIndex, predictions[bestIndex]
 
-        predictions = self.model.predict(data)
+        predictions = self.model.predict(data)[0]
         bestIndex = np.argmax(predictions)
         return bestIndex, predictions[bestIndex]
-
-    
-

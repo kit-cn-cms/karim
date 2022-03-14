@@ -75,22 +75,22 @@ class Vectors:
         vectors2 = self.vectors[obj2]
         return [vectors1[i].Angle(vectors2[i].Vect()) for i in range(len(vectors1))]
 
-    def initIndexedVector(self, event, obj, idx):
+    def initIndexedVector(self, event, obj, idx, suffix=""):
         self.vectors[obj+"_"+str(idx)] = np.array([ROOT.TLorentzVector() for _ in range(self.length)])
         if self.isTree:
             self.vectors[obj+"_"+str(idx)][0].SetPtEtaPhiE(
-                eval("event."+obj+"_Pt[{}]".format(idx)),
-                eval("event."+obj+"_Eta[{}]".format(idx)),
-                eval("event."+obj+"_Phi[{}]".format(idx)),
-                eval("event."+obj+"_E[{}]".format(idx))
+                eval("event."+obj+"_Pt"+suffix+"[{}]".format(idx)),
+                eval("event."+obj+"_Eta"+suffix+"[{}]".format(idx)),
+                eval("event."+obj+"_Phi"+suffix+"[{}]".format(idx)),
+                eval("event."+obj+"_E"+suffix+"[{}]".format(idx)),
                 )
         else:
             for i, entry in event.iterrows():
                 self.vectors[obj+"_"+str(idx)][i].SetPtEtaPhiE(
-                    entry[obj+"_Pt[{}]".format(idx)],
-                    entry[obj+"_Eta[{}]".format(idx)],
-                    entry[obj+"_Phi[{}]".format(idx)],
-                    entry[obj+"_E[{}]".format(idx)]
+                    entry[obj+"_Pt"+suffix+"[{}]".format(idx)],
+                    entry[obj+"_Eta"+suffix+"[{}]".format(idx)],
+                    entry[obj+"_Phi"+suffix+"[{}]".format(idx)],
+                    entry[obj+"_E"+suffix+"[{}]".format(idx)],
                     )
 
     def addNeutrino(self, event, metPt, metPhi, lepName):
@@ -117,9 +117,6 @@ class Vectors:
                 nu_px[i], nu_py[i], pz, 0.)
             self.vectors["nu"][i].SetE(
                 self.vectors["nu"][i].P())
-
-
-
 
 def get_dPhi(phi1, phi2):
     dphi = abs(phi1-phi2)
