@@ -91,8 +91,8 @@ def get_additional_variables():
         "Jet_Phi_SYS[3]",           #jet4_phi
         "Jet_M_SYS[3]",             #jet4_m
         "Jet_E_SYS[3]",             #jet1_m
-        "Jet_btagValue_SYS[3]",     #jet4_btag
-
+        "Jet_btagValue_SYS[3]"      #jet4_btag
+      
         ]
     return variables
 
