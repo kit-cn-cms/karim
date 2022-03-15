@@ -53,7 +53,6 @@ def get_additional_variables():
     variables = [
 
         "nTagsM_SYS",               #nbjets_m
-        "nLightM_SYS",              #ncjets_m
         "nJets_SYS",                #ngoodjets
         "HT_SYS",                   #Ht
 
@@ -72,7 +71,6 @@ def get_additional_variables():
         "Jet_M_SYS[0]",             #jet1_m
         "Jet_E_SYS[0]",             #jet1_m
         "Jet_btagValue_SYS[0]",     #jet1_btag
-        "Jet_ctagValue_SYS[0]",     #jet1_cvsl
 
         "Jet_Pt_SYS[1]",            #jet2_pt
         "Jet_Eta_SYS[1]",           #jet2_eta
@@ -80,7 +78,6 @@ def get_additional_variables():
         "Jet_M_SYS[1]",             #jet2_m
         "Jet_E_SYS[1]",             #jet1_m
         "Jet_btagValue_SYS[1]",     #jet2_btag
-        "Jet_ctagValue_SYS[1]",     #jet2_cvsl
 
         "Jet_Pt_SYS[2]",            #jet3_pt
         "Jet_Eta_SYS[2]",           #jet3_eta
@@ -88,7 +85,6 @@ def get_additional_variables():
         "Jet_M_SYS[2]",             #jet3_m
         "Jet_E_SYS[2]",             #jet1_m
         "Jet_btagValue_SYS[2]",     #jet3_btag
-        "Jet_ctagValue_SYS[2]",     #jet3_cvsl
 
         "Jet_Pt_SYS[3]",            #jet4_pt
         "Jet_Eta_SYS[3]",           #jet4_eta
@@ -96,7 +92,6 @@ def get_additional_variables():
         "Jet_M_SYS[3]",             #jet4_m
         "Jet_E_SYS[3]",             #jet1_m
         "Jet_btagValue_SYS[3]",     #jet4_btag
-        "Jet_ctagValue_SYS[3]"      #jet4_cvsl
 
         ]
     return variables
@@ -167,7 +162,6 @@ def get_input_variables():
     evtVar = [
 
         "nTagsM_SYS",               #nbjets_m
-        "nLightM_SYS",              #ncjets_m >> TODO need to find a replacement
         "nJets_SYS",                #ngoodjets
         "HT_SYS",                   #Ht
 
@@ -189,7 +183,6 @@ def get_input_variables():
         "Jet_Eta_SYS[0]",           #jet1_eta
         "Jet_M_SYS[0]",             #jet1_m
         "Jet_btagValue_SYS[0]",     #jet1_btag
-        "Jet_ctagValue_SYS[0]",     #jet1_cvsl
         "Jet1lep_dR",               #dRlep1
         "Jet1nu_dR",                #dRnu1
         "Jet1lep_M",                #invmlep1
@@ -198,7 +191,6 @@ def get_input_variables():
         "Jet_Eta_SYS[1]",           #jet2_eta
         "Jet_M_SYS[1]",             #jet2_m
         "Jet_btagValue_SYS[1]",     #jet2_btag
-        "Jet_ctagValue_SYS[1]",     #jet2_cvsl
         "Jet2lep_dR",               #dRlep2
         "Jet2nu_dR",                #dRnu2
         "Jet2lep_M",                #invmlep2
@@ -207,7 +199,6 @@ def get_input_variables():
         "Jet_Eta_SYS[2]",           #jet3_eta
         "Jet_M_SYS[2]",             #jet3_m
         "Jet_btagValue_SYS[2]",     #jet3_btag
-        "Jet_ctagValue_SYS[2]",     #jet3_cvsl
         "Jet3lep_dR",               #dRlep3
         "Jet3nu_dR",                #dRnu3
         "Jet3lep_M",                #invmlep3
@@ -216,7 +207,6 @@ def get_input_variables():
         "Jet_Eta_SYS[3]",           #jet4_eta
         "Jet_M_SYS[3]",             #jet4_m
         "Jet_btagValue_SYS[3]",     #jet4_btag
-        "Jet_ctagValue_SYS[3]",     #jet4_cvsl
         "Jet4lep_dR",               #dRlep4
         "Jet4nu_dR",                #dRnu4
         "Jet4lep_M"                 #invmlep4
@@ -295,8 +285,8 @@ def get_permutations(df, ptMatrix, btagOrder):
 
     evtVar, jetVar = get_input_variables()
     # HYU convention:
-    evtValues = np.array([data[v] for v in evtVar]).reshape(-1,34)
-    jetValues = np.array([data[v] for v in jetVar]).reshape(-1,4,8)
+    evtValues = np.array([data[v] for v in evtVar]).reshape(-1,33)
+    jetValues = np.array([data[v] for v in jetVar]).reshape(-1,4,7)
 
     return permutations, [evtValues, jetValues]
 
