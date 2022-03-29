@@ -51,9 +51,9 @@ jecs = [
     "jesTotal",
     "jer",
     ]
-validSysts = ["nom"]
-validSysts+= [j+"Up" for j in jecs]
-validSysts+= [j+"Down" for j in jecs]
+validSysts = ["nominal"]
+validSysts+= [j+"up" for j in jecs]
+validSysts+= [j+"down" for j in jecs]
 
 def getSystematics(tree):
     branches = [b.GetName() for b in tree.GetListOfBranches()]
@@ -247,17 +247,19 @@ class GenWeights:
     def getProcessFractions(self):
         # extract gen weight branches
         genWeights = [b for b in self.branches if b.startswith("genWeight")]
-        self.weightTypes = [b.replace("genWeight_", "") for b in genWeights]
+        self.weightTypes = [b.replace("genWeight_", "") for b in genWeights if not b == "genWeight"]
 
-        if not "incl" in self.weightTypes:
-            print("ERROR: could not find 'incl' gen weight in genWeight file")
-            sys.exit()
+        #if not "incl" in self.weightTypes:
+        #    print("ERROR: could not find 'incl' gen weight in genWeight file")
+        #    sys.exit()
 
         self.genFractions = {}
         self.xsNorms = {}
         print("process fractions:")
-        inclh = self.file.Get("genWeight_incl")
+        inclh = self.file.Get("genWeight")
+        self.xsNorms["default"] = 1000./(inclh.GetMean()*inclh.GetEntries())
         for w in self.weightTypes:
+            print(w)
             genh = self.file.Get("genWeight_"+w)
             self.genFractions[w] = genh.GetMean()*genh.GetEntries()/(inclh.GetMean()*inclh.GetEntries())
             # XS usually given in pb, lumi in fb-1

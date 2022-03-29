@@ -16,6 +16,7 @@ def checkFiles(sample, mode, nameRequirement, shellPath, outPath):
     inFiles = glob.glob("/".join(
         [sample, "*{}*.root".format(nameRequirement)]
         ))
+    inFiles = [p for p in inFiles if not "genWeight" in p]
     print("\n\n")
     print(" ===== SAMPLE ===== ")
     print(sample)

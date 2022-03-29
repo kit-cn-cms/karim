@@ -36,6 +36,7 @@ def writeScripts(inputSample, scriptDir, options, basepath):
     create shell script to submit job
     '''
     rootfiles = glob.glob("/".join([inputSample, "tree*{}*.root".format(options.name_requirement)]))
+    rootfiles = [r for r in rootfiles if not "genWeight" in r]
     print(" ===== SAMPLE ===== ")
     print(inputSample)
     print(" ================== ")

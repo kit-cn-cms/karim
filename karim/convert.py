@@ -4,7 +4,7 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-import uproot
+#import uproot
 
 from karim import load as load
 
