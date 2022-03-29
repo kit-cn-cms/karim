@@ -127,10 +127,10 @@ if not os.path.exists(shell_path):
 
 print("set max events per job to {}".format(opts.nevents))
 
+ 
 for sample in args:
     sampleName = os.path.basename(sample)
     outfilePath = "/".join([shell_path, sampleName])
-
     if not os.path.exists(outfilePath):
         os.makedirs(outfilePath)
 
@@ -139,7 +139,6 @@ for sample in args:
         scriptDir   = outfilePath,
         options     = opts,
         basepath    = base)
-
 shelldir = os.path.basename(shell_path)
 
 cmd = " ".join([

@@ -9,12 +9,15 @@ class Config:
         dirname, basename = os.path.split(configpath)
         sys.path.append(dirname)
         config_name = os.path.splitext(basename)[0]
+        print(config_name)
+        print(dirname)
         config = importlib.import_module(config_name)
         print("\nimporting config:\n{}\n".format(configpath))
 
         self.additional_variables   = config.get_additional_variables()
         self.base_selection         = config.base_selection
         self.calculate_variables    = config.calculate_variables
+
 
         if mode == "Reconstruction":
             self.naming     = config.get_naming()

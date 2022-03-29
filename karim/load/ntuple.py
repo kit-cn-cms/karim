@@ -15,7 +15,8 @@ class InputFile(object):
         
         for ft in friendTrees:
             print("adding friendTree {}".format(ft))
-            self.tree.AddFriend("MVATree", ft)        
+            # self.tree.AddFriend("MVATree", ft)        
+            self.tree.AddFriend("Events", ft)        
     
     def __enter__(self):
         return self.tree
