@@ -49,7 +49,8 @@ for year in ["2018", "2017", "2016preVFP", "2016postVFP"]:
 
     # electron trigger
     eleTrigFile = _core.CorrectionSet.from_file(
-        os.path.join(sfDir, "EleTriggerSF_NanoAODv2_v0.json"))
+        #os.path.join(sfDir, "EleTriggerSF_NanoAODv2_v0.json"))
+        os.path.join(sfDir, "EleTriggerSF_NanoAODv9_v0.json"))
     data[year]["eleTrig"] = eleTrigFile["EleTriggerSF"]
 
     # electron ID/RECO
@@ -108,6 +109,11 @@ def set_branches(wrapper, jec = None):
     wrapper.SetFloatVar("pileup")
     wrapper.SetFloatVar("pileup_up_rel")
     wrapper.SetFloatVar("pileup_down_rel")
+
+    wrapper.SetFloatVar("pdf_up")
+    wrapper.SetFloatVar("pdf_up_rel")
+    wrapper.SetFloatVar("pdf_down")
+    wrapper.SetFloatVar("pdf_down_rel")
 
 
 def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genWeights = None):
@@ -248,6 +254,28 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     wrapper.branchArrays["pileup"][0] = pu
     wrapper.branchArrays["pileup_up_rel"][0] = puSF[dataEra].evaluate(float(event.nTruePU), "up")/pu
     wrapper.branchArrays["pileup_down_rel"][0] = puSF[dataEra].evaluate(float(event.nTruePU), "down")/pu
+
+
+    try:
+        nom_pdf = event.Weight_pdf[0]
+        weights = np.array([event.Weight_pdf[i+1] for i in range(len(event.Weight_pdf)-1)])
+        if sample.startswith("TTbb"):
+            residuals = weights-np.mean(weights)
+            variation = (residuals)**2
+            variation = sum(variation)/(len(variation)-1)
+            
+        else:
+            residuals = weights-nom_pdf
+            variation = (residuals)**2
+            variation = sum(variation)
+
+        variation = np.sqrt(variation)
+
+        wrapper.branchArrays["pdf_up"][0]       =  nom_pdf+variation
+        wrapper.branchArrays["pdf_up_rel"][0]   = (nom_pdf+variation)/nom_pdf
+        wrapper.branchArrays["pdf_down"][0]     =  nom_pdf-variation
+        wrapper.branchArrays["pdf_down_rel"][0] = (nom_pdf-variation)/nom_pdf
+    except: pass
 
     return event
 
