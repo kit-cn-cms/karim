@@ -12,6 +12,7 @@ karimpath = os.path.dirname(os.path.dirname(filepath))
 
 
 corr = {}
+simple = {}
 for year in ["2017", "2018", "2016postVFP", "2016preVFP"]:
     yearS = year[2:]
     sfDir = os.path.join(karimpath, "data", "UL_"+yearS)
@@ -20,6 +21,7 @@ for year in ["2017", "2018", "2016postVFP", "2016preVFP"]:
     corrFile = _core.CorrectionSet.from_file(
         os.path.join(sfDir, "btagCorrection_ttbb_deepJet.json"))
     corr[year] = corrFile["shape_correction"]
+    simple[year] = corrFile["simple_shape_correction"]
 
 def get_additional_variables():
     '''
@@ -37,6 +39,7 @@ def set_branches(wrapper, jec):
     suffix = "_"+jec
 
     wrapper.SetFloatVar("btagCorr"+suffix)
+    wrapper.SetFloatVar("btagCorrSimple"+suffix)
 
 def get_proc(event, sample):
     if sample.startswith("TTbb"):
@@ -66,8 +69,12 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
 
     proc = get_proc(event, sample)
     nJet = getattr(event, "nJets"+suffix)
-    c = corr[dataEra].evaluate(proc, max(min(nJet, 8), 4), float(event.nPV), getattr(event, "HT_jets"+suffix))
+    ht = getattr(event, "HT_jets"+suffix)
+    c = corr[dataEra].evaluate(proc, max(min(nJet, 8), 4), float(event.nPV), ht)
     wrapper.branchArrays["btagCorr"+suffix][0] = c
+    s = simple[dataEra].evaluate(proc, float(nJet), ht)
+    wrapper.branchArrays["btagCorrSimple"+suffix][0] = s
+    
 
     return event
 

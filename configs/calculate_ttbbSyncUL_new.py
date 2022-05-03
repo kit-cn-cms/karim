@@ -131,15 +131,25 @@ def set_branches(wrapper, jec = None):
     wrapper.SetFloatVar("jet1_eta")
     wrapper.SetFloatVar("jet1_phi")
     wrapper.SetFloatVar("jet1_deepJet")
+    wrapper.SetFloatVar("jet1_btag_SF_fixWP_M")
+    wrapper.SetFloatVar("jet1_btag_SF_fixWP_T")
+    wrapper.SetFloatVar("jet1_btag_eff_fixWP_M")
+    wrapper.SetFloatVar("jet1_btag_eff_fixWP_T")
+    wrapper.SetFloatVar("jet1_hadronFlavour")
 
     wrapper.SetFloatVar("jet2_pt")
     wrapper.SetFloatVar("jet2_eta")
     wrapper.SetFloatVar("jet2_phi")
     wrapper.SetFloatVar("jet2_deepJet")
+    wrapper.SetFloatVar("jet2_btag_SF_fixWP_M")
+    wrapper.SetFloatVar("jet2_btag_SF_fixWP_T")
+    wrapper.SetFloatVar("jet2_btag_eff_fixWP_M")
+    wrapper.SetFloatVar("jet2_btag_eff_fixWP_T")
+    wrapper.SetFloatVar("jet2_hadronFlavour")
 
     wrapper.SetFloatVar("btag_weight_fixWP_MT")
-    wrapper.SetFloatVar("btag_weight_fixWP_MT_og")
-    wrapper.SetFloatVar("btag_weight_fixWP_MT_alt")
+    #wrapper.SetFloatVar("btag_weight_fixWP_MT_og")
+    #wrapper.SetFloatVar("btag_weight_fixWP_MT_alt")
     wrapper.SetFloatVar("btag_weight_itFit")
 
     wrapper.SetFloatVar("pu_nTrueInt")
@@ -242,6 +252,11 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
         wrapper.branchArrays["jet1_eta"][0] = -1
         wrapper.branchArrays["jet1_phi"][0] = -1
         wrapper.branchArrays["jet1_deepJet"][0] = -1
+        wrapper.branchArrays["jet1_btag_SF_fixWP_M"][0] = -1
+        wrapper.branchArrays["jet1_btag_SF_fixWP_T"][0] = -1
+        wrapper.branchArrays["jet1_btag_eff_fixWP_M"][0] = -1
+        wrapper.branchArrays["jet1_btag_eff_fixWP_T"][0] = -1
+        wrapper.branchArrays["jet1_hadronFlavour"][0] = -1
         #wrapper.branchArrays["jet1_deepJet_shapeSF"][0] = -1
     if event.nJets_nominal > 1:
         wrapper.branchArrays["jet2_pt"][0] = event.Jets_pt_nominal[1]
@@ -254,6 +269,11 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
         wrapper.branchArrays["jet2_eta"][0] = -1
         wrapper.branchArrays["jet2_phi"][0] = -1
         wrapper.branchArrays["jet2_deepJet"][0] = -1
+        wrapper.branchArrays["jet2_btag_SF_fixWP_M"][0] = -1
+        wrapper.branchArrays["jet2_btag_SF_fixWP_T"][0] = -1
+        wrapper.branchArrays["jet2_btag_eff_fixWP_M"][0] = -1
+        wrapper.branchArrays["jet2_btag_eff_fixWP_T"][0] = -1
+        wrapper.branchArrays["jet2_hadronFlavour"][0] = -1
         #wrapper.branchArrays["jet2_deepJet_shapeSF"][0] = -1
 
 
@@ -280,29 +300,55 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
             passes_M = getattr(event, "Jets_taggedM_nominal")[idx]
             passes_T = getattr(event, "Jets_taggedT_nominal")[idx]
 
+            if passes_M and event.Jets_btagDeepFlavB_nominal[idx] < 0.3040:
+                print("ERROR pass WP M: ",event.Jets_btagDeepFlavB_nominal[idx])
+            if (not passes_M) and event.Jets_btagDeepFlavB_nominal[idx] >= 0.7476:
+                print("ERROR fail WP M: ",event.Jets_btagDeepFlavB_nominal[idx])
+            if passes_T and event.Jets_btagDeepFlavB_nominal[idx] < 0.3040:
+                print("ERROR pass WP M: ",event.Jets_btagDeepFlavB_nominal[idx])
+            if (not passes_T) and event.Jets_btagDeepFlavB_nominal[idx] >= 0.7476:
+                print("ERROR fail WP M: ",event.Jets_btagDeepFlavB_nominal[idx])
+
             eff_M = btagEff[dataEra].evaluate("M", flav, eta, pt)
             eff_T = btagEff[dataEra].evaluate("T", flav, eta, pt)
 
             if flav == 0:
-                sf_M = btagSFold[dataEra].evaluate("central", "incl", "M", flav, abseta, pt)
-                sf_T = btagSFold[dataEra].evaluate("central", "incl", "T", flav, abseta, pt)
+                sf_M = ltagSF[dataEra].evaluate("central", "M", flav, abseta, pt)
+                sf_T = ltagSF[dataEra].evaluate("central", "T", flav, abseta, pt)
             else:
-                sf_M = btagSFold[dataEra].evaluate("central", "comb", "M", flav, abseta, pt)
-                sf_T = btagSFold[dataEra].evaluate("central", "comb", "T", flav, abseta, pt)
+                sf_M = btagSF[dataEra].evaluate("central", "M", flav, abseta, pt)
+                sf_T = btagSF[dataEra].evaluate("central", "T", flav, abseta, pt)
+
+            if idx == 0:
+                wrapper.branchArrays["jet1_btag_SF_fixWP_M"][0] = sf_M
+                wrapper.branchArrays["jet1_btag_SF_fixWP_T"][0] = sf_T
+                wrapper.branchArrays["jet1_btag_eff_fixWP_M"][0] = eff_M
+                wrapper.branchArrays["jet1_btag_eff_fixWP_T"][0] = eff_T
+                wrapper.branchArrays["jet1_hadronFlavour"][0] = flav
+            if idx == 1:
+                wrapper.branchArrays["jet2_btag_SF_fixWP_M"][0] = sf_M
+                wrapper.branchArrays["jet2_btag_SF_fixWP_T"][0] = sf_T
+                wrapper.branchArrays["jet2_btag_eff_fixWP_M"][0] = eff_M
+                wrapper.branchArrays["jet2_btag_eff_fixWP_T"][0] = eff_T
+                wrapper.branchArrays["jet2_hadronFlavour"][0] = flav
 
             if passes_T:
-                jetSFs.append(sf_T)
                 P_MC_TM   *= eff_T
                 P_DATA_TM *= eff_T*sf_T
             elif passes_M:
-                jetSFs.append( (sf_M*eff_M - sf_T*eff_T)/(eff_M-eff_T) )
                 P_MC_TM   *= (eff_M      - eff_T)
                 P_DATA_TM *= (eff_M*sf_M - eff_T*sf_T)
             else:
-                jetSFs.append( (1.-sf_M*eff_M)/(1.-eff_M) )
                 P_MC_TM   *= (1. - eff_M)
                 P_DATA_TM *= (1. - eff_M*sf_M)
 
+            '''
+            if idx == 0:
+                wrapper.branchArrays["jet1_bSF"][0] = jetSF
+            if idx == 1:
+                wrapper.branchArrays["jet2_bSF"][0] = jetSF
+            '''
+ 
             ts.append(sf_T)
             ms.append(sf_M)
             te.append(eff_T)
@@ -310,8 +356,8 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
             # itFit
             shapeSF *= itFit[dataEra].evaluate(
                 "central", flav, abseta, pt, event.Jets_btagDeepFlavB_nominal[idx])
-        finalSF = 1.
-        for s in jetSFs: finalSF*=s
+        #finalSF = 1.
+        #for s in jetSFs: finalSF*=s
         if event.event in [608, 8328, 9619, 10298, 11357, 14281]:
             print("eta", [event.Jets_eta_nominal[i] for i in range(event.nJets_nominal)])
             print("pt", [event.Jets_pt_nominal[i] for i in range(event.nJets_nominal)])
@@ -323,14 +369,15 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
             print("sfM", ms)
             print("effT", te)
             print("effM", me)
-            print("jetSFs", jetSFs)
-            print("SF", finalSF)
-        wrapper.branchArrays["btag_weight_fixWP_MT_og"][0] = finalSF
+            #print("jetSFs", jetSFs)
+            #print("SF", finalSF)
+        #wrapper.branchArrays["btag_weight_fixWP_MT_og"][0] = finalSF
         wrapper.branchArrays["btag_weight_fixWP_MT"][0] = P_DATA_TM/P_MC_TM
-        diff= finalSF-(P_DATA_TM/P_MC_TM)
-        if diff > 1e-10: print(diff)
+        #diff= finalSF-(P_DATA_TM/P_MC_TM)
+        #if diff > 1e-10: print(diff)
         wrapper.branchArrays["btag_weight_itFit"][0] = shapeSF
 
+        '''
         jetSF = 1.
         for idx in range(event.nJets_nominal):
             if event.Jets_taggedT_nominal[idx]:
@@ -375,7 +422,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
                 jetSF *= ((1. - sfM*effM)/(1. - effM))
 
         wrapper.branchArrays["btag_weight_fixWP_MT_alt"][0] = jetSF
-
+        '''
     wrapper.branchArrays["nPV"][0] = event.nPV
     if isData:
         wrapper.branchArrays["pu_nTrueInt"][0] = -1

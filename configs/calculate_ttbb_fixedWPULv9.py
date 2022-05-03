@@ -22,9 +22,9 @@ for year in ["2016preVFP", "2016postVFP", "2017", "2018"]:
         os.path.join(jsonDir, "BTV", year+"_UL", "btagging.json.gz"))
     btagSF[year]   = btagSFjson
 
-sys_bd = []#"isr", "fsr", "hdamp", "jes", "jer", "pileup", "qcdscale", "statistic", "topmass", "type3"]
+sys_bd = ["isr", "fsr", "hdamp", "jes", "jer", "pileup", "qcdscale", "statistic", "topmass", "type3"]
 SFb_sys = ["up_"+sys for sys in sys_bd]+["down_"+sys for sys in sys_bd]
-SFl_sys = []#"up_correlated","up_uncorrelated","down_correlated","down_uncorrelated"]
+SFl_sys = ["up_correlated","up_uncorrelated","down_correlated","down_uncorrelated"]
 
 def get_additional_variables():
     '''
@@ -56,7 +56,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     '''
 
     suffix = "_"+jec
-    if not jec == "nominal": return
+    #if not jec == "nominal": return
     P_MC_TM   = 1.
     P_DATA_TM = 1.
     if jec == "nominal":
