@@ -50,6 +50,8 @@ jecs = [
     "jesEC2",
     "jesTotal",
     "jer",
+    "jesHEMIssue",
+    "unclustEn"
     ]
 validSysts = ["nom"]
 validSysts+= [j+"Up" for j in jecs]
