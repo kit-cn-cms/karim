@@ -105,13 +105,13 @@ def set_branches(wrapper, jec):
     wrapper.SetFloatVar("muIsoSF_loose_down")
 
     # photon scale factors
-    wrapper.SetFloatVar("phoEffSF_tight")
-    wrapper.SetFloatVar("phoEffSF_tight_up")
-    wrapper.SetFloatVar("phoEffSF_tight_down")
+    wrapper.SetFloatVar("phoIDSF_tight")
+    wrapper.SetFloatVar("phoIDSF_tight_up")
+    wrapper.SetFloatVar("phoIDSF_tight_down")
 
-    wrapper.SetFloatVar("phoEffSF_loose")
-    wrapper.SetFloatVar("phoEffSF_loose_up")
-    wrapper.SetFloatVar("phoEffSF_loose_down")
+    wrapper.SetFloatVar("phoIDSF_loose")
+    wrapper.SetFloatVar("phoIDSF_loose_up")
+    wrapper.SetFloatVar("phoIDSF_loose_down")
 
 
 
@@ -209,27 +209,28 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     wrapper.branchArrays["eleRecoSF_loose_down"][0]   = elRecoSF_loose_down
 
     # # tight photons
-    # phoEffSF_tight = 1.
-    # phoEffSF_tight_up = 1.
-    # phoEffSF_tight_down = 1.
+    phoIDSF_tight = 1.
+    phoIDSF_tight_up = 1.
+    phoIDSF_tight_down = 1.
 
-    # for iPho in range(getattr(event, "N_TightPhotons")):
-    #     if getattr(event, "TightPhoton_Pt")[iPho] < 500:
-    #         pt = getattr(event, "TightPhoton_Pt")[iPho]
-    #     else:
-    #         pt = 499.
-    #     sf = data[dataEra]["photon"].evaluate(dataEra,"sf","Tight", getattr(event, "TightPhoton_Eta")[iPho], pt)
-    #     sfErr = data[dataEra]["photon"].evaluate(dataEra,"syst","Tight", getattr(event, "TightPhoton_Eta")[iPho], pt)
+    for iPho in range(getattr(event, "N_TightPhotons")):
+        if getattr(event, "TightPhoton_Pt")[iPho] < 500:
+            pt = getattr(event, "TightPhoton_Pt")[iPho]
+        else:
+            pt = 499.
+        sf = data[dataEra]["photon"].evaluate(dataEra,"sf","Tight", getattr(event, "TightPhoton_Eta")[iPho], pt)
+        sf_up = data[dataEra]["photon"].evaluate(dataEra,"sfup","Tight", getattr(event, "TightPhoton_Eta")[iPho], pt)
+        sf_down = data[dataEra]["photon"].evaluate(dataEra,"sfdown","Tight", getattr(event, "TightPhoton_Eta")[iPho], pt)
 
-    #     phoEffSF_tight        *= sf
-    #     phoEffSF_tight_up     *= (sf + sfErr)
-    #     phoEffSF_tight_down   *= (sf - sfErr)
+        phoIDSF_tight        *= sf
+        phoIDSF_tight_up     *= sf_up
+        phoIDSF_tight_down   *= sf_down
 
-    # wrapper.branchArrays["phoEffSF_tight"][0]   = phoEffSF_tight
-    # wrapper.branchArrays["phoEffSF_tight_up"][0]   = phoEffSF_tight_up
-    # wrapper.branchArrays["phoEffSF_tight_down"][0]   = phoEffSF_tight_down
+    wrapper.branchArrays["phoIDSF_tight"][0]   = phoIDSF_tight
+    wrapper.branchArrays["phoIDSF_tight_up"][0]   = phoIDSF_tight_up
+    wrapper.branchArrays["phoIDSF_tight_down"][0]   = phoIDSF_tight_down
 
-    # # loose photons
+    # loose photons
     # phoEffSF_loose = 1.
     # phoEffSF_loose_up = 1.
     # phoEffSF_loose_down = 1.
