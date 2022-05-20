@@ -65,6 +65,8 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     # TODO adjust when merged JEC uncertainties are avialable
     if jec == "nominal":
         btvJECname = "central"
+    if "jer" in jec:
+        btvJECname = "central"
     else:
         btvJECname = "central"
 
