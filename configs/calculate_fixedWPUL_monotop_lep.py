@@ -64,11 +64,6 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     '''
 
     suffix = "_"+jec
-    # TODO adjust when merged JEC uncertainties are avialable
-    if jec == "nom":
-        btvJECname = "central"
-    else:
-        btvJECname = "central"
 
     if jec == "nom":
         # add basic information for friend trees
@@ -99,6 +94,9 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         passes_M = getattr(event, "Jet_taggedM"+suffix)[idx]
 
         eff_M = btagEff[dataEra].evaluate("M", flav, eta, pt)
+        # todo: check empty bins in efficiency
+        if eff_M == 0.:
+            eff_M = 0.001
 
         if flav == 0:
             sf_M = btagSF[dataEra]["deepJet_incl"].evaluate("central", "M", flav, eta, pt)

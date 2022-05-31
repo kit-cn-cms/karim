@@ -105,13 +105,15 @@ def set_branches(wrapper, jec = None):
 
     wrapper.SetFloatVar("Boson_Pt") 
     for mode in ["evj","eej", "vvj", "aj"]:
-        wrapper.SetFloatVar( mode + "_kFactor_QCD")
         wrapper.SetFloatVar( mode + "_kFactor_EW")
-        wrapper.SetFloatVar( mode + "_kFactor_EW1up")
-        wrapper.SetFloatVar( mode + "_kFactor_EW1down")
-        wrapper.SetFloatVar( mode + "_kFactor_EW2up")
-        wrapper.SetFloatVar( mode + "_kFactor_EW2down")
-        wrapper.SetFloatVar( mode + "_kFactor")
+        wrapper.SetFloatVar( mode + "_kFactor_EW1up_rel")
+        wrapper.SetFloatVar( mode + "_kFactor_EW1down_rel")
+        wrapper.SetFloatVar( mode + "_kFactor_EW2up_rel")
+        wrapper.SetFloatVar( mode + "_kFactor_EW2down_rel")
+        wrapper.SetFloatVar( mode + "_kFactor_EW3up_rel")
+        wrapper.SetFloatVar( mode + "_kFactor_EW3down_rel")
+        # wrapper.SetFloatVar( mode + "_kFactor_QCD")
+        # wrapper.SetFloatVar( mode + "_kFactor_rel")
 
 
 def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights = None):
@@ -163,14 +165,14 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     result = {}
     for mode in ["evj","eej", "vvj", "aj"]:
         result[mode] = {
-            "kFactor_QCD": 1.,
+            # "kFactor_QCD": 1.,
             "kFactor_EW": 1.,
-            "kFactor_EW1_up": 1.,
-            "kFactor_EW1_down": 1.,
-            "kFactor_EW2_up": 1.,
-            "kFactor_EW2_down": 1.,
-            "kFactor_EW3_up": 1.,
-            "kFactor_EW3_down": 1.,
+            "kFactor_EW1_up_rel": 1.,
+            "kFactor_EW1_down_rel": 1.,
+            "kFactor_EW2_up_rel": 1.,
+            "kFactor_EW2_down_rel": 1.,
+            "kFactor_EW3_up_rel": 1.,
+            "kFactor_EW3_down_rel": 1.,
         }
 
 
@@ -200,26 +202,28 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
 
         result[label]["kFactor_EW"] = nom
         
-        result[label]["kFactor_EW1_up"] = (nom + ew1)
-        result[label]["kFactor_EW1_down"] = (nom - ew1) / nom
+        result[label]["kFactor_EW1_up_rel"] = (nom + ew1)/nom
+        result[label]["kFactor_EW1_down_rel"] = (nom - ew1)/nom
 
-        result[label]["kFactor_EW2_up"] = (nom + ew2)
-        result[label]["kFactor_EW2_down"] = (nom - ew2)
+        result[label]["kFactor_EW2_up_rel"] = (nom + ew2)/nom
+        result[label]["kFactor_EW2_down_rel"] = (nom - ew2)/nom
 
-        result[label]["kFactor_EW3_up"] = (nom + ew3)
-        result[label]["kFactor_EW3_down"] = (nom - ew3)
+        result[label]["kFactor_EW3_up_rel"] = (nom + ew3)/nom
+        result[label]["kFactor_EW3_down_rel"] = (nom - ew3)/nom
 
     wrapper.branchArrays["Boson_Pt"][0] = pT
     
 
     for mode in ["evj","eej", "vvj", "aj"]:
-        wrapper.branchArrays[ mode + "_kFactor_QCD"][0] = result[mode]["kFactor_QCD"]
         wrapper.branchArrays[ mode + "_kFactor_EW"][0] = result[mode]["kFactor_EW"]
-        wrapper.branchArrays[ mode + "_kFactor_EW1up"][0] = result[mode]["kFactor_EW1_up"]
-        wrapper.branchArrays[ mode + "_kFactor_EW1down"][0] = result[mode]["kFactor_EW1_down"]
-        wrapper.branchArrays[ mode + "_kFactor_EW2up"][0] = result[mode]["kFactor_EW2_up"]
-        wrapper.branchArrays[ mode + "_kFactor_EW2down"][0] = result[mode]["kFactor_EW2_down"]
-        wrapper.branchArrays[ mode + "_kFactor"][0] =  result[mode]["kFactor_QCD"]*result[mode]["kFactor_EW"] 
+        wrapper.branchArrays[ mode + "_kFactor_EW1up_rel"][0] = result[mode]["kFactor_EW1_up_rel"]
+        wrapper.branchArrays[ mode + "_kFactor_EW1down_rel"][0] = result[mode]["kFactor_EW1_down_rel"]
+        wrapper.branchArrays[ mode + "_kFactor_EW2up_rel"][0] = result[mode]["kFactor_EW2_up_rel"]
+        wrapper.branchArrays[ mode + "_kFactor_EW2down_rel"][0] = result[mode]["kFactor_EW2_down_rel"]
+        wrapper.branchArrays[ mode + "_kFactor_EW3up_rel"][0] = result[mode]["kFactor_EW3_up_rel"]
+        wrapper.branchArrays[ mode + "_kFactor_EW3down_rel"][0] = result[mode]["kFactor_EW3_down_rel"]
+        # wrapper.branchArrays[ mode + "_kFactor_QCD"][0] = result[mode]["kFactor_QCD"]
+        # wrapper.branchArrays[ mode + "_kFactor"][0] =  result[mode]["kFactor_QCD"]*result[mode]["kFactor_EW"] 
 
 
     # simple pdf weight

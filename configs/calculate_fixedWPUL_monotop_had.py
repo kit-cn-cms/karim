@@ -98,7 +98,16 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         flav  = getattr(event, "Jets_outside_lead_AK15Jet_HadronFlav"+suffix)[idx]
         passes_L = getattr(event, "Jets_outside_lead_AK15Jet_taggedL"+suffix)[idx]
 
+        # TODO: fix this
+        if abs(flav) > 5:
+            continue
+            # flav = 0
+        if abs(eta) > 5:
+            continue
+            # eta = 0.
+
         eff_L = btagEff[dataEra].evaluate("L", flav, eta, pt)
+
 
         if flav == 0:
             sf_L = btagSF[dataEra]["deepJet_incl"].evaluate("central", "L", flav, eta, pt)

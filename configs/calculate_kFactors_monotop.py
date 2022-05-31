@@ -82,6 +82,14 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
                 result["eej"]["kFactor_QCD"] = kFactors_QCD["eej"].GetBinContent(b)
                 b = kFactors_EW["evj"].FindBin(pT)
                 result["eej"]["kFactor_EW"] = 1. + kFactors_EW["eej"].GetBinContent(b)
+    elif "NuNu" in sample:
+        if getattr(event, "N_zBosons") >= 1:
+            pT = getattr(event, "zBoson_Pt")[0]
+            if  pT >= 30.:
+                b = kFactors_QCD["vvj"].FindBin(pT)
+                result["vvj"]["kFactor_QCD"] = kFactors_QCD["vvj"].GetBinContent(b)
+                b = kFactors_EW["evj"].FindBin(pT)
+                result["vvj"]["kFactor_EW"] = 1. + kFactors_EW["vvj"].GetBinContent(b)
     wrapper.branchArrays["Boson_Pt"][0] = pT
     
 
