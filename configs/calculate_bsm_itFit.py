@@ -74,13 +74,13 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         for u in bSF_uncs+cSF_uncs:
             sf_uncs[u] = 1.
 
-        for idx in range(getattr(event, "nJets"+suffix)):
-            flav = getattr(event, "Jet_Flav"+suffix)[idx]
+        for idx in range(getattr(event, "N_Jets"+suffix)):
+            flav = getattr(event, "Jets_Flav"+suffix)[idx]
 
             nom = itFit[dataEra].evaluate("central", flav,
-                abs(getattr(event, "Jet_Eta"+suffix)[idx]),
-                getattr(event, "Jet_Pt"+suffix)[idx],
-                getattr(event, "Jet_btagValue"+suffix)[idx])
+                abs(getattr(event, "Jets_Eta"+suffix)[idx]),
+                getattr(event, "Jets_Pt"+suffix)[idx],
+                getattr(event, "Jets_btagValue"+suffix)[idx])
             sf *= nom
 
             if jec == "nom":
@@ -90,17 +90,17 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
                         sf_uncs[u] *= nom
                     for u in cSF_uncs:
                         sf_uncs[u] *= itFit[dataEra].evaluate(u, flav,
-                            abs(getattr(event, "Jet_Eta"+suffix)[idx]),
-                            getattr(event, "Jet_Pt"+suffix)[idx],
-                            getattr(event, "Jet_btagValue"+suffix)[idx])
+                            abs(getattr(event, "Jets_Eta"+suffix)[idx]),
+                            getattr(event, "Jets_Pt"+suffix)[idx],
+                            getattr(event, "Jets_btagValue"+suffix)[idx])
                 else:
                     for u in cSF_uncs:
                         sf_uncs[u] *= nom
                     for u in bSF_uncs:
                         sf_uncs[u] *= itFit[dataEra].evaluate(u, flav,
-                            abs(getattr(event, "Jet_Eta"+suffix)[idx]),
-                            getattr(event, "Jet_Pt"+suffix)[idx],
-                            getattr(event, "Jet_btagValue"+suffix)[idx])
+                            abs(getattr(event, "Jets_Eta"+suffix)[idx]),
+                            getattr(event, "Jets_Pt"+suffix)[idx],
+                            getattr(event, "Jets_btagValue"+suffix)[idx])
 
         wrapper.branchArrays["itFitSF"+suffix][0] = sf
         if jec == "nom":

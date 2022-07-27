@@ -60,7 +60,6 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     '''
     calculate weights
     '''
-
     suffix = "_"+jec
     # TODO adjust when merged JEC uncertainties are avialable
     if jec == "nom":

@@ -6,6 +6,21 @@ import os
 filepath = os.path.abspath(__file__)
 karimpath = os.path.dirname(os.path.dirname(filepath))
 
+from correctionlib import _core
+jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration", "POG")
+puName = {
+    "2016preVFP":   "Collisions16_UltraLegacy_goldenJSON",
+    "2016postVFP":  "Collisions16_UltraLegacy_goldenJSON",
+    "2017":         "Collisions17_UltraLegacy_goldenJSON",
+    "2018":         "Collisions18_UltraLegacy_goldenJSON",
+    }
+
+puSF = {}
+for year in ["2016preVFP", "2016postVFP", "2017", "2018"]:
+    # initialize pileup SFs
+    pu_evaluator = _core.CorrectionSet.from_file(
+        os.path.join(jsonDir, "LUM", year+"_UL", "puWeights.json.gz"))
+    puSF[year] = pu_evaluator[puName[year]]
 
 def get_additional_variables():
     '''
@@ -20,8 +35,8 @@ def get_additional_variables():
         "nTaus_corr",
         "nPairs_corr",
         "Weight_GEN",
-        "nJets_corr_nom",
-        "nTagsM_corr_nom",
+        "N_Jets_corr_nom",
+        "N_taggableJets_corr_nom",
         "SystemFlag_corr_nom",
         ]
     return variables
@@ -60,6 +75,10 @@ def set_branches(wrapper, jec = None):
     wrapper.SetFloatVar("fsrUpRel")
     wrapper.SetFloatVar("isrDownRel")
     wrapper.SetFloatVar("fsrDownRel")
+
+    wrapper.SetFloatVar("pileup")
+    wrapper.SetFloatVar("pileup_up_rel")
+    wrapper.SetFloatVar("pileup_down_rel")
 
 def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights = None):
     '''
@@ -104,5 +123,11 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         wrapper.branchArrays["fsrUpRel"  ][0] = getattr(event, "Weight_fsrUp"  )
         wrapper.branchArrays["fsrDownRel"][0] = getattr(event, "Weight_fsrDown")
     except: pass
+
+    pu = puSF[year].evaluate(float(event.nTruePU), "nominal")
+    wrapper.branchArrays["pileup"][0] = pu
+    wrapper.branchArrays["pileup_up_rel"][0] = puSF[dataEra].evaluate(float(event.nTruePU), "up")/pu
+    wrapper.branchArrays["pileup_down_rel"][0] = puSF[dataEra].evaluate(float(event.nTruePU), "down")/pu
+
     return event
 

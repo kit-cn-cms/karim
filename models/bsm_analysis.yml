@@ -1,0 +1,16 @@
+sets:
+    "bsm_classification":
+        nodes:
+            - Sig_MH600_hSBB"
+            - Sig_MH600_hSTauTau
+            - ttbar
+            - Zll
+            - Wjet
+            - misc
+            - ST
+        models:
+            ge2j_ge1t:
+                path: /nfs/dust/cms/user/mmarz/DRACO-MLfoy/workdir/twoSig_debug_ge2j_ge1t/checkpoints
+                selection: N_taggedJets_corr_nom >= 1
+        predicted_class: "predictedClass_classificationDNN"
+        name: "dnnOutput_$NODE_node__$IDX"

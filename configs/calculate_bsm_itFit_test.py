@@ -72,13 +72,13 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     for u in bSF_uncs+cSF_uncs:
         sf_uncs[u] = 1.
 
-    for idx in range(getattr(event, "nTaggableJets_corr"+suffix)):
+    for idx in range(getattr(event, "N_taggableJets_corr"+suffix)):
         
+        flav = getattr(event, "taggableJets_Flav_corr"+suffix)[idx]
         if ((getattr(event, "taggableJets_taggedM_corr"+suffix)[idx] and getattr(event,"taggableJets_Pt_corr"+suffix)[idx] < 30) or getattr(event, "taggableJets_Pt_corr"+suffix)[idx] >= 30):
-            flav = getattr(event, "taggableJets_Flav_corr"+suffix)[idx]
             
             nom = itFit[dataEra].evaluate("central", flav,
-                abs(getattr(event, "taggableJets_Eta_corr"+suffix)[idx]),
+                min(2.49999999999999, abs(getattr(event, "taggableJets_Eta_corr"+suffix)[idx])),
                 getattr(event, "taggableJets_Pt_corr"+suffix)[idx],
                 getattr(event, "taggableJets_btagValue_corr"+suffix)[idx])
             
@@ -94,7 +94,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
                     sf_uncs[u] *= nom
                 for u in cSF_uncs:
                     sf_uncs[u] *= itFit[dataEra].evaluate(u, flav,
-                        abs(getattr(event, "taggableJets_Eta_corr"+suffix)[idx]),
+                        min(2.49999999999999, abs(getattr(event, "taggableJets_Eta_corr"+suffix)[idx])),
                         getattr(event, "taggableJets_Pt_corr"+suffix)[idx],
                         getattr(event, "taggableJets_btagValue_corr"+suffix)[idx])
             else:
@@ -102,7 +102,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
                     sf_uncs[u] *= nom
                 for u in bSF_uncs:
                     sf_uncs[u] *= itFit[dataEra].evaluate(u, flav,
-                        abs(getattr(event, "taggableJets_Eta_corr"+suffix)[idx]),
+                        min(2.49999999999999, abs(getattr(event, "taggableJets_Eta_corr"+suffix)[idx])),
                         getattr(event, "taggableJets_Pt_corr"+suffix)[idx],
                         getattr(event, "taggableJets_btagValue_corr"+suffix)[idx])
 
