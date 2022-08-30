@@ -31,6 +31,7 @@ def set_branches(wrapper, jec):
     
     wrapper.SetFloatVar("ttbbReco_DNNbb_Mbb"+suffix)
     wrapper.SetFloatVar("ttbbReco_DNNbb_dRbb"+suffix)
+    wrapper.SetFloatVar("ttbbReco_DNNbb_etabb"+suffix)
     wrapper.SetFloatVar("ttbbReco_DNNbb_pTbb"+suffix)
     wrapper.SetFloatVar("ttbbReco_DNNbb_b1_eta"+suffix)
     wrapper.SetFloatVar("ttbbReco_DNNbb_b1_pt"+suffix)
@@ -193,6 +194,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         etas[bbidx[0]], phis[bbidx[0]],
         etas[bbidx[1]], phis[bbidx[1]])
     wrapper.branchArrays["ttbbReco_DNNbb_dRbb"+suffix][0] = dR
+    wrapper.branchArrays["ttbbReco_DNNbb_etabb"+suffix][0] = dijet.Eta()
 
     wrapper.branchArrays["ttbbReco_DNNbb_b1_eta"+suffix][0]  = etas[bbidx[0]]
     wrapper.branchArrays["ttbbReco_DNNbb_b1_pt"+suffix][0]   = pts[bbidx[0]]

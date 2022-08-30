@@ -62,6 +62,7 @@ for year in ["2018", "2017", "2016preVFP", "2016postVFP"]:
     mu_evaluator = _core.CorrectionSet.from_file(
         os.path.join(jsonDir, "MUO", year+"_UL", "muon_Z.json.gz"))
     data[year]["muTrig"] = mu_evaluator[muTrigName[year]]
+    data[year]["muReco"] = mu_evaluator["NUM_TrackerMuons_DEN_genTracks"]
     data[year]["muID"]   = mu_evaluator["NUM_TightID_DEN_TrackerMuons"]
     data[year]["muISO"]  = mu_evaluator["NUM_TightRelIso_DEN_TightIDandIPCut"]
 
@@ -102,6 +103,9 @@ def set_branches(wrapper, jec = None):
     wrapper.SetFloatVar("muIsoSF")
     wrapper.SetFloatVar("muIsoSF_up_rel")
     wrapper.SetFloatVar("muIsoSF_down_rel")
+    wrapper.SetFloatVar("muRecoSF")
+    wrapper.SetFloatVar("muRecoSF_up_rel")
+    wrapper.SetFloatVar("muRecoSF_down_rel")
     wrapper.SetFloatVar("elRecoSF")
     wrapper.SetFloatVar("elRecoSF_up_rel")
     wrapper.SetFloatVar("elRecoSF_down_rel")
@@ -203,6 +207,10 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     muIsoSF_up = 1.
     muIsoSF_down = 1.
 
+    muRecoSF = 1.
+    muRecoSF_up = 1.
+    muRecoSF_down = 1.
+
     for iMu in range(event.nMu):
         muIDSF       *= data[dataEra]["muID"].evaluate(
                             dataEra+"_UL", abs(event.Mu_eta[iMu]), event.Mu_pt[iMu], "sf")
@@ -216,7 +224,13 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
                             dataEra+"_UL", abs(event.Mu_eta[iMu]), event.Mu_pt[iMu], "systup")
         muIsoSF_down *= data[dataEra]["muISO"].evaluate( 
                             dataEra+"_UL", abs(event.Mu_eta[iMu]), event.Mu_pt[iMu], "systdown")
-        
+        muRecoSF      *= data[dataEra]["muReco"].evaluate( 
+                            dataEra+"_UL", abs(event.Mu_eta[iMu]), event.Mu_pt[iMu], "sf")
+        muRecoSF_up   *= data[dataEra]["muReco"].evaluate( 
+                            dataEra+"_UL", abs(event.Mu_eta[iMu]), event.Mu_pt[iMu], "systup")
+        muRecoSF_down *= data[dataEra]["muReco"].evaluate( 
+                            dataEra+"_UL", abs(event.Mu_eta[iMu]), event.Mu_pt[iMu], "systdown")
+
         muTrigSF      *= data[dataEra]["muTrig"].evaluate(
                             dataEra+"_UL", abs(event.Mu_eta[iMu]), max(29.,event.Mu_pt[iMu]), "sf")
         muTrigSF_up   *= data[dataEra]["muTrig"].evaluate(
@@ -228,6 +242,7 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     wrapper.branchArrays["muTrigSF"][0] = muTrigSF
     wrapper.branchArrays["muIDSF"][0]   = muIDSF
     wrapper.branchArrays["muIsoSF"][0]  = muIsoSF
+    wrapper.branchArrays["muRecoSF"][0]  = muRecoSF
 
     # relative SFs only when exactly one muon is present
     if event.nMu == 1 and event.nvetoLep == 1:
@@ -239,6 +254,9 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
            
         wrapper.branchArrays["muIsoSF_up_rel"][0]    = muIsoSF_up/muIsoSF
         wrapper.branchArrays["muIsoSF_down_rel"][0]  = muIsoSF_down/muIsoSF
+           
+        wrapper.branchArrays["muRecoSF_up_rel"][0]    = muRecoSF_up/muRecoSF
+        wrapper.branchArrays["muRecoSF_down_rel"][0]  = muRecoSF_down/muRecoSF
     else:
         wrapper.branchArrays["muTrigSF_up_rel"][0]   = 1.
         wrapper.branchArrays["muTrigSF_down_rel"][0] = 1.

@@ -26,6 +26,7 @@ puName = {
 data = {}
 itFit = {}
 btagSF = {}
+ltagSF = {}
 btagEff = {}
 for year in ["2018", "2017", "2016preVFP", "2016postVFP"]:
     # short year
@@ -64,7 +65,8 @@ for year in ["2018", "2017", "2016preVFP", "2016postVFP"]:
     if year in ["2017", "2018"]:
         btagSFjson = _core.CorrectionSet.from_file(
             os.path.join(jsonDir, "BTV", year+"_UL", "btagging.json.gz"))
-        btagSF[year]   = btagSFjson["deepJet_wp"]
+        btagSF[year]   = btagSFjson["deepJet_comb"]
+        ltagSF[year]   = btagSFjson["deepJet_incl"]
         itFit[year]    = btagSFjson["deepJet_shape"]
 
         btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_ttbb_deepJet.json"))
@@ -176,21 +178,20 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
         
         if event.nEle == 1 and event.nLooseLep == 1:
             lepSF  *= data[dataEra]["electron"].evaluate(
-                        dataEra,"sf","Tight", event.Ele_EtaSC[0], min(499., event.Ele_Pt[0]))
+                        dataEra,"sf","Tight", event.Ele_EtaSC[0], event.Ele_Pt[0])
             lepSF  *= data[dataEra]["electron"].evaluate(
-                        dataEra,"sf","RecoAbove20", event.Ele_EtaSC[0], min(499., event.Ele_Pt[0]))
+                        dataEra,"sf","RecoAbove20", event.Ele_EtaSC[0], event.Ele_Pt[0])
             trigSF *= data[dataEra]["eleTrig"].evaluate("central", event.Ele_Pt[0], event.Ele_EtaSC[0])
             if dataEra == "2017": trigSF *= 0.991 # HLT zvtx correction
 
 
         if event.nMu == 1 and event.nLooseLep == 1:
-            trigSF *= data[dataEra]["muTrig"].evaluate(abs(event.Mu_Eta[0]), min(199., event.Mu_Pt[0]), "nominal")
-            if dataEra == "2018":
-                lepSF  *= data[dataEra]["muID"].evaluate( min(119., event.Mu_Pt[0]), "nominal")
-                lepSF  *= data[dataEra]["muISO"].evaluate(min(119., event.Mu_Pt[0]), "nominal")
-            else:
-                lepSF  *= data[dataEra]["muID"].evaluate(  abs(event.Mu_Eta[0]), min(119., event.Mu_Pt[0]), "nominal")
-                lepSF  *= data[dataEra]["muISO"].evaluate( abs(event.Mu_Eta[0]), min(119., event.Mu_Pt[0]), "nominal")
+            trigSF *= data[dataEra]["muTrig"].evaluate(
+                        dataEra+"_UL", abs(event.Mu_Eta[0]), event.Mu_Pt[0], "sf")
+            lepSF  *= data[dataEra]["muID"].evaluate( 
+                        dataEra+"_UL", abs(event.Mu_Eta[0]), event.Mu_Pt[0], "sf")
+            lepSF  *= data[dataEra]["muISO"].evaluate(
+                        dataEra+"_UL", abs(event.Mu_Eta[0]), event.Mu_Pt[0], "sf")
         
     if isData:
         wrapper.branchArrays["trigger_SF"][0] = -1.
@@ -267,11 +268,11 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
             eff_T = btagEff[dataEra].evaluate("T", flav, eta, pt)
 
             if flav == 0:
-                sf_M = btagSF[dataEra].evaluate("central", "incl", "M", flav, eta, pt)
-                sf_T = btagSF[dataEra].evaluate("central", "incl", "T", flav, eta, pt)
+                sf_M = ltagSF[dataEra].evaluate("central", "M", flav, eta, pt)
+                sf_T = ltagSF[dataEra].evaluate("central", "T", flav, eta, pt)
             else:
-                sf_M = btagSF[dataEra].evaluate("central", "comb", "M", flav, eta, pt)
-                sf_T = btagSF[dataEra].evaluate("central", "comb", "T", flav, eta, pt)
+                sf_M = btagSF[dataEra].evaluate("central", "M", flav, eta, pt)
+                sf_T = btagSF[dataEra].evaluate("central", "T", flav, eta, pt)
 
             if passes_T:
                 P_MC_TM   *= eff_T

@@ -81,6 +81,16 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
 
         eff_M = btagEff[dataEra].evaluate("M", flav, eta, pt)
         eff_T = btagEff[dataEra].evaluate("T", flav, eta, pt)
+        if eff_T == 0:
+            if flav == 5:
+                eff_T = 0.5
+            else:
+                eff_T = 0.001
+        if eff_M == 0:  
+            if flav == 5:
+                eff_M = 0.7
+            else:
+                eff_M = 0.01
 
         if flav == 0:
             sf_M = btagSF[dataEra]["deepJet_incl"].evaluate("central", "M", flav, eta, pt)
@@ -140,6 +150,11 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
                     for sys in SFl_sys:
                         Pl_DATA_TM[sys] *= (1. - eff_M*sf_M)
 
+        if P_MC_TM == 0:
+            print("warning ",P_MC_TM, P_DATA_TM, eff_M, eff_T, sf_M, sf_T)
+    if P_MC_TM == 0.:
+        print("ZERO MC: ",P_MC_TM, P_DATA_TM)
+        P_MC_TM = 1e-9
 
     wrapper.branchArrays["fixedWPSF_TM"+suffix][0] = P_DATA_TM/P_MC_TM
     if jec == "nominal":

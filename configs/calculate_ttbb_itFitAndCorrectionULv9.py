@@ -11,6 +11,20 @@ filepath = os.path.abspath(__file__)
 karimpath = os.path.dirname(os.path.dirname(filepath))
 
 
+
+corr = {}
+simple = {}
+for year in ["2017", "2018", "2016postVFP", "2016preVFP"]:
+    yearS = year[2:]
+    sfDir = os.path.join(karimpath, "data", "UL_"+yearS)
+
+    # electron trigger
+    corrFile = _core.CorrectionSet.from_file(
+        os.path.join(sfDir, "btagCorrection_ttbb_deepJet.json"))
+    corr[year] = corrFile["shape_correction"]
+    simple[year] = corrFile["simple_shape_correction"]
+
+
 itFit = {}
 #for year in ["2017", "2018", "2016postVFP", "2016preVFP"]:
 #    btagSFjson = _core.CorrectionSet.from_file(
@@ -61,6 +75,28 @@ def set_branches(wrapper, jec):
         for u in bSF_uncs+cSF_uncs:
             wrapper.SetFloatVar("btagSF_{}_rel".format(u))
 
+    wrapper.SetFloatVar("btagCorr"+suffix)
+    wrapper.SetFloatVar("btagCorrSimple"+suffix)
+
+def get_proc(event, sample):
+    if sample.startswith("TTbb"):
+        return "ttbb"
+    elif sample.startswith("ST"):
+        return "singlet"
+    elif sample.startswith("DY") or sample.startswith("WJet"):
+        return "vjets"
+    elif sample.startswith("ttH") or sample.startswith("TTZ") or sample.startswith("TTW"):
+        return "ttX"
+    elif sample.startswith("TTTo"):
+        if event.is_25ttbb64 or event.is_25ttbj64:
+            return "ttbb_5FS"
+        elif event.is_25ttcc64:
+            return "ttcc"
+        else:
+            return "ttjj"
+    else:
+        return "MC"
+
 def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights = None):
     '''
     calculate weights
@@ -71,6 +107,11 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         btvJECname = "central"
     elif "jer" in jec or "HEM" in jec:
         btvJECname = "central"
+    elif "jesFlavorPure" in jec:
+        if jec.endswith("down"):
+            btvJECname = "down_jesFlavorQCD"
+        if jec.endswith("up"):
+            btvJECname = "up_jesFlavorQCD"
     else:
         if jec.endswith("down"):
             btvJECname = "down_"+jec.replace("down","")
@@ -127,6 +168,13 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         for u in bSF_uncs+cSF_uncs:
             wrapper.branchArrays["btagSF_{}_rel".format(u)][0] = sf_uncs[u]/sf
 
+    proc = get_proc(event, sample)
+    nJet = getattr(event, "nJets"+suffix)
+    ht = getattr(event, "HT_jets"+suffix)
+    c = corr[dataEra].evaluate(proc, max(min(nJet, 8), 4), float(event.nPV), ht)
+    wrapper.branchArrays["btagCorr"+suffix][0] = c
+    s = simple[dataEra].evaluate(proc, float(nJet), ht)
+    wrapper.branchArrays["btagCorrSimple"+suffix][0] = s
 
 
     return event

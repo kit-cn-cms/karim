@@ -30,7 +30,7 @@ ltagSF = {}
 btagSFold = {}
 ltagSFold = {}
 btagEff = {}
-for year in ["2017"]:#["2018", "2017", "2016preVFP", "2016postVFP"]:
+for year in ["2018", "2017", "2016preVFP", "2016postVFP"]:
     # short year
     yearS = year[2:]
 
@@ -48,7 +48,7 @@ for year in ["2017"]:#["2018", "2017", "2016preVFP", "2016postVFP"]:
 
     # electron trigger
     eleTrigFile = _core.CorrectionSet.from_file(
-        os.path.join(sfDir, "EleTriggerSF_NanoAODv2_v0.json"))
+        os.path.join(sfDir, "EleTriggerSF_NanoAODv9_v0.json"))
     data[year]["eleTrig"] = eleTrigFile["EleTriggerSF"]
 
 
@@ -64,20 +64,19 @@ for year in ["2017"]:#["2018", "2017", "2016preVFP", "2016postVFP"]:
         os.path.join(jsonDir, "LUM", year+"_UL", "puWeights.json.gz"))
     data[year]["pu"] = pu_evaluator[puName[year]]
 
-    if year in ["2017", "2018"]:
-        btagSFjson = _core.CorrectionSet.from_file(
-            os.path.join(jsonDir, "BTV", year+"_UL", "btagging.json.gz"))
-        btagSF[year]   = btagSFjson["deepJet_comb"]
-        ltagSF[year]   = btagSFjson["deepJet_incl"]
-        itFit[year]    = btagSFjson["deepJet_shape"]
+    btagSFjson = _core.CorrectionSet.from_file(
+        os.path.join(jsonDir, "BTV", year+"_UL", "btagging.json.gz"))
+    btagSF[year]   = btagSFjson["deepJet_comb"]
+    ltagSF[year]   = btagSFjson["deepJet_incl"]
+    itFit[year]    = btagSFjson["deepJet_shape"]
 
-        btagSFjsonold = _core.CorrectionSet.from_file(
-            os.path.join(sfDir, "btagging.json"))
-        print(os.path.join(sfDir, "btagging.json"))
-        btagSFold[year]   = btagSFjsonold["deepJet_wp"]
+    #btagSFjsonold = _core.CorrectionSet.from_file(
+    #    os.path.join(sfDir, "btagging.json"))
+    #print(os.path.join(sfDir, "btagging.json"))
+    #btagSFold[year]   = btagSFjsonold["deepJet_wp"]
 
-        btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_ttbb_deepJet.json"))
-        btagEff[year] = btagEffjson["btagEff"]
+    btagEffjson = _core.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_ttbb_deepJet.json"))
+    btagEff[year] = btagEffjson["btagEff"]
 year = None
 
 def get_additional_variables():
@@ -90,11 +89,9 @@ def get_additional_variables():
     return variables
 
 def base_selection(event):
-    if event.nEle == 1 and event.nMu == 0 and event.nLooseLep == 1:
-        return True
-    if event.nEle == 0 and event.nMu == 1 and event.nLooseLep == 1:
-        return True
-    return False
+    if event.luminosityBlock == 20 or event.luminosityBlock == 19:
+        return False
+    return True
 
 def set_branches(wrapper, jec = None):
     wrapper.SetIntVar("run")   
@@ -136,6 +133,7 @@ def set_branches(wrapper, jec = None):
     wrapper.SetFloatVar("jet1_btag_eff_fixWP_M")
     wrapper.SetFloatVar("jet1_btag_eff_fixWP_T")
     wrapper.SetFloatVar("jet1_hadronFlavour")
+    wrapper.SetFloatVar("jet1_btag_weight_fixWP_MT")
 
     wrapper.SetFloatVar("jet2_pt")
     wrapper.SetFloatVar("jet2_eta")
@@ -146,6 +144,29 @@ def set_branches(wrapper, jec = None):
     wrapper.SetFloatVar("jet2_btag_eff_fixWP_M")
     wrapper.SetFloatVar("jet2_btag_eff_fixWP_T")
     wrapper.SetFloatVar("jet2_hadronFlavour")
+    wrapper.SetFloatVar("jet2_btag_weight_fixWP_MT")
+
+    wrapper.SetFloatVar("jet3_pt")
+    wrapper.SetFloatVar("jet3_eta")
+    wrapper.SetFloatVar("jet3_phi")
+    wrapper.SetFloatVar("jet3_deepJet")
+    wrapper.SetFloatVar("jet3_btag_SF_fixWP_M")
+    wrapper.SetFloatVar("jet3_btag_SF_fixWP_T")
+    wrapper.SetFloatVar("jet3_btag_eff_fixWP_M")
+    wrapper.SetFloatVar("jet3_btag_eff_fixWP_T")
+    wrapper.SetFloatVar("jet3_hadronFlavour")
+    wrapper.SetFloatVar("jet3_btag_weight_fixWP_MT")
+
+    wrapper.SetFloatVar("jet4_pt")
+    wrapper.SetFloatVar("jet4_eta")
+    wrapper.SetFloatVar("jet4_phi")
+    wrapper.SetFloatVar("jet4_deepJet")
+    wrapper.SetFloatVar("jet4_btag_SF_fixWP_M")
+    wrapper.SetFloatVar("jet4_btag_SF_fixWP_T")
+    wrapper.SetFloatVar("jet4_btag_eff_fixWP_M")
+    wrapper.SetFloatVar("jet4_btag_eff_fixWP_T")
+    wrapper.SetFloatVar("jet4_hadronFlavour")
+    wrapper.SetFloatVar("jet4_btag_weight_fixWP_MT")
 
     wrapper.SetFloatVar("btag_weight_fixWP_MT")
     #wrapper.SetFloatVar("btag_weight_fixWP_MT_og")
@@ -162,7 +183,11 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
     '''
     calculate weights
     '''
-    
+   
+    isData = False
+    if "SingleEl" in sample or "EGamma" in sample or "SingleMu" in sample:
+        isData = True
+
     wrapper.branchArrays["run"][0] = event.run
     wrapper.branchArrays["luminosityBlock"][0] = event.luminosityBlock
     wrapper.branchArrays["event"][0] = event.event
@@ -187,9 +212,6 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
         wrapper.branchArrays["is_mu"][0] = 0
         wrapper.branchArrays["trigger_mu"][0] = 0
 
-    isData = False
-    if "SingleEl" in sample or "EGamma" in sample or "SingleMu" in sample:
-        isData = True
 
     if not isData:
         trigSF = 1.
@@ -233,7 +255,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
         if event.nEle == 1:
             wrapper.branchArrays["lepton_deltaEtaSC"][0] = event.Ele_etaSC[0]-event.Ele_eta[0]
             #wrapper.branchArrays["lepton_pt_uncorr"][0]  = event.Ele_Pt_uncorr[0]
-            wrapper.branchArrays["lepton_pt_uncorr"][0]  = -1
+            wrapper.branchArrays["lepton_pt_uncorr"][0]  = event.Ele_pt[0]/event.Ele_eCorr[0]
         else:
             wrapper.branchArrays["lepton_deltaEtaSC"][0] = -1
             wrapper.branchArrays["lepton_pt_uncorr"][0]  = -1
@@ -257,6 +279,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
         wrapper.branchArrays["jet1_btag_eff_fixWP_M"][0] = -1
         wrapper.branchArrays["jet1_btag_eff_fixWP_T"][0] = -1
         wrapper.branchArrays["jet1_hadronFlavour"][0] = -1
+        wrapper.branchArrays["jet1_btag_weight_fixWP_MT"][0] = -1
         #wrapper.branchArrays["jet1_deepJet_shapeSF"][0] = -1
     if event.nJets_nominal > 1:
         wrapper.branchArrays["jet2_pt"][0] = event.Jets_pt_nominal[1]
@@ -274,15 +297,50 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
         wrapper.branchArrays["jet2_btag_eff_fixWP_M"][0] = -1
         wrapper.branchArrays["jet2_btag_eff_fixWP_T"][0] = -1
         wrapper.branchArrays["jet2_hadronFlavour"][0] = -1
+        wrapper.branchArrays["jet2_btag_weight_fixWP_MT"][0] = -1
         #wrapper.branchArrays["jet2_deepJet_shapeSF"][0] = -1
 
+    if event.nJets_nominal > 2:
+        wrapper.branchArrays["jet3_pt"][0] = event.Jets_pt_nominal[2]
+        #wrapper.branchArrays["jet2_pt"][0] = event.Jets_Pt_raw_nom[1]
+        wrapper.branchArrays["jet3_eta"][0] = event.Jets_eta_nominal[2]
+        wrapper.branchArrays["jet3_phi"][0] = event.Jets_phi_nominal[2]
+        wrapper.branchArrays["jet3_deepJet"][0] = event.Jets_btagDeepFlavB_nominal[2]
+    else:
+        wrapper.branchArrays["jet3_pt"][0] = -1
+        wrapper.branchArrays["jet3_eta"][0] = -1
+        wrapper.branchArrays["jet3_phi"][0] = -1
+        wrapper.branchArrays["jet3_deepJet"][0] = -1
+        wrapper.branchArrays["jet3_btag_SF_fixWP_M"][0] = -1
+        wrapper.branchArrays["jet3_btag_SF_fixWP_T"][0] = -1
+        wrapper.branchArrays["jet3_btag_eff_fixWP_M"][0] = -1
+        wrapper.branchArrays["jet3_btag_eff_fixWP_T"][0] = -1
+        wrapper.branchArrays["jet3_hadronFlavour"][0] = -1
+        wrapper.branchArrays["jet3_btag_weight_fixWP_MT"][0] = -1
+        #wrapper.branchArrays["jet2_deepJet_shapeSF"][0] = -1
+
+    if event.nJets_nominal > 3:
+        wrapper.branchArrays["jet4_pt"][0] = event.Jets_pt_nominal[3]
+        #wrapper.branchArrays["jet2_pt"][0] = event.Jets_Pt_raw_nom[1]
+        wrapper.branchArrays["jet4_eta"][0] = event.Jets_eta_nominal[3]
+        wrapper.branchArrays["jet4_phi"][0] = event.Jets_phi_nominal[3]
+        wrapper.branchArrays["jet4_deepJet"][0] = event.Jets_btagDeepFlavB_nominal[3]
+    else:
+        wrapper.branchArrays["jet4_pt"][0] = -1
+        wrapper.branchArrays["jet4_eta"][0] = -1
+        wrapper.branchArrays["jet4_phi"][0] = -1
+        wrapper.branchArrays["jet4_deepJet"][0] = -1
+        wrapper.branchArrays["jet4_btag_SF_fixWP_M"][0] = -1
+        wrapper.branchArrays["jet4_btag_SF_fixWP_T"][0] = -1
+        wrapper.branchArrays["jet4_btag_eff_fixWP_M"][0] = -1
+        wrapper.branchArrays["jet4_btag_eff_fixWP_T"][0] = -1
+        wrapper.branchArrays["jet4_hadronFlavour"][0] = -1
+        wrapper.branchArrays["jet4_btag_weight_fixWP_MT"][0] = -1
+        #wrapper.branchArrays["jet2_deepJet_shapeSF"][0] = -1
 
     if isData:
         wrapper.branchArrays["btag_weight_fixWP_MT"][0] = -1.
         wrapper.branchArrays["btag_weight_itFit"][0] = -1.
-    elif "2016" in dataEra:
-        wrapper.branchArrays["btag_weight_fixWP_MT"][0] = 1.
-        wrapper.branchArrays["btag_weight_itFit"][0] = 1.
     else:
         P_DATA_TM = 1.
         P_MC_TM   = 1.
@@ -300,14 +358,14 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
             passes_M = getattr(event, "Jets_taggedM_nominal")[idx]
             passes_T = getattr(event, "Jets_taggedT_nominal")[idx]
 
-            if passes_M and event.Jets_btagDeepFlavB_nominal[idx] < 0.3040:
-                print("ERROR pass WP M: ",event.Jets_btagDeepFlavB_nominal[idx])
-            if (not passes_M) and event.Jets_btagDeepFlavB_nominal[idx] >= 0.7476:
-                print("ERROR fail WP M: ",event.Jets_btagDeepFlavB_nominal[idx])
-            if passes_T and event.Jets_btagDeepFlavB_nominal[idx] < 0.3040:
-                print("ERROR pass WP M: ",event.Jets_btagDeepFlavB_nominal[idx])
-            if (not passes_T) and event.Jets_btagDeepFlavB_nominal[idx] >= 0.7476:
-                print("ERROR fail WP M: ",event.Jets_btagDeepFlavB_nominal[idx])
+            #if passes_M and event.Jets_btagDeepFlavB_nominal[idx] < 0.3040:
+            #    print("ERROR pass WP M: ",event.Jets_btagDeepFlavB_nominal[idx])
+            #if (not passes_M) and event.Jets_btagDeepFlavB_nominal[idx] >= 0.7476:
+            #    print("ERROR fail WP M: ",event.Jets_btagDeepFlavB_nominal[idx])
+            #if passes_T and event.Jets_btagDeepFlavB_nominal[idx] < 0.3040:
+            #    print("ERROR pass WP M: ",event.Jets_btagDeepFlavB_nominal[idx])
+            #if (not passes_T) and event.Jets_btagDeepFlavB_nominal[idx] >= 0.7476:
+            #    print("ERROR fail WP M: ",event.Jets_btagDeepFlavB_nominal[idx])
 
             eff_M = btagEff[dataEra].evaluate("M", flav, eta, pt)
             eff_T = btagEff[dataEra].evaluate("T", flav, eta, pt)
@@ -331,23 +389,41 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
                 wrapper.branchArrays["jet2_btag_eff_fixWP_M"][0] = eff_M
                 wrapper.branchArrays["jet2_btag_eff_fixWP_T"][0] = eff_T
                 wrapper.branchArrays["jet2_hadronFlavour"][0] = flav
+            if idx == 2:
+                wrapper.branchArrays["jet3_btag_SF_fixWP_M"][0] = sf_M
+                wrapper.branchArrays["jet3_btag_SF_fixWP_T"][0] = sf_T
+                wrapper.branchArrays["jet3_btag_eff_fixWP_M"][0] = eff_M
+                wrapper.branchArrays["jet3_btag_eff_fixWP_T"][0] = eff_T
+                wrapper.branchArrays["jet3_hadronFlavour"][0] = flav
+            if idx == 3:
+                wrapper.branchArrays["jet4_btag_SF_fixWP_M"][0] = sf_M
+                wrapper.branchArrays["jet4_btag_SF_fixWP_T"][0] = sf_T
+                wrapper.branchArrays["jet4_btag_eff_fixWP_M"][0] = eff_M
+                wrapper.branchArrays["jet4_btag_eff_fixWP_T"][0] = eff_T
+                wrapper.branchArrays["jet4_hadronFlavour"][0] = flav
 
             if passes_T:
-                P_MC_TM   *= eff_T
-                P_DATA_TM *= eff_T*sf_T
+                jet_MC_TM   = eff_T
+                jet_DATA_TM = eff_T*sf_T
             elif passes_M:
-                P_MC_TM   *= (eff_M      - eff_T)
-                P_DATA_TM *= (eff_M*sf_M - eff_T*sf_T)
+                jet_MC_TM   = (eff_M      - eff_T)
+                jet_DATA_TM = (eff_M*sf_M - eff_T*sf_T)
             else:
-                P_MC_TM   *= (1. - eff_M)
-                P_DATA_TM *= (1. - eff_M*sf_M)
+                jet_MC_TM   = (1. - eff_M)
+                jet_DATA_TM = (1. - eff_M*sf_M)
 
-            '''
+            P_MC_TM *= jet_MC_TM
+            P_DATA_TM *= jet_DATA_TM
+            jetSF = jet_DATA_TM/jet_MC_TM           
+
             if idx == 0:
-                wrapper.branchArrays["jet1_bSF"][0] = jetSF
+                wrapper.branchArrays["jet1_btag_weight_fixWP_MT"][0] = jetSF
             if idx == 1:
-                wrapper.branchArrays["jet2_bSF"][0] = jetSF
-            '''
+                wrapper.branchArrays["jet2_btag_weight_fixWP_MT"][0] = jetSF
+            if idx == 2:
+                wrapper.branchArrays["jet3_btag_weight_fixWP_MT"][0] = jetSF
+            if idx == 3:
+                wrapper.branchArrays["jet4_btag_weight_fixWP_MT"][0] = jetSF
  
             ts.append(sf_T)
             ms.append(sf_M)
@@ -434,8 +510,8 @@ def calculate_variables(event, wrapper, sample, jec, dataEra, genWeights = None)
 
     if isData:
         wrapper.branchArrays["L1_prefire_weight"][0] = -1
-    elif dataEra == "2018":
-        wrapper.branchArrays["L1_prefire_weight"][0] = 1.
+    #elif dataEra == "2018":
+    #    wrapper.branchArrays["L1_prefire_weight"][0] = 1.
     else:
         wrapper.branchArrays["L1_prefire_weight"][0] = event.prefireWeight
     return event

@@ -48,6 +48,7 @@ def set_branches(wrapper, jec):
             wrapper.SetFloatVar("fixedWPSFl_TM_"+sys+"_rel")
 
     wrapper.SetFloatVar("fixedWPSF_TM"+suffix)
+    wrapper.SetIntVar("nbM"+suffix)
 
 def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights = None):
     '''
@@ -146,5 +147,6 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
             wrapper.branchArrays["fixedWPSFl_TM_"+sys+"_rel"][0] = Pl_DATA_TM[sys]/P_DATA_TM
         for sys in SFb_sys:
             wrapper.branchArrays["fixedWPSFb_TM_"+sys+"_rel"][0] = Pb_DATA_TM[sys]/P_DATA_TM
+    wrapper.branchArrays["nbM"+suffix][0] = getattr(event, "nTagsM"+suffix)
     return event
 
