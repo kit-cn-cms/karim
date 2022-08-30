@@ -10,12 +10,12 @@ karimpath = os.path.dirname(os.path.dirname(filepath))
 from correctionlib import _core
 jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration", "POG")
 
-# muTrigName = {
-#     "2016preVFP":   "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight",
-#     "2016postVFP":  "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight",
-#     "2017":         "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight",
-#     "2018":         "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",
-#     }
+muTrigName = {
+    "2016preVFP":   "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight",
+    "2016postVFP":  "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight",
+    "2017":         "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight",
+    "2018":         "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight",
+    }
 
 mudataEra = {
     "2016preVFP":   "2016preVFP_UL",
@@ -44,7 +44,7 @@ for dataEra in ["2018", "2017", "2016preVFP", "2016postVFP"]:
     # muon Trig/ID/ISO
     mu_evaluator = _core.CorrectionSet.from_file(
         os.path.join(jsonDir, "MUO", dataEra+"_UL", "muon_Z.json.gz"))
-    # data[dataEra]["muTrig"] = mu_evaluator[muTrigName[dataEra]]
+    data[dataEra]["muTrig"] = mu_evaluator[muTrigName[dataEra]]
     data[dataEra]["muIDT"]   = mu_evaluator["NUM_TightID_DEN_TrackerMuons"]
     data[dataEra]["muIDL"]   = mu_evaluator["NUM_LooseID_DEN_TrackerMuons"]
     data[dataEra]["muISOT"]  = mu_evaluator["NUM_TightRelIso_DEN_TightIDandIPCut"]
@@ -70,7 +70,8 @@ def set_branches(wrapper, jec):
     wrapper.SetIntVar("run")   
     wrapper.SetIntVar("lumi")   
 
-    # electron scale factors
+
+   # electron scale factors
     wrapper.SetFloatVar("eleIDSF_tight")
     wrapper.SetFloatVar("eleIDSF_tight_up")
     wrapper.SetFloatVar("eleIDSF_tight_down")
@@ -103,6 +104,10 @@ def set_branches(wrapper, jec):
     wrapper.SetFloatVar("muIsoSF_loose")
     wrapper.SetFloatVar("muIsoSF_loose_up")
     wrapper.SetFloatVar("muIsoSF_loose_down")
+
+    wrapper.SetFloatVar("muTrigSF")
+    wrapper.SetFloatVar("muTrigSF_up")
+    wrapper.SetFloatVar("muTrigSF_down")
 
     # photon scale factors
     wrapper.SetFloatVar("phoIDSF_tight")
@@ -298,13 +303,22 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     muIsoSF_loose_up = 1.
     muIsoSF_loose_down = 1.
 
+    muTrigSF = 1.
+    muTrigSF_up = 1.
+    muTrigSF_down = 1.
+
     for iMu in range(getattr(event, "N_LooseMuons")):
         idsf     = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "sf")
         idsfErr_up  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systup")
         idsfErr_down  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systdown")
+
         isosf    = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "sf")
         isosfErr_up = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systup")
         isosfErr_down = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systdown")
+
+        muTrigSF      *= data[dataEra]["muTrig"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), max(29.,event.LooseMuon_Pt[iMu]), "sf")
+        muTrigSF_up   *= data[dataEra]["muTrig"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), max(29.,event.LooseMuon_Pt[iMu]), "systup")
+        muTrigSF_down *= data[dataEra]["muTrig"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), max(29.,event.LooseMuon_Pt[iMu]), "systdown")
 
 
         muIDSF_loose       *= idsf
@@ -323,6 +337,10 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     wrapper.branchArrays["muIsoSF_loose"][0]  = muIsoSF_loose
     wrapper.branchArrays["muIsoSF_loose_up"][0]  = muIsoSF_loose_up
     wrapper.branchArrays["muIsoSF_loose_down"][0]  = muIsoSF_loose_down
+
+    wrapper.branchArrays["muTrigSF"][0]  = muTrigSF
+    wrapper.branchArrays["muTrigSF_up"][0]  = muTrigSF_up
+    wrapper.branchArrays["muTrigSF_down"][0]  = muTrigSF_down
 
     return event
 
