@@ -109,7 +109,7 @@ def get_eta_pt_bins(inFile, wp):
     
     data = {}
     data["nodetype"] = "multibinning"
-    data["inputs"] = ["pt", "eta"]
+    data["inputs"] = ["eta", "pt"]
     data["flow"] = "clamp"
 
     etaEdges = []
