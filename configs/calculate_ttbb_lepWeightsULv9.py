@@ -267,6 +267,8 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
         wrapper.branchArrays["muIsoSF_up_rel"][0]    = 1.
         wrapper.branchArrays["muIsoSF_down_rel"][0]  = 1.
 
+        wrapper.branchArrays["muRecoSF_up_rel"][0]    = 1.
+        wrapper.branchArrays["muRecoSF_down_rel"][0]  = 1.
 
     pu = puSF[dataEra].evaluate(float(event.nTruePU), "nominal")
     wrapper.branchArrays["pileup"][0] = pu

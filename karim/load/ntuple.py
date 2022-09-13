@@ -43,7 +43,7 @@ jecs = [
     "jesRelativeSample_2018",
     "jesRelativeSample_2017",
     "jesRelativeSample_2016",
-    "jesFlavorQCD",
+    #"jesFlavorQCD",
     "jesFlavorPureBottom",
     "jesFlavorPureCharm",
     "jesFlavorPureQuark",
@@ -52,13 +52,13 @@ jecs = [
     #"jesHF",
     "jesAbsolute",
     #"jesEC2",
-    "jesTotal",
+    #"jesTotal",
     "jer",
-    "jer0",
-    "jer1",
-    "jer2",
-    "jer3",
-    "jer4",
+    #"jer0",
+    #"jer1",
+    #"jer2",
+    #"jer3",
+    #"jer4",
     ]
 validSysts = ["nominal"]
 validSysts+= [j+"up" for j in jecs]
