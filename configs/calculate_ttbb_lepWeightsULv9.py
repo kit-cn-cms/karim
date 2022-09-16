@@ -119,11 +119,116 @@ def set_branches(wrapper, jec = None):
     wrapper.SetFloatVar("pdf_down")
     wrapper.SetFloatVar("pdf_down_rel")
 
+    wrapper.SetFloatVar("pdf_up_rel_noAS")
+    wrapper.SetFloatVar("pdf_up_rel_AS")
+    wrapper.SetFloatVar("pdf_down_rel_noAS")
+    wrapper.SetFloatVar("pdf_down_rel_AS")
+
+    wrapper.SetFloatVar("muR_up")
+    wrapper.SetFloatVar("muR_down")
+    wrapper.SetFloatVar("muF_up")
+    wrapper.SetFloatVar("muF_down")
+
+    wrapper.SetFloatVar("isr_up")
+    wrapper.SetFloatVar("isr_down")
+    wrapper.SetFloatVar("fsr_up")
+    wrapper.SetFloatVar("fsr_down")
+    
 
 def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genWeights = None):
     '''
     calculate weights
     '''
+    if sample.startswith("TTJets"):
+        wrapper.branchArrays["muR_down"][0] = event.LHEScaleWeights[1]*2
+        wrapper.branchArrays["muR_up"][0] = event.LHEScaleWeights[7]*2
+        wrapper.branchArrays["muF_down"][0] = event.LHEScaleWeights[3]*2
+        wrapper.branchArrays["muF_up"][0] = event.LHEScaleWeights[5]*2
+        wrapper.branchArrays["isr_down"][0] = event.psWeights[24]
+        wrapper.branchArrays["isr_up"][0] = event.psWeights[25]
+        wrapper.branchArrays["fsr_down"][0] = event.psWeights[2]
+        wrapper.branchArrays["fsr_up"][0] = event.psWeights[3]
+    elif sample.startswith("TT_TuneCH3"):
+        wrapper.branchArrays["muR_down"][0] = event.LHEScaleWeights[1]
+        wrapper.branchArrays["muR_up"][0] = event.LHEScaleWeights[7]
+        wrapper.branchArrays["muF_down"][0] = event.LHEScaleWeights[3]
+        wrapper.branchArrays["muF_up"][0] = event.LHEScaleWeights[5]
+        # TODO: weights seem broken
+        #print(event.psWeights)
+        wrapper.branchArrays["isr_down"][0] = 1
+        wrapper.branchArrays["isr_up"][0] = 1
+        wrapper.branchArrays["fsr_down"][0] = 1
+        wrapper.branchArrays["fsr_up"][0] = 1
+    elif sample.startswith("ttbb_4FS"):
+        wrapper.branchArrays["muR_down"][0] = event.LHEScaleWeights[1]
+        wrapper.branchArrays["muR_up"][0] = event.LHEScaleWeights[7]
+        wrapper.branchArrays["muF_down"][0] = event.LHEScaleWeights[3]
+        wrapper.branchArrays["muF_up"][0] = event.LHEScaleWeights[5]
+        wrapper.branchArrays["isr_down"][0] = event.psWeights[24]
+        wrapper.branchArrays["isr_up"][0] = event.psWeights[25]
+        wrapper.branchArrays["fsr_down"][0] = event.psWeights[2]
+        wrapper.branchArrays["fsr_up"][0] = event.psWeights[3]
+    elif sample.startswith("TTTo") or sample.startswith("TTbb"):
+        wrapper.branchArrays["muR_down"][0] = event.LHEScaleWeights[1]
+        wrapper.branchArrays["muR_up"][0] = event.LHEScaleWeights[7]
+        wrapper.branchArrays["muF_down"][0] = event.LHEScaleWeights[3]
+        wrapper.branchArrays["muF_up"][0] = event.LHEScaleWeights[5]
+        wrapper.branchArrays["isr_down"][0] = event.psWeights[24]
+        wrapper.branchArrays["isr_up"][0] = event.psWeights[25]
+        wrapper.branchArrays["fsr_down"][0] = event.psWeights[2]
+        wrapper.branchArrays["fsr_up"][0] = event.psWeights[3]
+    else:
+        wrapper.branchArrays["muR_down"][0] = event.LHEScaleWeights[1]
+        wrapper.branchArrays["muR_up"][0] = event.LHEScaleWeights[7]
+        wrapper.branchArrays["muF_down"][0] = event.LHEScaleWeights[3]
+        wrapper.branchArrays["muF_up"][0] = event.LHEScaleWeights[5]
+        wrapper.branchArrays["isr_down"][0] = event.psWeights[2]
+        wrapper.branchArrays["isr_up"][0] = event.psWeights[0]
+        wrapper.branchArrays["fsr_down"][0] = event.psWeights[3]
+        wrapper.branchArrays["fsr_up"][0] = event.psWeights[1]
+        
+
+    try:
+        nom_pdf = event.Weight_pdf[0]
+        weights = np.array([event.Weight_pdf[i+1] for i in range(len(event.Weight_pdf)-1)])
+        if sample.startswith("TTJets"):
+            weights *= 2
+
+        if sample.startswith("TTbb"):
+            residuals = weights-np.mean(weights)
+            variation = (residuals)**2
+            variation = sum(variation)/(len(variation)-1)
+            
+        else:
+            residuals = weights-nom_pdf
+            variation = (residuals)**2
+            variation = sum(variation)
+
+        variation = np.sqrt(variation)
+        wrapper.branchArrays["pdf_up"][0]       =  nom_pdf+variation
+        wrapper.branchArrays["pdf_up_rel"][0]   = (nom_pdf+variation)/nom_pdf
+        wrapper.branchArrays["pdf_down"][0]     =  nom_pdf-variation
+        wrapper.branchArrays["pdf_down_rel"][0] = (nom_pdf-variation)/nom_pdf
+
+        if not sample.startswith("TTbb") and len(weights) == 102:
+            weights_noAS = weights[:-2]
+            residuals_noAS = weights_noAS - nom_pdf
+            variation_noAS = (residuals_noAS)**2
+            variation_noAS = sum(variation_noAS)
+
+            wrapper.branchArrays["pdf_up_rel_noAS"][0] = (nom_pdf+variation_noAS)/nom_pdf
+            wrapper.branchArrays["pdf_up_rel_AS"][0] = weights[-2]
+            wrapper.branchArrays["pdf_down_rel_noAS"][0] = (nom_pdf-variation_noAS)/nom_pdf
+            wrapper.branchArrays["pdf_down_rel_AS"][0] = weights[-1]
+        else:
+            wrapper.branchArrays["pdf_up_rel_noAS"][0] = (nom_pdf+variation)/nom_pdf
+            wrapper.branchArrays["pdf_up_rel_AS"][0] = 1.
+            wrapper.branchArrays["pdf_down_rel_noAS"][0] = (nom_pdf-variation)/nom_pdf
+            wrapper.branchArrays["pdf_down_rel_AS"][0] = 1.
+
+    except: pass
+
+    if sample.startswith("TTJets") or sample.startswith("TT_TuneCH3") or sample.startswith("ttbb_4FS"): return 
 
     # add basic information for friend trees
     wrapper.branchArrays["event"][0] = getattr(event, "event")
@@ -276,26 +381,6 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     wrapper.branchArrays["pileup_down_rel"][0] = puSF[dataEra].evaluate(float(event.nTruePU), "down")/pu
 
 
-    try:
-        nom_pdf = event.Weight_pdf[0]
-        weights = np.array([event.Weight_pdf[i+1] for i in range(len(event.Weight_pdf)-1)])
-        if sample.startswith("TTbb"):
-            residuals = weights-np.mean(weights)
-            variation = (residuals)**2
-            variation = sum(variation)/(len(variation)-1)
-            
-        else:
-            residuals = weights-nom_pdf
-            variation = (residuals)**2
-            variation = sum(variation)
-
-        variation = np.sqrt(variation)
-
-        wrapper.branchArrays["pdf_up"][0]       =  nom_pdf+variation
-        wrapper.branchArrays["pdf_up_rel"][0]   = (nom_pdf+variation)/nom_pdf
-        wrapper.branchArrays["pdf_down"][0]     =  nom_pdf-variation
-        wrapper.branchArrays["pdf_down_rel"][0] = (nom_pdf-variation)/nom_pdf
-    except: pass
 
     return event
 

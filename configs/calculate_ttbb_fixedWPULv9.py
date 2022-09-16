@@ -22,9 +22,9 @@ for year in ["2016preVFP", "2016postVFP", "2017", "2018"]:
         os.path.join(jsonDir, "BTV", year+"_UL", "btagging.json.gz"))
     btagSF[year]   = btagSFjson
 
-sys_bd = ["isr", "fsr", "hdamp", "jes", "jer", "pileup", "qcdscale", "statistic", "topmass", "type3"]
+sys_bd = ["isr", "fsr", "hdamp", "jes", "jer", "pileup", "qcdscale","statistic", "statisticM", "statisticT", "topmass", "type3"]
 SFb_sys = ["up_"+sys for sys in sys_bd]+["down_"+sys for sys in sys_bd]
-SFl_sys = ["up_correlated","up_uncorrelated","down_correlated","down_uncorrelated"]
+SFl_sys = ["up_correlated","up_uncorrelated","up_uncorrelatedM","up_uncorrelatedT","down_correlated","down_uncorrelated","down_uncorrelatedM","down_uncorrelatedT"]
 
 def get_additional_variables():
     '''
@@ -97,15 +97,41 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
             sf_T = btagSF[dataEra]["deepJet_incl"].evaluate("central", "T", flav, eta, pt)
             if jec == "nominal":
                 for sys in SFl_sys:
-                    sfl_M[sys] = btagSF[dataEra]["deepJet_incl"].evaluate(sys, "M", flav, eta, pt)
-                    sfl_T[sys] = btagSF[dataEra]["deepJet_incl"].evaluate(sys, "T", flav, eta, pt)
+                    sysN = sys
+                    if sys.endswith("T") or sys.endswith("M"):
+                        sysN = sys[:-1]
+                    dataEraT = dataEra
+                    if dataEra == "2016postVFP":
+                        dataEraT = "2016preVFP"
+                    if sys.endswith("M"):
+                        sfl_M[sys] = btagSF[dataEraT]["deepJet_incl"].evaluate(sysN, "M", flav, eta, pt)
+                        sfl_T[sys] = sf_T
+                    elif sys.endswith("T"):
+                        sfl_M[sys] = sf_M
+                        sfl_T[sys] = btagSF[dataEraT]["deepJet_incl"].evaluate(sysN, "T", flav, eta, pt)
+                    else:
+                        sfl_M[sys] = btagSF[dataEraT]["deepJet_incl"].evaluate(sysN, "M", flav, eta, pt)
+                        sfl_T[sys] = btagSF[dataEraT]["deepJet_incl"].evaluate(sysN, "T", flav, eta, pt)
         else:
-            sf_M = btagSF[dataEra]["deepJet_comb"].evaluate("central", "M", flav, eta, pt)
-            sf_T = btagSF[dataEra]["deepJet_comb"].evaluate("central", "T", flav, eta, pt)
+            central = "central"
+            if jec == "jer":
+                central = "jer"
+            sf_M = btagSF[dataEra]["deepJet_comb"].evaluate(central, "M", flav, eta, pt)
+            sf_T = btagSF[dataEra]["deepJet_comb"].evaluate(central, "T", flav, eta, pt)
             if jec == "nominal":
                 for sys in SFb_sys:
-                    sfb_M[sys] = btagSF[dataEra]["deepJet_comb"].evaluate(sys, "M", flav, eta, pt)
-                    sfb_T[sys] = btagSF[dataEra]["deepJet_comb"].evaluate(sys, "T", flav, eta, pt)
+                    sysN = sys
+                    if sys.endswith("T") or sys.endswith("M"):
+                        sysN = sys[:-1]
+                    if sys.endswith("M"):
+                        sfb_M[sys] = btagSF[dataEra]["deepJet_comb"].evaluate(sysN, "M", flav, eta, pt)
+                        sfb_T[sys] = sf_T
+                    elif sys.endswith("T"):
+                        sfb_M[sys] = sf_M
+                        sfb_T[sys] = btagSF[dataEra]["deepJet_comb"].evaluate(sysN, "T", flav, eta, pt)
+                    else:
+                        sfb_M[sys] = btagSF[dataEra]["deepJet_comb"].evaluate(sysN, "M", flav, eta, pt)
+                        sfb_T[sys] = btagSF[dataEra]["deepJet_comb"].evaluate(sysN, "T", flav, eta, pt)
 
         if passes_T:
             P_MC_TM   *= eff_T
