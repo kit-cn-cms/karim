@@ -179,17 +179,17 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
             pt = getattr(event, "TightElectron_Pt")[iEl]
         else:
             pt = 499.
-        idsf = data[dataEra]["electron"].evaluate(dataEra,"sf","Tight", getattr(event, "TightElectron_Eta")[iEl], pt)
-        idsfErr_up = data[dataEra]["electron"].evaluate(dataEra,"sfup","Tight", getattr(event, "TightElectron_Eta")[iEl], pt)
-        idsfErr_down = data[dataEra]["electron"].evaluate(dataEra,"sfdown","Tight", getattr(event, "TightElectron_Eta")[iEl], pt)
+        idsf = data[dataEra]["electron"].evaluate(dataEra,"sf","Tight", getattr(event, "TightElectron_EtaSC")[iEl], pt)
+        idsfErr_up = data[dataEra]["electron"].evaluate(dataEra,"sfup","Tight", getattr(event, "TightElectron_EtaSC")[iEl], pt)
+        idsfErr_down = data[dataEra]["electron"].evaluate(dataEra,"sfdown","Tight", getattr(event, "TightElectron_EtaSC")[iEl], pt)
 
-        recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoAbove20", getattr(event, "TightElectron_Eta")[iEl], pt)
-        recosfErr_up    = data[dataEra]["electron"].evaluate(dataEra,"sfup","RecoAbove20", getattr(event, "TightElectron_Eta")[iEl], pt)
-        recosfErr_down    = data[dataEra]["electron"].evaluate(dataEra,"sfdown","RecoAbove20", getattr(event, "TightElectron_Eta")[iEl], pt)
+        recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoAbove20", getattr(event, "TightElectron_EtaSC")[iEl], pt)
+        recosfErr_up    = data[dataEra]["electron"].evaluate(dataEra,"sfup","RecoAbove20", getattr(event, "TightElectron_EtaSC")[iEl], pt)
+        recosfErr_down    = data[dataEra]["electron"].evaluate(dataEra,"sfdown","RecoAbove20", getattr(event, "TightElectron_EtaSC")[iEl], pt)
 
-        triggersf = data[dataEra]["eleTrig_tight"].evaluate("central", pt, getattr(event, "TightElectron_Eta")[iEl])
-        triggersf_up = data[dataEra]["eleTrig_tight"].evaluate("up", pt, getattr(event, "TightElectron_Eta")[iEl])
-        triggersf_down = data[dataEra]["eleTrig_tight"].evaluate("down", pt, getattr(event, "TightElectron_Eta")[iEl])
+        triggersf = data[dataEra]["eleTrig_tight"].evaluate("central", pt, getattr(event, "TightElectron_EtaSC")[iEl])
+        triggersf_up = data[dataEra]["eleTrig_tight"].evaluate("up", pt, getattr(event, "TightElectron_EtaSC")[iEl])
+        triggersf_down = data[dataEra]["eleTrig_tight"].evaluate("down", pt, getattr(event, "TightElectron_EtaSC")[iEl])
 
         elIDSF_tight        *= idsf
         elIDSF_tight_up     *= idsfErr_up
@@ -235,22 +235,22 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
             pt = getattr(event, "LooseElectron_Pt")[iEl]
         else:
             pt = 499.
-        idsf = data[dataEra]["electron"].evaluate(dataEra,"sf","Loose", getattr(event, "LooseElectron_Eta")[iEl], pt)
-        idsfErr_up = data[dataEra]["electron"].evaluate(dataEra,"sfup","Loose", getattr(event, "LooseElectron_Eta")[iEl], pt)
-        idsfErr_down = data[dataEra]["electron"].evaluate(dataEra,"sfdown","Loose", getattr(event, "LooseElectron_Eta")[iEl], pt)
+        idsf = data[dataEra]["electron"].evaluate(dataEra,"sf","Loose", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+        idsfErr_up = data[dataEra]["electron"].evaluate(dataEra,"sfup","Loose", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+        idsfErr_down = data[dataEra]["electron"].evaluate(dataEra,"sfdown","Loose", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
 
         if pt >= 20.:
-            recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoAbove20", getattr(event, "LooseElectron_Eta")[iEl], pt)
-            recosfErr_up    = data[dataEra]["electron"].evaluate(dataEra,"sfup","RecoAbove20", getattr(event, "LooseElectron_Eta")[iEl], pt)
-            recosfErr_down    = data[dataEra]["electron"].evaluate(dataEra,"sfdown","RecoAbove20", getattr(event, "LooseElectron_Eta")[iEl], pt)
+            recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoAbove20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+            recosfErr_up    = data[dataEra]["electron"].evaluate(dataEra,"sfup","RecoAbove20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+            recosfErr_down    = data[dataEra]["electron"].evaluate(dataEra,"sfdown","RecoAbove20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
         else:
-            recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoBelow20", getattr(event, "LooseElectron_Eta")[iEl], pt)
-            recosfErr_up    = data[dataEra]["electron"].evaluate(dataEra,"sfup","RecoBelow20", getattr(event, "LooseElectron_Eta")[iEl], pt)
-            recosfErr_down    = data[dataEra]["electron"].evaluate(dataEra,"sfdown","RecoBelow20", getattr(event, "LooseElectron_Eta")[iEl], pt)
+            recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoBelow20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+            recosfErr_up    = data[dataEra]["electron"].evaluate(dataEra,"sfup","RecoBelow20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+            recosfErr_down    = data[dataEra]["electron"].evaluate(dataEra,"sfdown","RecoBelow20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
 
-        triggersf = data[dataEra]["eleTrig_loose"].evaluate("central", getattr(event, "LooseElectron_Pt")[iEl], getattr(event, "LooseElectron_Eta")[iEl])
-        triggersf_up = data[dataEra]["eleTrig_loose"].evaluate("up", getattr(event, "LooseElectron_Pt")[iEl], getattr(event, "LooseElectron_Eta")[iEl])
-        triggersf_down = data[dataEra]["eleTrig_loose"].evaluate("down",  getattr(event, "LooseElectron_Pt")[iEl], getattr(event, "LooseElectron_Eta")[iEl])
+        triggersf = data[dataEra]["eleTrig_loose"].evaluate("central", getattr(event, "LooseElectron_Pt")[iEl], getattr(event, "LooseElectron_EtaSC")[iEl])
+        triggersf_up = data[dataEra]["eleTrig_loose"].evaluate("up", getattr(event, "LooseElectron_Pt")[iEl], getattr(event, "LooseElectron_EtaSC")[iEl])
+        triggersf_down = data[dataEra]["eleTrig_loose"].evaluate("down",  getattr(event, "LooseElectron_Pt")[iEl], getattr(event, "LooseElectron_EtaSC")[iEl])
 
         elIDSF_loose        *= idsf
         elIDSF_loose_up     *= idsfErr_up
