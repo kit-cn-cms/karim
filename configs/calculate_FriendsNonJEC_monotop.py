@@ -126,64 +126,38 @@ def set_branches(wrapper, jec):
     wrapper.SetIntVar("nMuon_loose")   
     wrapper.SetIntVar("nMuon_tight")   
 
-
-
    # electron scale factors
-    wrapper.SetFloatVar("eleIDSF_tight")
-    wrapper.SetFloatVar("eleIDSF_tight_up")
-    wrapper.SetFloatVar("eleIDSF_tight_down")
+    wrapper.SetFloatVar("eleIDSF")
+    wrapper.SetFloatVar("eleIDSF_up")
+    wrapper.SetFloatVar("eleIDSF_down")
 
-    wrapper.SetFloatVar("eleIDSF_loose")
-    wrapper.SetFloatVar("eleIDSF_loose_up")
-    wrapper.SetFloatVar("eleIDSF_loose_down")
+    wrapper.SetFloatVar("eleRecoSF")
+    wrapper.SetFloatVar("eleRecoSF_up")
+    wrapper.SetFloatVar("eleRecoSF_down")
 
-    wrapper.SetFloatVar("eleRecoSF_tight")
-    wrapper.SetFloatVar("eleRecoSF_tight_up")
-    wrapper.SetFloatVar("eleRecoSF_tight_down")
-
-    wrapper.SetFloatVar("eleRecoSF_loose")
-    wrapper.SetFloatVar("eleRecoSF_loose_up")
-    wrapper.SetFloatVar("eleRecoSF_loose_down")
-
-    wrapper.SetFloatVar("eleTriggerSF_tight")
-    wrapper.SetFloatVar("eleTriggerSF_tight_up")
-    wrapper.SetFloatVar("eleTriggerSF_tight_down")
-
-    wrapper.SetFloatVar("eleTriggerSF_loose")
-    wrapper.SetFloatVar("eleTriggerSF_loose_up")
-    wrapper.SetFloatVar("eleTriggerSF_loose_down")
+    wrapper.SetFloatVar("eleTriggerSF")
+    wrapper.SetFloatVar("eleTriggerSF_up")
+    wrapper.SetFloatVar("eleTriggerSF_down")
 
     # muon scale factors
-    wrapper.SetFloatVar("muIDSF_tight")
-    wrapper.SetFloatVar("muIDSF_tight_up")
-    wrapper.SetFloatVar("muIDSF_tight_down")
+    wrapper.SetFloatVar("muIDSF")
+    wrapper.SetFloatVar("muIDSF_up")
+    wrapper.SetFloatVar("muIDSF_down")
 
-    wrapper.SetFloatVar("muIDSF_loose")
-    wrapper.SetFloatVar("muIDSF_loose_up")
-    wrapper.SetFloatVar("muIDSF_loose_down")
+    wrapper.SetFloatVar("muIsoSF")
+    wrapper.SetFloatVar("muIsoSF_up")
+    wrapper.SetFloatVar("muIsoSF_down")
 
-    wrapper.SetFloatVar("muIsoSF_tight")
-    wrapper.SetFloatVar("muIsoSF_tight_up")
-    wrapper.SetFloatVar("muIsoSF_tight_down")
-      
-    wrapper.SetFloatVar("muIsoSF_loose")
-    wrapper.SetFloatVar("muIsoSF_loose_up")
-    wrapper.SetFloatVar("muIsoSF_loose_down")
-
-    wrapper.SetFloatVar("muTriggerSF_tight")
-    wrapper.SetFloatVar("muTriggerSF_tight_up")
-    wrapper.SetFloatVar("muTriggerSF_tight_down")
+    wrapper.SetFloatVar("muTriggerSF")
+    wrapper.SetFloatVar("muTriggerSF_up")
+    wrapper.SetFloatVar("muTriggerSF_down")
 
     # photon scale factors
     wrapper.SetFloatVar("phoIDSF_tight")
     wrapper.SetFloatVar("phoIDSF_tight_up")
     wrapper.SetFloatVar("phoIDSF_tight_down")
 
-    wrapper.SetFloatVar("phoIDSF_loose")
-    wrapper.SetFloatVar("phoIDSF_loose_up")
-    wrapper.SetFloatVar("phoIDSF_loose_down")
-
- # cross section weight
+    # cross section weight
     wrapper.SetFloatVar("xsNorm")
 
     # rate factors
@@ -249,20 +223,21 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
 
     # electron scale factors
     # tight electrons
-    elIDSF_tight = 1.
-    elIDSF_tight_up = 1.
-    elIDSF_tight_down = 1.
+    elIDSF = 1.
+    elIDSF_up = 1.
+    elIDSF_down = 1.
 
-    elRecoSF_tight = 1.
-    elRecoSF_tight_up = 1.
-    elRecoSF_tight_down = 1.
+    elRecoSF = 1.
+    elRecoSF_up = 1.
+    elRecoSF_down = 1.
 
-    elTriggerSF_tight = 1.
-    elTriggerSF_tight_up = 1.
-    elTriggerSF_tight_down = 1.
+    elTriggerSF = 1.
+    elTriggerSF_up = 1.
+    elTriggerSF_down = 1.
 
-    for iEl in range(getattr(event, "N_TightElectrons")):
-        # TODO super cluster eta
+    # tight electrons are only considered, if there is exactly one tight electron (which is also loose)
+    if getattr(event, "N_TightElectrons") == 1 and getattr(event, "N_LooseElectrons") == 1:
+        iEl = 0
         if getattr(event, "TightElectron_Pt")[iEl] < 500:
             pt = getattr(event, "TightElectron_Pt")[iEl]
         else:
@@ -279,92 +254,138 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
         triggersf_up = data[dataEra]["eleTrig_tight"].evaluate("up", pt, getattr(event, "TightElectron_EtaSC")[iEl])
         triggersf_down = data[dataEra]["eleTrig_tight"].evaluate("down", pt, getattr(event, "TightElectron_EtaSC")[iEl])
 
-        elIDSF_tight        *= idsf
-        elIDSF_tight_up     *= idsfErr_up
-        elIDSF_tight_down   *= idsfErr_down
+        elIDSF        *= idsf
+        elIDSF_up     *= idsfErr_up
+        elIDSF_down   *= idsfErr_down
 
-        elRecoSF_tight      *= recosf
-        elRecoSF_tight_up   *= recosfErr_up
-        elRecoSF_tight_down *= recosfErr_down
+        elRecoSF      *= recosf
+        elRecoSF_up   *= recosfErr_up
+        elRecoSF_down *= recosfErr_down
 
-        elTriggerSF_tight      *= triggersf
-        elTriggerSF_tight_up   *= triggersf_up
-        elTriggerSF_tight_down *= triggersf_down
+        elTriggerSF      *= triggersf
+        elTriggerSF_up   *= triggersf_up
+        elTriggerSF_down *= triggersf_down
+    
+    # two loose electrons for hadronic DY region
+    elif getattr(event, "N_LooseElectrons") == 2:
+        for iEl in range(getattr(event, "N_LooseElectrons")):
+            if getattr(event, "LooseElectron_Pt")[iEl] < 500:
+                pt = getattr(event, "LooseElectron_Pt")[iEl]
+            else:
+                pt = 499.
+            idsf = data[dataEra]["electron"].evaluate(dataEra,"sf","Loose", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+            idsfErr_up = data[dataEra]["electron"].evaluate(dataEra,"sfup","Loose", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+            idsfErr_down = data[dataEra]["electron"].evaluate(dataEra,"sfdown","Loose", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
 
-    wrapper.branchArrays["eleIDSF_tight"][0]   = elIDSF_tight
-    wrapper.branchArrays["eleIDSF_tight_up"][0]   = elIDSF_tight_up
-    wrapper.branchArrays["eleIDSF_tight_down"][0]   = elIDSF_tight_down
+            if pt >= 20.:
+                recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoAbove20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+                recosfErr_up    = data[dataEra]["electron"].evaluate(dataEra,"sfup","RecoAbove20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+                recosfErr_down    = data[dataEra]["electron"].evaluate(dataEra,"sfdown","RecoAbove20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+            else:
+                recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoBelow20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+                recosfErr_up    = data[dataEra]["electron"].evaluate(dataEra,"sfup","RecoBelow20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
+                recosfErr_down    = data[dataEra]["electron"].evaluate(dataEra,"sfdown","RecoBelow20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
 
-    wrapper.branchArrays["eleRecoSF_tight"][0]   = elRecoSF_tight
-    wrapper.branchArrays["eleRecoSF_tight_up"][0]   = elRecoSF_tight_up
-    wrapper.branchArrays["eleRecoSF_tight_down"][0]   = elRecoSF_tight_down
+            triggersf = data[dataEra]["eleTrig_loose"].evaluate("central", getattr(event, "LooseElectron_Pt")[iEl], getattr(event, "LooseElectron_EtaSC")[iEl])
+            triggersf_up = data[dataEra]["eleTrig_loose"].evaluate("up", getattr(event, "LooseElectron_Pt")[iEl], getattr(event, "LooseElectron_EtaSC")[iEl])
+            triggersf_down = data[dataEra]["eleTrig_loose"].evaluate("down",  getattr(event, "LooseElectron_Pt")[iEl], getattr(event, "LooseElectron_EtaSC")[iEl])
 
-    wrapper.branchArrays["eleTriggerSF_tight"][0]   = elTriggerSF_tight
-    wrapper.branchArrays["eleTriggerSF_tight_up"][0]   = elTriggerSF_tight_up
-    wrapper.branchArrays["eleTriggerSF_tight_down"][0]   = elTriggerSF_tight_down
+            elIDSF       *= idsf
+            elIDSF_up     *= idsfErr_up
+            elIDSF_down   *= idsfErr_down
 
-    # loose electrons
-    elIDSF_loose = 1.
-    elIDSF_loose_up = 1.
-    elIDSF_loose_down = 1.
+            elRecoSF      *= recosf
+            elRecoSF_up   *= recosfErr_up
+            elRecoSF_down *= recosfErr_down
 
-    elRecoSF_loose = 1.
-    elRecoSF_loose_up = 1.
-    elRecoSF_loose_down = 1.
+            elTriggerSF      *= triggersf
+            elTriggerSF_up   *= triggersf_up
+            elTriggerSF_down *= triggersf_down
+
+    wrapper.branchArrays["eleIDSF"][0]   = elIDSF
+    wrapper.branchArrays["eleIDSF_up"][0]   = elIDSF_up
+    wrapper.branchArrays["eleIDSF_down"][0]   = elIDSF_down
+
+    wrapper.branchArrays["eleRecoSF"][0]   = elRecoSF
+    wrapper.branchArrays["eleRecoSF_up"][0]   = elRecoSF_up
+    wrapper.branchArrays["eleRecoSF_down"][0]   = elRecoSF_down
+
+    wrapper.branchArrays["eleTriggerSF"][0]   = elTriggerSF
+    wrapper.branchArrays["eleTriggerSF_up"][0]   = elTriggerSF_up
+    wrapper.branchArrays["eleTriggerSF_down"][0]   = elTriggerSF_down
+
+    #############
+    ### muons ###
+    #############
+    muIDSF = 1.
+    muIDSF_up = 1.
+    muIDSF_down = 1.
+
+    muIsoSF = 1.
+    muIsoSF_up = 1.
+    muIsoSF_down = 1.
+    
+    muTrigSF = 1.
+    muTrigSF_up = 1.
+    muTrigSF_down = 1.
+
+    # tight muons are only considered, if there is exactly one tight electron (which is also loose)
+    if getattr(event, "N_TightMuons") == 1 and getattr(event, "N_LooseMuons") == 1:
+        iMu = 0
+        idsf     = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "sf")
+        idsfErr_up  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "systup")
+        idsfErr_down  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "systdown")
+        isosf    = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "sf")
+        isosfErr_up = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "systup")
+        isosfErr_down = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "systdown")
+
+        muTrigSF      *= data[dataEra]["muTrig_tight"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), max(29.,event.TightMuon_Pt[iMu]), "sf")
+        muTrigSF_up   *= data[dataEra]["muTrig_tight"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), max(29.,event.TightMuon_Pt[iMu]), "systup")
+        muTrigSF_down *= data[dataEra]["muTrig_tight"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), max(29.,event.TightMuon_Pt[iMu]), "systdown")
+
+        muIDSF        *= idsf
+        muIsoSF       *= isosf
+
+        muIDSF_up     *= idsfErr_up
+        muIDSF_down   *= idsfErr_down
+
+        muIsoSF_up    *= isosfErr_up
+        muIsoSF_down  *= isosfErr_down
+
+    # two loose muons for hadronic DY region
+    elif getattr(event, "N_LooseMuons") == 2:
+        for iMu in range(getattr(event, "N_LooseMuons")):
+            idsf     = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "sf")
+            idsfErr_up  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systup")
+            idsfErr_down  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systdown")
+
+            isosf    = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "sf")
+            isosfErr_up = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systup")
+            isosfErr_down = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systdown")
+
+            muIDSF       *= idsf
+            muIsoSF      *= isosf
+
+            muIDSF_up     *= idsfErr_up
+            muIDSF_down   *= idsfErr_down
+
+            muIsoSF_up    *= isosfErr_up
+            muIsoSF_down  *= isosfErr_down
+
+    wrapper.branchArrays["muIDSF"][0]   = muIDSF
+    wrapper.branchArrays["muIDSF_up"][0]   = muIDSF_up
+    wrapper.branchArrays["muIDSF_down"][0]   = muIDSF_down
+
+    wrapper.branchArrays["muIsoSF"][0]  = muIsoSF
+    wrapper.branchArrays["muIsoSF_up"][0]  = muIsoSF_up
+    wrapper.branchArrays["muIsoSF_down"][0]  = muIsoSF_down
+
+    wrapper.branchArrays["muTriggerSF"][0] = muTrigSF
+    wrapper.branchArrays["muTriggerSF_up"][0] = muTrigSF_up
+    wrapper.branchArrays["muTriggerSF_down"][0] = muTrigSF_down
 
 
-    elTriggerSF_loose = 1.
-    elTriggerSF_loose_up = 1.
-    elTriggerSF_loose_down = 1.
-
-    for iEl in range(getattr(event, "N_LooseElectrons")):
-        # TODO super cluster eta
-        if getattr(event, "LooseElectron_Pt")[iEl] < 500:
-            pt = getattr(event, "LooseElectron_Pt")[iEl]
-        else:
-            pt = 499.
-        idsf = data[dataEra]["electron"].evaluate(dataEra,"sf","Loose", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
-        idsfErr_up = data[dataEra]["electron"].evaluate(dataEra,"sfup","Loose", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
-        idsfErr_down = data[dataEra]["electron"].evaluate(dataEra,"sfdown","Loose", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
-
-        if pt >= 20.:
-            recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoAbove20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
-            recosfErr_up    = data[dataEra]["electron"].evaluate(dataEra,"sfup","RecoAbove20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
-            recosfErr_down    = data[dataEra]["electron"].evaluate(dataEra,"sfdown","RecoAbove20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
-        else:
-            recosf    = data[dataEra]["electron"].evaluate(dataEra,"sf","RecoBelow20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
-            recosfErr_up    = data[dataEra]["electron"].evaluate(dataEra,"sfup","RecoBelow20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
-            recosfErr_down    = data[dataEra]["electron"].evaluate(dataEra,"sfdown","RecoBelow20", getattr(event, "LooseElectron_EtaSC")[iEl], pt)
-
-        triggersf = data[dataEra]["eleTrig_loose"].evaluate("central", getattr(event, "LooseElectron_Pt")[iEl], getattr(event, "LooseElectron_EtaSC")[iEl])
-        triggersf_up = data[dataEra]["eleTrig_loose"].evaluate("up", getattr(event, "LooseElectron_Pt")[iEl], getattr(event, "LooseElectron_EtaSC")[iEl])
-        triggersf_down = data[dataEra]["eleTrig_loose"].evaluate("down",  getattr(event, "LooseElectron_Pt")[iEl], getattr(event, "LooseElectron_EtaSC")[iEl])
-
-        elIDSF_loose        *= idsf
-        elIDSF_loose_up     *= idsfErr_up
-        elIDSF_loose_down   *= idsfErr_down
-
-        elRecoSF_loose      *= recosf
-        elRecoSF_loose_up   *= recosfErr_up
-        elRecoSF_loose_down *= recosfErr_down
-
-        elTriggerSF_loose      *= triggersf
-        elTriggerSF_loose_up   *= triggersf_up
-        elTriggerSF_loose_down *= triggersf_down
-
-    wrapper.branchArrays["eleIDSF_loose"][0]   = elIDSF_loose
-    wrapper.branchArrays["eleIDSF_loose_up"][0]   = elIDSF_loose_up
-    wrapper.branchArrays["eleIDSF_loose_down"][0]   = elIDSF_loose_down
-
-    wrapper.branchArrays["eleRecoSF_loose"][0]   = elRecoSF_loose
-    wrapper.branchArrays["eleRecoSF_loose_up"][0]   = elRecoSF_loose_up
-    wrapper.branchArrays["eleRecoSF_loose_down"][0]   = elRecoSF_loose_down
-
-    wrapper.branchArrays["eleTriggerSF_loose"][0]   = elTriggerSF_loose
-    wrapper.branchArrays["eleTriggerSF_loose_up"][0]   = elTriggerSF_loose_up
-    wrapper.branchArrays["eleTriggerSF_loose_down"][0]   = elTriggerSF_loose_down
-
-    # # tight photons
+    # tight photons
     phoIDSF_tight = 1.
     phoIDSF_tight_up = 1.
     phoIDSF_tight_down = 1.
@@ -387,87 +408,6 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     wrapper.branchArrays["phoIDSF_tight_down"][0]   = phoIDSF_tight_down
 
            
-    # tight muons
-    muIDSF_tight = 1.
-    muIDSF_tight_up = 1.
-    muIDSF_tight_down = 1.
-
-    muIsoSF_tight = 1.
-    muIsoSF_tight_up = 1.
-    muIsoSF_tight_down = 1.
-    
-    muTrigSF_tight = 1.
-    muTrigSF_tight_up = 1.
-    muTrigSF_tight_down = 1.
-
-
-    for iMu in range(getattr(event, "N_TightMuons")):
-        idsf     = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "sf")
-        idsfErr_up  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "systup")
-        idsfErr_down  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "systdown")
-        isosf    = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "sf")
-        isosfErr_up = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "systup")
-        isosfErr_down = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "systdown")
-
-        muTrigSF_tight      *= data[dataEra]["muTrig_tight"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), max(29.,event.TightMuon_Pt[iMu]), "sf")
-        muTrigSF_tight_up   *= data[dataEra]["muTrig_tight"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), max(29.,event.TightMuon_Pt[iMu]), "systup")
-        muTrigSF_tight_down *= data[dataEra]["muTrig_tight"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), max(29.,event.TightMuon_Pt[iMu]), "systdown")
-
-        muIDSF_tight        *= idsf
-        muIsoSF_tight       *= isosf
-
-        muIDSF_tight_up     *= idsfErr_up
-        muIDSF_tight_down   *= idsfErr_down
-
-        muIsoSF_tight_up    *= isosfErr_up
-        muIsoSF_tight_down  *= isosfErr_down
-
-    wrapper.branchArrays["muIDSF_tight"][0]   = muIDSF_tight
-    wrapper.branchArrays["muIDSF_tight_up"][0]   = muIDSF_tight_up
-    wrapper.branchArrays["muIDSF_tight_down"][0]   = muIDSF_tight_down
-
-    wrapper.branchArrays["muIsoSF_tight"][0]  = muIsoSF_tight
-    wrapper.branchArrays["muIsoSF_tight_up"][0]  = muIsoSF_tight_up
-    wrapper.branchArrays["muIsoSF_tight_down"][0]  = muIsoSF_tight_down
-
-    wrapper.branchArrays["muTriggerSF_tight"][0] = muTrigSF_tight
-    wrapper.branchArrays["muTriggerSF_tight_up"][0] = muTrigSF_tight_up
-    wrapper.branchArrays["muTriggerSF_tight_down"][0] = muTrigSF_tight_down
-
-    # loose muons
-    muIDSF_loose = 1.
-    muIDSF_loose_up = 1.
-    muIDSF_loose_down = 1.
-    
-    muIsoSF_loose = 1.
-    muIsoSF_loose_up = 1.
-    muIsoSF_loose_down = 1.
-
-    for iMu in range(getattr(event, "N_LooseMuons")):
-        idsf     = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "sf")
-        idsfErr_up  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systup")
-        idsfErr_down  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systdown")
-
-        isosf    = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "sf")
-        isosfErr_up = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systup")
-        isosfErr_down = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systdown")
-
-        muIDSF_loose       *= idsf
-        muIsoSF_loose      *= isosf
-
-        muIDSF_loose_up     *= idsfErr_up
-        muIDSF_loose_down   *= idsfErr_down
-
-        muIsoSF_loose_up    *= isosfErr_up
-        muIsoSF_loose_down  *= isosfErr_down
-
-
-    wrapper.branchArrays["muIDSF_loose"][0]   = muIDSF_loose
-    wrapper.branchArrays["muIDSF_loose_up"][0]   = muIDSF_loose_up
-    wrapper.branchArrays["muIDSF_loose_down"][0]   = muIDSF_loose_down
-    wrapper.branchArrays["muIsoSF_loose"][0]  = muIsoSF_loose
-    wrapper.branchArrays["muIsoSF_loose_up"][0]  = muIsoSF_loose_up
-    wrapper.branchArrays["muIsoSF_loose_down"][0]  = muIsoSF_loose_down
 
     ##################
     ### GENWEIGHTS ###
