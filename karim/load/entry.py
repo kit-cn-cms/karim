@@ -28,6 +28,7 @@ class Entry:
             data = np.zeros(shape = (1, len(variables)))
             idy = 0
             for i, v in enumerate(variables):
+                # print(v)
                 if "[" in v and "]" in v:
                     v, vidx = v.split("[")
                     vidx = int(vidx.replace("]",""))    
@@ -36,7 +37,12 @@ class Entry:
                     except:
                         data[:,idy] = 0.
                 else:
-                    data[:,idy] = getattr(event, v)
+                    # print(getattr(event, v))
+                    # data[:,idy] = getattr(event, v)
+                    try:
+                        data[:,idy] = getattr(event, v)
+                    except:
+                        data[:,idy] = 0
                 idy += 1
 
         return data, error

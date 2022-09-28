@@ -20,7 +20,7 @@ def base_selection(event):
     base selection applied to all events
     events where the base selection is not fulfilled are filled with dummy values
     '''
-    sel_base = "(N_allJets_corr_nom >= 2 and N_taggedJets_corr_nom >= 1 and nPairs_corr ==1)"
+    sel_base = "((N_allJets_corr_nom>=2 and N_taggedJets_corr_nom>=1 and nPairs_corr==1) and (crossTrigMatch_corr == 1 or singleTrigMatch_corr == 1))"
 
     return sel_base
 
