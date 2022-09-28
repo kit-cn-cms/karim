@@ -1,0 +1,15 @@
+sets:
+    "bsm_classification":
+        nodes:
+            - MH1000_BB_res
+            - MH1000_BB_bos
+            - MH1000_TauTau
+            - ttbar
+            - Zll
+            - Wjet
+        models:
+            ge2j_ge1t_ge0A:
+                path: /nfs/dust/cms/user/mmarz/DRACO-MLfoy/workdir/1000GeV_boosted_vars_ge2j_ge1t_ge0A/checkpoints
+                selection: ((event.N_allJets_corr_nom>=2 and event.N_taggedJets_corr_nom>=1 and event.nPairs_corr==1) and (event.crossTrigMatch_corr == 1 or event.singleTrigMatch_corr == 1))
+        predicted_class: "predictedClass_classificationDNN"
+        name: "dnnOutput_$NODE_node__$IDX"
