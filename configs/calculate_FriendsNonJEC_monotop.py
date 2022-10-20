@@ -413,8 +413,13 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     ### GENWEIGHTS ###
     ##################
 
-   # cross section norm
-    wrapper.branchArrays["xsNorm"][0] = genWeights.getXS("incl")
+    # cross section norm
+    if sample.startswith("WJetsToLNu_Pt-100To250") or sample.startswith("WJetsToLNu_Pt-250To400"):
+        # factor 2 since rejecting every second event during ntupling
+        # print("WJetsToLNu_Pt-100To250 or WJetsToLNu_Pt-250To400")
+        wrapper.branchArrays["xsNorm"][0] = genWeights.getXS("incl")*2.
+    else:
+        wrapper.branchArrays["xsNorm"][0] = genWeights.getXS("incl")
 
     # rate factors
     # apply them directly to the weights
@@ -526,18 +531,6 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     # wrapper.branchArrays["pdf_up_rel"][0]   = (nom_pdf+variation)/nom_pdf
     # wrapper.branchArrays["pdf_down"][0]     =  nom_pdf-variation
     # wrapper.branchArrays["pdf_down_rel"][0] = (nom_pdf-variation)/nom_pdf
-
-
-
-
-
-
-
-
-
-
-
-
 
     return event
 

@@ -267,7 +267,8 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     wrapper.branchArrays["recoil"+suffix][0] = recoil
 
     if recoil > 0 and (getattr(event,"N_TightMuons") == 1 or \
-         (getattr(event,"N_LooseMuons") == 0 and getattr(event,"N_LooseElectrons") == 0 and getattr(event,"N_LoosePhotons") == 0 )  ):
+         (getattr(event,"N_LooseMuons") == 0 and getattr(event,"N_LooseElectrons") == 0 and getattr(event,"N_LoosePhotons") == 0 )\
+        ):
         wrapper.branchArrays["recoilTriggerSF"+suffix][0] = btagEff[dataEra]["recoilTrig"].evaluate("central", recoil)
         wrapper.branchArrays["recoilTriggerSF"+suffix+"_up"][0] = btagEff[dataEra]["recoilTrig"].evaluate("up", recoil)
         wrapper.branchArrays["recoilTriggerSF"+suffix+"_down"][0] = btagEff[dataEra]["recoilTrig"].evaluate("down", recoil)
