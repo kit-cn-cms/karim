@@ -183,6 +183,7 @@ def set_branches(wrapper, jec):
     wrapper.SetFloatVar("pileup_up_rel")
     wrapper.SetFloatVar("pileup_down_rel")
 
+    wrapper.SetFloatVar("pdf_nom")
     wrapper.SetFloatVar("pdf_up")
     wrapper.SetFloatVar("pdf_up_rel")
     wrapper.SetFloatVar("pdf_down")
@@ -519,18 +520,22 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
 
 
     # simple pdf weight
-    # TODO update 
-    # nom_pdf = event.Weight_pdf[0]
-    # residuals = np.array([nom_pdf - event.Weight_pdf[i+1] for i in range(len(event.Weight_pdf)-1)])
-    # if sample.startswith("TTbb"):
-    #     variation = (np.mean(residuals**2, axis = 0))**0.5
-    # else:
-    #     variation = (residuals)**2
-    #     variation = (variation.sum(axis=0))**0.5
-    # wrapper.branchArrays["pdf_up"][0]       =  nom_pdf+variation
-    # wrapper.branchArrays["pdf_up_rel"][0]   = (nom_pdf+variation)/nom_pdf
-    # wrapper.branchArrays["pdf_down"][0]     =  nom_pdf-variation
-    # wrapper.branchArrays["pdf_down_rel"][0] = (nom_pdf-variation)/nom_pdf
+    if event.nPDFWeight > 0:
+        nom_pdf = event.Weight_pdf[0]
+        residuals = np.array([nom_pdf - event.Weight_pdf[i+1] for i in range(len(event.Weight_pdf)-1)])
+        if sample.startswith("TTbb"):
+            variation = (np.mean(residuals**2, axis = 0))**0.5
+        else:
+            variation = (residuals)**2
+            variation = (variation.sum(axis=0))**0.5
+    else:
+        nom_pdf = 1.
+        variation = 0.
+    wrapper.branchArrays["pdf_nom"][0]       =  nom_pdf
+    wrapper.branchArrays["pdf_up"][0]       =  nom_pdf+variation
+    wrapper.branchArrays["pdf_up_rel"][0]   = (nom_pdf+variation)/nom_pdf
+    wrapper.branchArrays["pdf_down"][0]     =  nom_pdf-variation
+    wrapper.branchArrays["pdf_down_rel"][0] = (nom_pdf-variation)/nom_pdf
 
     return event
 
