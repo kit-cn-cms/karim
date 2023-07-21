@@ -92,6 +92,13 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     calculate weights
     '''
 
+    # apparently the 2016postVFP light btag SFs are bad
+    # therefore use the preVFP ones
+    if dataEra == "2016postVFP":
+        dataEra_lightSF = "2016preVFP"
+    else:
+        dataEra_lightSF = dataEra
+
     suffix = "_"+jec
 
     if jec == "nom":
@@ -132,10 +139,10 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
             eff_M = 0.001
 
         if flav == 0:
-            sf_M = btagSF[dataEra]["deepJet_incl"].evaluate("central", "M", flav, eta, pt)
+            sf_M = btagSF[dataEra_lightSF]["deepJet_incl"].evaluate("central", "M", flav, eta, pt)
             if jec == "nom":
                 for sys in SFl_sys:
-                    sfl_M[sys] = btagSF[dataEra]["deepJet_incl"].evaluate(sys, "M", flav, eta, pt)
+                    sfl_M[sys] = btagSF[dataEra_lightSF]["deepJet_incl"].evaluate(sys, "M", flav, eta, pt)
         else:
             sf_M = btagSF[dataEra]["deepJet_comb"].evaluate("central", "M", flav, eta, pt)
             if jec == "nom":
@@ -212,10 +219,10 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
 
 
         if flav == 0:
-            sf_L = btagSF[dataEra]["deepJet_incl"].evaluate("central", "L", flav, eta, pt)
+            sf_L = btagSF[dataEra_lightSF]["deepJet_incl"].evaluate("central", "L", flav, eta, pt)
             if jec == "nom":
                 for sys in SFl_sys:
-                    sfl_L[sys] = btagSF[dataEra]["deepJet_incl"].evaluate(sys, "L", flav, eta, pt)
+                    sfl_L[sys] = btagSF[dataEra_lightSF]["deepJet_incl"].evaluate(sys, "L", flav, eta, pt)
         else:
             sf_L = btagSF[dataEra]["deepJet_comb"].evaluate("central", "L", flav, eta, pt)
             if jec == "nom":
