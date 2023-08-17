@@ -15,6 +15,10 @@ class Config:
         self.additional_variables   = config.get_additional_variables()
         self.base_selection         = config.base_selection
         self.calculate_variables    = config.calculate_variables
+        if config.load_input_branches:
+            self.load_input_branches = config.load_input_branches
+        else:
+            self.load_input_branches = self.loadInputBranches
 
         if mode == "Reconstruction":
             self.naming     = config.get_naming()
@@ -127,4 +131,6 @@ class Config:
         if not os.path.exists(idx):
             sys.exit("index file does not exist {}".format(idx))
         return db, idx
-        
+
+    def loadInputBranches(self):
+        return []

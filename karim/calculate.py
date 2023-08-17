@@ -18,8 +18,8 @@ def calculate_variables(filename, configpath, friendTrees, outpath,
     genWeights = load.GenWeights(filename)
     
     # open input file
-    with load.InputFile(filename, config.getFriendTrees(filename)) as ntuple:
-        jecs = load.getSystematics(ntuple)
+    with load.InputFile(filename, config.getFriendTrees(filename), "Events", config.load_input_branches()) as ntuple:
+        jecs = load.getSystematics(ntuple.tree)
 
         # open output root file
         with load.OutputFile(outpath) as outfile:
@@ -27,6 +27,7 @@ def calculate_variables(filename, configpath, friendTrees, outpath,
 
             # start loop over ntuple entries
             first = True
+            print("Ntuple",ntuple)
             for i, event in enumerate(load.TreeIterator(ntuple)):
                 if apply_selection:
                     if not config.base_selection(event):

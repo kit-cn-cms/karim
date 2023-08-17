@@ -1,28 +1,32 @@
 import ROOT
 import os
 from array import array
+import uproot as up
 
 class InputFile(object):
     '''
     open input file and return tree
     '''
-    def __init__(self, filename, friendTrees = [], treeName = "Events"):
-        self.file = ROOT.TFile(filename)
-        self.tree = self.file.Get(treeName)
-        
+    def __init__(self, filename, friendTrees = [], treeName = "Events", branches = []):
+        self.file = up.open(filename)
+        self.tree = self.file[treeName]
+        self.branches = []#[branch.decode() for branch in self.tree.keys()]
+        for branch in branches:
+            self.branches += self.tree.keys(filter_name=branch)
+        print(self.branches)
+
         print("\nloading tree with {nentries} entries\n".format(
-            nentries = self.tree.GetEntries()))
+            nentries = len(self.tree)))
         
         for ft in friendTrees:
             print("adding friendTree {}".format(ft))
             self.tree.AddFriend("MVATree", ft)        
     
     def __enter__(self):
-        return self.tree
+        return self
 
     def __exit__(self, ctx_type, ctx_value, ctx_traceback):
-        self.file.Close()
-
+        pass
 
 jecs = [
     "jes",
@@ -64,7 +68,8 @@ validSysts+= [j+"Up" for j in jecs]
 validSysts+= [j+"Down" for j in jecs]
 
 def getSystematics(tree):
-    branches = [b.GetName() for b in tree.GetListOfBranches()]
+    branches = tree.keys()
+    #print(branches)
     postfix  = []
     for b in branches:
         if not b.split("_")[-1].startswith("201"):
@@ -87,13 +92,17 @@ class TreeIterator:
         
     yields: DataFrame of all jet assignment hypotheses
     '''
-    def __init__(self, tree, Hypotheses = None):
-        self.tree = tree
+    def __init__(self, inputfile, Hypotheses = None):
+        self.tree = inputfile.tree
+        self.branches = inputfile.branches
         self.Hypotheses = Hypotheses
 
     def __iter__(self):
+        # event counter
         self.idx = 0
-        self.max = self.tree.GetEntries()
+        # max number of event i.e. number of events in tree
+        self.max = len(self.tree)
+        # print step i.e. print information every pstep events
         self.pstep = 100
         self.scale = 100000
         # ToDo add branch address initialization?
@@ -110,10 +119,10 @@ class TreeIterator:
             self.timer.Start()
 
         if self.idx < self.max:
-            self.tree.GetEntry(self.idx)
+            #self.tree.GetEntry(self.idx)
             self.idx+=1
 
-            return self.tree
+            return self.tree.arrays(self.branches,entry_start=self.idx,entry_stop=self.idx+1,library="np")
             #if not self.Hypotheses is None:
             #    return self.Hypotheses.GetPermutations(self.tree, self.tree.N_Jets)
             #else:
@@ -130,10 +139,10 @@ class TreeIterator:
             self.timer.Start()
 
         if self.idx < self.max:
-            self.tree.GetEntry(self.idx)
+            #self.tree.GetEntry(self.idx)
             self.idx+=1
 
-            return self.tree
+            return self.tree.arrays(self.branches,entry_start=self.idx,entry_stop=self.idx+1,library="np")
             #if not self.Hypotheses is None:
             #    return self.Hypotheses.GetPermutations(self.tree, self.tree.N_Jets)
             #else:
