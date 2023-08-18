@@ -7,23 +7,23 @@ class InputFile(object):
     '''
     open input file and return tree
     '''
-    def __init__(self, filename, friendTrees = [], treeName = "Events", branches = []):
-        self.file = up.open(filename)
-        self.tree = self.file[treeName]
-        self.branches = []#[branch.decode() for branch in self.tree.keys()]
-        for branch in branches:
-            self.branches += self.tree.keys(filter_name=branch)
-        print(self.branches)
-
-        print("\nloading tree with {nentries} entries\n".format(
-            nentries = len(self.tree)))
+    def __init__(self, filename, friendTrees = [], treeName = "Events"):
+        self.file = filename
+        self.treename = treeName
+        #self.branches = []
+        with up.open("{}:{}".format(self.file,self.treename)) as tree:
+            print("\nloading tree with {nentries} entries\n".format(
+                nentries = len(tree)))
+            #for branch in branches:
+                #self.branches += tree.keys(filter_name=branch)
+        #print(self.branches)
         
         for ft in friendTrees:
             print("adding friendTree {}".format(ft))
             self.tree.AddFriend("MVATree", ft)        
     
     def __enter__(self):
-        return self
+        return up.open("{}:{}".format(self.file,self.treename))
 
     def __exit__(self, ctx_type, ctx_value, ctx_traceback):
         pass
@@ -92,9 +92,10 @@ class TreeIterator:
         
     yields: DataFrame of all jet assignment hypotheses
     '''
-    def __init__(self, inputfile, Hypotheses = None):
-        self.tree = inputfile.tree
-        self.branches = inputfile.branches
+    def __init__(self, inputtree, Hypotheses = None, branches = []):
+        self.tree = inputtree
+        self.branches = branches
+        #print(self.branches)
         self.Hypotheses = Hypotheses
 
     def __iter__(self):
@@ -122,7 +123,7 @@ class TreeIterator:
             #self.tree.GetEntry(self.idx)
             self.idx+=1
 
-            return self.tree.arrays(self.branches,entry_start=self.idx,entry_stop=self.idx+1,library="np")
+            return self.tree.arrays(self.branches,entry_start=self.idx,entry_stop=self.idx+1,library="ak")
             #if not self.Hypotheses is None:
             #    return self.Hypotheses.GetPermutations(self.tree, self.tree.N_Jets)
             #else:
@@ -142,7 +143,7 @@ class TreeIterator:
             #self.tree.GetEntry(self.idx)
             self.idx+=1
 
-            return self.tree.arrays(self.branches,entry_start=self.idx,entry_stop=self.idx+1,library="np")
+            return self.tree.arrays(self.branches,entry_start=self.idx,entry_stop=self.idx+1,library="ak")
             #if not self.Hypotheses is None:
             #    return self.Hypotheses.GetPermutations(self.tree, self.tree.N_Jets)
             #else:

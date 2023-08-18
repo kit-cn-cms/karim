@@ -6,7 +6,7 @@ import os
 import sys
 import correctionlib
 from pprint import pprint
-import numpy as np
+import awkward as ak
 
 filepath = os.path.abspath(__file__)
 karimpath = os.path.dirname(os.path.dirname(filepath))
@@ -115,7 +115,7 @@ def set_branches(wrapper, jec):
     wrapper.SetFloatVar("recoilTriggerSF"+suffix+"_Statdown")
 
 
-def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights = None):
+def calculate_variables(event, wrapper, sample, jecs, dataEra = None, genWeights = None):
     '''
     calculate weights
     '''
@@ -127,100 +127,162 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     else:
         dataEra_lightSF = dataEra
 
-    suffix = "_"+jec
+    suffix = "_"
 
-    if jec == "nom":
-        # add basic information for friend trees
-        wrapper.branchArrays["Evt_ID"][0] = event["Evt_ID"][0]
-        wrapper.branchArrays["Evt_Run"][0]   = event["Evt_Run"][0]
-        wrapper.branchArrays["Evt_Lumi"][0]  = event["Evt_Lumi"][0]
+    # add basic information for friend trees
+    wrapper.branchArrays["Evt_ID"][0] = event["Evt_ID"][0]
+    wrapper.branchArrays["Evt_Run"][0]   = event["Evt_Run"][0]
+    wrapper.branchArrays["Evt_Lumi"][0]  = event["Evt_Lumi"][0]
 
-        # cross section norm
-        wrapper.branchArrays["xsNorm"][0] = genWeights.getXS("incl")
+    # cross section norm
+    wrapper.branchArrays["xsNorm"][0] = genWeights.getXS("incl")
 
     ################
     ### LEPTONIC ###
     ################
 
-    P_MC   = 1.
+    P_MC   = None
     P_DATA_sys = {}
     sf_M_sys = {}
-    if jec == "nom":
-        for sys in SFb_sys+SFl_sys:
-            P_DATA_sys[sys] = 1.
+    for sys in SFb_sys+SFl_sys+["central"]:
+        P_DATA_sys[sys] = None
+        sf_M_sys[sys] = None
 
-    # necessary jet variables
-    eta   = np.absolute(event["Jet_Eta"+suffix][0])
-    pt    = event["Jet_Pt"+suffix][0]
-    flav  = event["Jet_HadronFlav"+suffix][0]
-    passes_M = event["Jet_taggedM"+suffix][0]
+    # necessary jet variables eta, pt, flavor, and whether jet passes medium working point
+    eta = []
+    pt = []
+    flav = []
+    passes_M = []
+    index_jec_nom = None
 
-    # create some masks
+    # first put single awkward (one for each jec source) arrays in list ...
+    for i,jec in enumerate(jecs):
+        if jec == "nom":
+            index_jec_nom = i
+        suffix = "_"+jec
+        eta.append(np.absolute(event["Jet_Eta"+suffix][0]))
+        pt.append(event["Jet_Pt"+suffix][0])
+        flav.append(event["Jet_HadronFlav"+suffix][0])
+        passes_M.append(event["Jet_taggedM"+suffix][0])
+    
+    # ... then turn the list into an awkwar array containing all jec variations
+    eta = ak.Array(eta)
+    pt = ak.Array(pt)
+    flav = ak.Array(flav)
+    passes_M = ak.Array(passes_M)
+    
+    # create some masks ...
+    # ... to get jets with flavor 0 (necessary because correctionlib returns error if the corresponding correction gets jets with flavor != 0)
     mask_flav_0 = flav == 0
-    #print("flav 0 mask:",mask_flav_0)
+    # print("flav 0 mask:",mask_flav_0)
+    # ... to get jets with flavor 4 or 5 (necessary because ... flavor != 4 or 5)
     mask_flav_4_5 = np.logical_or(flav == 4, flav == 5)
-    #print("flav 4/5 mask:",mask_flav_4_5)
+    # print("flav 4/5 mask:",mask_flav_4_5)
+    
+    # print("eta:",eta)
+    # print("pt:",pt)
+    # print("flav:",flav)
+    # print("passes M:",passes_M)
+   
+    #print(pt[mask_flav_0])
+    #print(btagEff[dataEra]["lep"].evaluate("M", flav[mask_flav_0], eta[mask_flav_0], pt[mask_flav_0]))
+    #print(btagEff[dataEra]["lep"].evaluate("M", flav[mask_flav_4_5], eta[mask_flav_4_5], pt[mask_flav_4_5]))
+    
+    eta_lfjets = eta[mask_flav_0]
+    pt_lfjets = pt[mask_flav_0]
+    flav_lfjets = flav[mask_flav_0]
+    eta_hfjets = eta[mask_flav_4_5]
+    pt_hfjets = pt[mask_flav_4_5]
+    flav_hfjets = flav[mask_flav_4_5]
 
-    # print(eta,eta.dtype)
-    # print(pt,pt.dtype)
-    # print(flav,flav.dtype)
-    # print(passes_M,passes_M.dtype)
-
-    # use correctionlib
-    eff_M = np.concatenate((btagEff[dataEra]["lep"].evaluate("M", flav[mask_flav_0], eta[mask_flav_0], pt[mask_flav_0]),\
-                            btagEff[dataEra]["lep"].evaluate("M", flav[mask_flav_4_5], eta[mask_flav_4_5], pt[mask_flav_4_5])))
+    # use correctionlib to determine efficiencies
+    # again, jec variations first into list ...
+    eff_M = []
+    for i,jec in enumerate(jecs):
+        eff_M.append(ak.concatenate((btagEff[dataEra]["lep"].evaluate("M", flav_lfjets[i], eta_lfjets[i], pt_lfjets[i]),\
+                            btagEff[dataEra]["lep"].evaluate("M", flav_hfjets[i], eta_hfjets[i], pt_hfjets[i])),\
+                            axis=0))
+    # ... and then into awkward array
+    eff_M = ak.Array(eff_M)
     # print("eff M",eff_M)
+
     # todo: check empty bins in efficiency
-    eff_M[eff_M == 0.] = 0.001
+    #eff_M[eff_M == 0.] = 0.001
+
+    # use correctionlib to determine scale factors
+    # again, jec variations first into list ...
+    sf_M_sys["central"] = []
+    for i,jec in enumerate(jecs):
+        sf_M_sys["central"].append(ak.concatenate((btagSF[dataEra_lightSF]["deepJet_incl"].evaluate("central", "M", flav_lfjets[i], eta_lfjets[i], pt_lfjets[i]),\
+                                          btagSF[dataEra]["deepJet_comb"].evaluate("central", "M", flav_hfjets[i], eta_hfjets[i], pt_hfjets[i])),\
+                                          axis=0))
+    # ... and then into awkward array
+    sf_M_sys["central"] = ak.Array(sf_M_sys["central"])
+    # also consider btag systematics
+    for sys in SFl_sys:
+        sf_M_sys[sys] = ak.concatenate((btagSF[dataEra_lightSF]["deepJet_incl"].evaluate(sys, "M", flav_lfjets[index_jec_nom], eta_lfjets[index_jec_nom], pt_lfjets[index_jec_nom]),\
+                                    btagSF[dataEra]["deepJet_comb"].evaluate("central", "M", flav_hfjets[index_jec_nom], eta_hfjets[index_jec_nom], pt_hfjets[index_jec_nom])))
+    for sys in SFb_sys:
+        sf_M_sys[sys] = ak.concatenate((btagSF[dataEra_lightSF]["deepJet_incl"].evaluate("central", "M", flav_lfjets[index_jec_nom], eta_lfjets[index_jec_nom], pt_lfjets[index_jec_nom]),\
+                                    btagSF[dataEra]["deepJet_comb"].evaluate(sys, "M", flav_hfjets[index_jec_nom], eta_hfjets[index_jec_nom], pt_hfjets[index_jec_nom])))
     
-    # use correctionlib
-    sf_M_sys["central"] = np.concatenate((btagSF[dataEra_lightSF]["deepJet_incl"].evaluate("central", "M", flav[mask_flav_0], eta[mask_flav_0], pt[mask_flav_0]),\
-                                          btagSF[dataEra]["deepJet_comb"].evaluate("central", "M", flav[mask_flav_4_5], eta[mask_flav_4_5], pt[mask_flav_4_5])))
-    if jec == "nom":
-        for sys in SFl_sys:
-            sf_M_sys[sys] = np.concatenate((btagSF[dataEra_lightSF]["deepJet_incl"].evaluate(sys, "M", flav[mask_flav_0], eta[mask_flav_0], pt[mask_flav_0]),\
-                                     btagSF[dataEra]["deepJet_comb"].evaluate("central", "M", flav[mask_flav_4_5], eta[mask_flav_4_5], pt[mask_flav_4_5])))
-        for sys in SFb_sys:
-            sf_M_sys[sys] = np.concatenate((btagSF[dataEra_lightSF]["deepJet_incl"].evaluate("central", "M", flav[mask_flav_0], eta[mask_flav_0], pt[mask_flav_0]),\
-                                     btagSF[dataEra]["deepJet_comb"].evaluate(sys, "M", flav[mask_flav_4_5], eta[mask_flav_4_5], pt[mask_flav_4_5])))
+    # print("sf M:",sf_M_sys)
     
-    # print(sf_M_sys)
+    # rearrange kinematic variable ak arrays such that their order resembles the order in the efficiency and scale factor ak arrays
+    eta = ak.concatenate((eta_lfjets,eta_hfjets),axis=1)
+    pt = ak.concatenate((pt_lfjets,pt_hfjets),axis=1)
+    passes_M = ak.concatenate((passes_M[mask_flav_0],passes_M[mask_flav_4_5]),axis=1)
+    flav = ak.concatenate((flav_lfjets,flav_hfjets),axis=1)
 
-    # rearrange arrays
-    eta = np.concatenate((eta[mask_flav_0],eta[mask_flav_4_5]))
-    pt = np.concatenate((pt[mask_flav_0],pt[mask_flav_4_5]))
-    passes_M = np.concatenate((passes_M[mask_flav_0],passes_M[mask_flav_4_5]))
-    flav = np.concatenate((flav[mask_flav_0],flav[mask_flav_4_5]))
+    # print("eta:",eta)
+    # print("pt:",pt)
+    # print("flav:",flav)
+    # print("passes M:",passes_M)
 
-    # print(eta,eta.dtype)
-    # print(pt,pt.dtype)
-    # print(flav,flav.dtype)
-    # print(passes_M,passes_M.dtype)
-
+    # find the jets that pass the medium working point
     passes_M_mask = passes_M==1
     fails_M_mask = passes_M==0
-    P_MC = np.prod(eff_M[passes_M_mask])*np.prod(np.add(np.negative(eff_M[fails_M_mask]),1.))
-    P_DATA_sys["central"] = np.prod(np.multiply(eff_M[passes_M_mask],sf_M_sys["central"][passes_M_mask]))*np.prod(np.add(np.negative(np.multiply(eff_M[fails_M_mask],sf_M_sys["central"][fails_M_mask])),1.))
 
-    if jec == "nom":
-        for sys in SFl_sys+SFb_sys:
-            P_DATA_sys[sys] = np.prod(np.multiply(eff_M[passes_M_mask],sf_M_sys[sys][passes_M_mask]))* \
-                              np.prod(np.add(np.negative(np.multiply(eff_M[fails_M_mask],sf_M_sys[sys][fails_M_mask])),1.))
+    eff_M_passes_M = eff_M[passes_M_mask]
+    eff_M_fails_M = eff_M[fails_M_mask]
+
+    # calculate array of MC probabilities
+    P_MC = ak.prod(eff_M_passes_M,axis=1)*ak.prod(np.add(np.negative(eff_M_fails_M),1.),axis=1)
+    # calculate array of Data probabilities
+    P_DATA_sys["central"] = ak.prod(eff_M_passes_M*sf_M_sys["central"][passes_M_mask],axis=1)*\
+                            ak.prod(np.add(np.negative(eff_M_fails_M*sf_M_sys["central"][fails_M_mask]),1.),axis=1)
+    # also consider btag systematics
+    for sys in SFl_sys+SFb_sys:
+        P_DATA_sys[sys] = ak.prod(eff_M_passes_M[index_jec_nom]*sf_M_sys[sys][passes_M[index_jec_nom]==1])* \
+                            ak.prod(np.add(np.negative((eff_M_fails_M[index_jec_nom])*(sf_M_sys[sys][passes_M[index_jec_nom]==0])),1.))
     
     # print(jec)
     # print("p mc",P_MC)
     # print("p data:",P_DATA_sys)
 
-    wrapper.branchArrays["fixedWPSF_leptonic"+suffix][0] = P_DATA_sys["central"]/P_MC
-    # print("sf central:",P_DATA_sys["central"]/P_MC)
-    if jec == "nom":
-        for sys in SFl_sys:
-            wrapper.branchArrays["fixedWPSFl_leptonic_"+sys+"_rel"][0] = P_DATA_sys[sys]/P_DATA_sys["central"]
-            # print("sf {}".format(sys),P_DATA_sys[sys]/P_DATA_sys["central"])
-        for sys in SFb_sys:
-            wrapper.branchArrays["fixedWPSFb_leptonic_"+sys+"_rel"][0] = P_DATA_sys[sys]/P_DATA_sys["central"]
-            # print("sf {}".format(sys),P_DATA_sys[sys]/P_DATA_sys["central"])
+    for i,jec in enumerate(jecs):
+        suffix = "_"+jec
+        wrapper.branchArrays["fixedWPSF_leptonic"+suffix][0] = P_DATA_sys["central"][i]/P_MC[i]
 
+        # print("sf central: {}".format(jec),P_DATA_sys["central"][i]/P_MC[i])
+        if jec == "nom":
+            for sys in SFl_sys:
+                wrapper.branchArrays["fixedWPSFl_leptonic_"+sys+"_rel"][0] = P_DATA_sys[sys]/P_DATA_sys["central"][index_jec_nom]
+                # print("sf {}".format(sys),P_DATA_sys[sys]/P_DATA_sys["central"][index_jec_nom])
+            for sys in SFb_sys:
+                wrapper.branchArrays["fixedWPSFb_leptonic_"+sys+"_rel"][0] = P_DATA_sys[sys]/P_DATA_sys["central"][index_jec_nom]
+                # print("sf {}".format(sys),P_DATA_sys[sys]/P_DATA_sys["central"][index_jec_nom])
+    
+    output_array = {}
+    output_array["fixedWPSF_leptonic"] = P_DATA_sys["central"]/P_MC
+    for sys in SFl_sys:
+        output_array["fixedWPSFl_leptonic_"+sys+"_rel"] = P_DATA_sys[sys]/P_DATA_sys["central"][index_jec_nom]
+    for sys in SFb_sys:
+        output_array["fixedWPSFb_leptonic_"+sys+"_rel"] = P_DATA_sys[sys]/P_DATA_sys["central"][index_jec_nom]
+    print("\n\n")
+    print(output_array)
+
+    return output_array
     ################
     ### HADRONIC ###
     ################
