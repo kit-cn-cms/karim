@@ -121,13 +121,13 @@ class TreeIterator:
 
         if self.idx < self.max:
             #self.tree.GetEntry(self.idx)
-            self.idx+=1
-
-            return self.tree.arrays(self.branches,entry_start=self.idx,entry_stop=self.idx+1,library="ak")
+            start = self.idx
+            self.idx+=25
+            stop = self.idx
+            return self.tree.arrays(self.branches,entry_start=start,entry_stop=stop,library="ak")
             #if not self.Hypotheses is None:
             #    return self.Hypotheses.GetPermutations(self.tree, self.tree.N_Jets)
-            #else:
-                
+            #else:        
         else:
             raise StopIteration
 
@@ -141,13 +141,13 @@ class TreeIterator:
 
         if self.idx < self.max:
             #self.tree.GetEntry(self.idx)
-            self.idx+=1
-
-            return self.tree.arrays(self.branches,entry_start=self.idx,entry_stop=self.idx+1,library="ak")
+            start = self.idx
+            self.idx+=25
+            stop = self.idx
+            return self.tree.arrays(self.branches,entry_start=start,entry_stop=stop,library="ak")
             #if not self.Hypotheses is None:
             #    return self.Hypotheses.GetPermutations(self.tree, self.tree.N_Jets)
-            #else:
-                
+            #else:          
         else:
             raise StopIteration
  
@@ -162,21 +162,21 @@ class OutputFile(object):
     def __init__(self, filename, treeName = "Events"):
         self.name = filename
         self.setSampleName()
-        self.file = ROOT.TFile(self.name, "RECREATE")
+        #self.file = ROOT.TFile(self.name, "RECREATE")
         self.tree = ROOT.TTree(treeName,"KarimTree")
         print("\nwriting info to file {}\n".format(self.name))
 
         self.branchArrays = {}
 
     def __enter__(self):
-        return self
+        return up.recreate(self.name)
 
     def __exit__(self, ctx_type, ctx_value, ctx_traceback):
-        nentries = self.tree.GetEntries()
-        self.file.Write()
-        self.file.Close()
-        with open(self.name.replace(".root",".cutflow.txt"), "w") as cff:
-            cff.write("entries : {}".format(nentries))
+        #nentries = self.tree.GetEntries()
+        #self.file.Write()
+        #self.file.Close()
+        #with open(self.name.replace(".root",".cutflow.txt"), "w") as cff:
+        #    cff.write("entries : {}".format(nentries))
         print("file {} written.".format(self.name))
         print("\n"+"="*50+"\n")
   

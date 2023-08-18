@@ -33,15 +33,13 @@ def calculate_variables(filename, configpath, friendTrees, outpath,
 
         # open output root file
         with load.OutputFile(outpath) as outfile:
-            outfile.SetConfigBranches(config, jecs, jecDependent)
+            #outfile.SetConfigBranches(config, jecs, jecDependent)
 
             # start loop over ntuple entries
             first = True
             print("Ntuple",ntuple)
-            output_array = []
+            output_array = None
             for i, event in enumerate(load.TreeIterator(ntuple, None, branches)):
-                if i%51 == 0:
-                    output_array = []
                 if apply_selection:
                     if not config.base_selection(event):
                         continue
@@ -49,8 +47,8 @@ def calculate_variables(filename, configpath, friendTrees, outpath,
                     if not jecDependent:
                         config.calculate_variables(event, outfile, outfile.sampleName, None, dataEra, genWeights)
                     else:
-                        output_array.append(config.calculate_variables(event, outfile, outfile.sampleName, jecs, dataEra, genWeights))
-                    outfile.FillTree()
+                        output_array = config.calculate_variables(event, outfile, "FIXME", jecs, dataEra, genWeights)
+                    #outfile.FillTree()
                 else:
                     if not jecDependent:
                         loopSize = getattr(event, split_feature)
@@ -65,32 +63,25 @@ def calculate_variables(filename, configpath, friendTrees, outpath,
                                 config.calculate_variables(event, outfile, outfile.sampleName, idx, jec)
                                 outfile.FillTree()
                                 outfile.ClearArrays()
-                
-                if i%50 == 0:
-                    output_tree = {}
-                    for key in output_array[i%50]:
-                        output_tree[key] = []
-                    for key in output_tree:
-                        for event_dict in output_array:
-                            output_tree[key].append(event_dict[key])
-                    for key in output_tree:
-                        output_tree[key] = ak.Array(output_tree[key])
-                    print(output_tree)
-
-
-                    
+                print(output_array)
+                if first:
+                    outfile["Events"] = output_array
+                else:
+                    outfile["Events"].extend(output_array)
 
                 if first:
                     print("writing variables to output tree:")
-                    for b in list(outfile.tree.GetListOfBranches()):
-                        print(b.GetName())
+                    # for b in outfile["Events"].keys():
+                    #     print(b)
                     first = False
+                if i > 2:
+                    break
 
                 
-                if i<=10 and split_feature is None:
-                    print(" === testevent ===")
-                    for b in list(outfile.tree.GetListOfBranches()):
-                        print(b.GetName(), ", ".join([str(entry) for entry in list(outfile.branchArrays[b.GetName()])]))
-                    print(" ================="+"\n")
-                outfile.ClearArrays()
-                continue
+                # if i<=10 and split_feature is None:
+                #     print(" === testevent ===")
+                #     for b in list(outfile.tree.GetListOfBranches()):
+                #         print(b.GetName(), ", ".join([str(entry) for entry in list(outfile.branchArrays[b.GetName()])]))
+                #     print(" ================="+"\n")
+                # outfile.ClearArrays()
+                # continue
