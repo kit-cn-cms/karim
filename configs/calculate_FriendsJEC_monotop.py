@@ -231,75 +231,67 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
     pt_hfjets = pt[mask_flav_4_5]
     flav_hfjets = flav[mask_flav_4_5]
 
-    #print(flav_lfjets)
-    #print(flav_hfjets)
-    print(eta_lfjets)
-    nums_njets = ak.flatten(ak.num(eta_lfjets,axis=2))
-    nums_njecs = ak.num(eta_lfjets,axis=1)
-    print(nums_njets)
-    print(nums_njecs)
-    #print(eta_lfjets_flattened_njets)
-    #print(eta_lfjets_flattened_njecs)
+    # for the correctionlib the arrays first have to be flattened
+    # after the evaluation we unflatten them again
+    # num arrays containing the (un)flattening structure
+    nums_njets_lf = ak.flatten(ak.num(eta_lfjets,axis=2))
+    nums_njecs_lf = ak.num(eta_lfjets,axis=1)
+    nums_njets_hf = ak.flatten(ak.num(eta_hfjets,axis=2))
+    nums_njecs_hf = ak.num(eta_hfjets,axis=1)
+
+    # flatten the arrays
     eta_lfjets_flattened = ak.flatten(ak.flatten(eta_lfjets,axis=2),axis=1)
     pt_lfjets_flattened = ak.flatten(ak.flatten(pt_lfjets,axis=2),axis=1)
     flav_lfjets_flattened = ak.flatten(ak.flatten(flav_lfjets,axis=2),axis=1)
+    eta_hfjets_flattened = ak.flatten(ak.flatten(eta_hfjets,axis=2),axis=1)
+    pt_hfjets_flattened = ak.flatten(ak.flatten(pt_hfjets,axis=2),axis=1)
+    flav_hfjets_flattened = ak.flatten(ak.flatten(flav_hfjets,axis=2),axis=1)
     print(eta_lfjets_flattened)
     print(pt_lfjets_flattened)
     print(flav_lfjets_flattened)
-    # use correctionlib to determine efficiencies
-    # again, jec variations first into list ...
+    print(eta_hfjets_flattened)
+    print(pt_hfjets_flattened)
+    print(flav_hfjets_flattened)
 
-    test = btagEff[dataEra]["lep"].evaluate("M", flav_lfjets_flattened, eta_lfjets_flattened, pt_lfjets_flattened)
-    print(test)
-    test = ak.unflatten(ak.Array(test),nums_njets)
-    print(test)
-    test = ak.unflatten(test,nums_njecs)
-    print(test)
-    exit()
-    eff_M = []
-    for e in range(len(events)):
-        eff_M_ = []
-        for i,jec in enumerate(jecs):
-            eff_M_.append(ak.concatenate((btagEff[dataEra]["lep"].evaluate("M", flav_lfjets[e][i], eta_lfjets[e][i], pt_lfjets[e][i]),\
-                                btagEff[dataEra]["lep"].evaluate("M", flav_hfjets[e][i], eta_hfjets[e][i], pt_hfjets[e][i])),\
-                                axis=0))
-        eff_M.append(eff_M_)
-        
-    # ... and then into awkward array
-    eff_M = ak.Array(eff_M)
+    # use correctionlib to determine efficiencies on the flattened arrays
+    eff_M_lfjets = btagEff[dataEra]["lep"].evaluate("M", flav_lfjets_flattened, eta_lfjets_flattened, pt_lfjets_flattened)
+    eff_M_hfjets = btagEff[dataEra]["lep"].evaluate("M", flav_hfjets_flattened, eta_hfjets_flattened, pt_hfjets_flattened)
+
+    # now unflatten the efficiencies again into the proper structure similar to the kinematic variables
+    eff_M_lfjets = ak.unflatten(eff_M_lfjets,nums_njets_lf)
+    eff_M_lfjets = ak.unflatten(eff_M_lfjets,nums_njecs_lf)
+    eff_M_hfjets = ak.unflatten(eff_M_hfjets,nums_njets_hf)
+    eff_M_hfjets = ak.unflatten(eff_M_hfjets,nums_njecs_hf)
+
+    # now concatenation
+    eff_M = ak.concatenate((eff_M_lfjets,eff_M_hfjets),axis=2)
     print("eff M",eff_M)
 
     # todo: check empty bins in efficiency
     #eff_M[eff_M == 0.] = 0.001
 
     # use correctionlib to determine scale factors
-    # again, jec variations first into list ...
-    sf_M_sys["central"] = []
-    for e in range(len(events)):
-        sf_M_sys_ = []
-        for i,jec in enumerate(jecs):
-            sf_M_sys_.append(ak.concatenate((btagSF[dataEra_lightSF]["deepJet_incl"].evaluate("central", "M", flav_lfjets[e][i], eta_lfjets[e][i], pt_lfjets[e][i]),\
-                                            btagSF[dataEra]["deepJet_comb"].evaluate("central", "M", flav_hfjets[e][i], eta_hfjets[e][i], pt_hfjets[e][i])),\
-                                            axis=0))
-        sf_M_sys["central"].append(sf_M_sys_)
+    sf_M_sys_lfjets = btagSF[dataEra_lightSF]["deepJet_incl"].evaluate("central", "M", flav_lfjets_flattened, eta_lfjets_flattened, pt_lfjets_flattened)
+    sf_M_sys_hfjets = btagSF[dataEra]["deepJet_comb"].evaluate("central", "M", flav_hfjets_flattened, eta_hfjets_flattened, pt_hfjets_flattened)
+    sf_M_sys_lfjets = ak.unflatten(ak.unflatten(sf_M_sys_lfjets,nums_njets_lf),nums_njecs_lf)
+    sf_M_sys_hfjets = ak.unflatten(ak.unflatten(sf_M_sys_hfjets,nums_njets_hf),nums_njecs_hf)
 
-    # ... and then into awkward array
-    sf_M_sys["central"] = ak.Array(sf_M_sys["central"])
+    sf_M_sys["central"] = ak.concatenate((sf_M_sys_lfjets,sf_M_sys_hfjets),axis=2)
 
     # also consider btag systematics
     for sys in SFl_sys:
-        sf_M_sys_ = []
-        for e in range(len(events)):
-            sf_M_sys_.append(ak.concatenate((btagSF[dataEra_lightSF]["deepJet_incl"].evaluate(sys, "M", flav_lfjets[e][index_jec_nom], eta_lfjets[e][index_jec_nom], pt_lfjets[e][index_jec_nom]),\
-                                            btagSF[dataEra]["deepJet_comb"].evaluate("central", "M", flav_hfjets[e][index_jec_nom], eta_hfjets[e][index_jec_nom], pt_hfjets[e][index_jec_nom]))))
-        sf_M_sys[sys] = ak.Array(sf_M_sys_)    
+        sf_M_sys_lfjets = btagSF[dataEra_lightSF]["deepJet_incl"].evaluate(sys, "M", flav_lfjets_flattened, eta_lfjets_flattened, pt_lfjets_flattened)
+        sf_M_sys_hfjets = btagSF[dataEra]["deepJet_comb"].evaluate("central", "M", flav_hfjets_flattened, eta_hfjets_flattened, pt_hfjets_flattened)
+        sf_M_sys_lfjets = (ak.unflatten(ak.unflatten(sf_M_sys_lfjets,nums_njets_lf),nums_njecs_lf))[:,index_jec_nom]
+        sf_M_sys_hfjets = (ak.unflatten(ak.unflatten(sf_M_sys_hfjets,nums_njets_hf),nums_njecs_hf))[:,index_jec_nom]
+        sf_M_sys[sys] = ak.concatenate((sf_M_sys_lfjets,sf_M_sys_hfjets),axis=1)
     
     for sys in SFb_sys:
-        sf_M_sys_ = []
-        for e in range(len(events)):
-            sf_M_sys_.append(ak.concatenate((btagSF[dataEra_lightSF]["deepJet_incl"].evaluate("central", "M", flav_lfjets[e][index_jec_nom], eta_lfjets[e][index_jec_nom], pt_lfjets[e][index_jec_nom]),\
-                                    btagSF[dataEra]["deepJet_comb"].evaluate(sys, "M", flav_hfjets[e][index_jec_nom], eta_hfjets[e][index_jec_nom], pt_hfjets[e][index_jec_nom]))))
-        sf_M_sys[sys] = ak.Array(sf_M_sys_)
+        sf_M_sys_lfjets = btagSF[dataEra_lightSF]["deepJet_incl"].evaluate("central", "M", flav_lfjets_flattened, eta_lfjets_flattened, pt_lfjets_flattened)
+        sf_M_sys_hfjets = btagSF[dataEra]["deepJet_comb"].evaluate(sys, "M", flav_hfjets_flattened, eta_hfjets_flattened, pt_hfjets_flattened)
+        sf_M_sys_lfjets = (ak.unflatten(ak.unflatten(sf_M_sys_lfjets,nums_njets_lf),nums_njecs_lf))[:,index_jec_nom]
+        sf_M_sys_hfjets = (ak.unflatten(ak.unflatten(sf_M_sys_hfjets,nums_njets_hf),nums_njecs_hf))[:,index_jec_nom]
+        sf_M_sys[sys] = ak.concatenate((sf_M_sys_lfjets,sf_M_sys_hfjets),axis=1)
     
     print("sf M:",sf_M_sys)
 
@@ -329,11 +321,8 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
     
     # also consider btag systematics
     for sys in SFl_sys+SFb_sys:
-        P_DATA_sys_ = []
-        for e in range(len(events)):
-            P_DATA_sys_.append(ak.prod(eff_M_passes_M[e][index_jec_nom]*sf_M_sys[sys][e][passes_M[e][index_jec_nom]==1])* \
-                            ak.prod(np.add(np.negative((eff_M_fails_M[e][index_jec_nom])*(sf_M_sys[sys][e][passes_M[e][index_jec_nom]==0])),1.)))
-        P_DATA_sys[sys] = ak.Array(P_DATA_sys_)
+        P_DATA_sys[sys] = ak.prod(eff_M_passes_M[:,index_jec_nom]*sf_M_sys[sys][passes_M[:,index_jec_nom]==1],axis=1)* \
+                          ak.prod(np.add(np.negative((eff_M_fails_M[:,index_jec_nom])*(sf_M_sys[sys][passes_M[:,index_jec_nom]==0])),1.),axis=1)
     
     print(jec)
     print("p mc",P_MC)

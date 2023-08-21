@@ -122,7 +122,7 @@ class TreeIterator:
         if self.idx < self.max:
             #self.tree.GetEntry(self.idx)
             start = self.idx
-            self.idx+=25
+            self.idx+=50
             stop = self.idx
             return self.tree.arrays(self.branches,entry_start=start,entry_stop=stop,library="ak")
             #if not self.Hypotheses is None:
@@ -142,7 +142,7 @@ class TreeIterator:
         if self.idx < self.max:
             #self.tree.GetEntry(self.idx)
             start = self.idx
-            self.idx+=25
+            self.idx+=50
             stop = self.idx
             return self.tree.arrays(self.branches,entry_start=start,entry_stop=stop,library="ak")
             #if not self.Hypotheses is None:

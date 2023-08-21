@@ -74,8 +74,6 @@ def calculate_variables(filename, configpath, friendTrees, outpath,
                     # for b in outfile["Events"].keys():
                     #     print(b)
                     first = False
-                if i > 2:
-                    break
 
                 
                 # if i<=10 and split_feature is None:
