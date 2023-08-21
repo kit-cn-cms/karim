@@ -13,7 +13,7 @@ class InputFile(object):
         #self.branches = []
         with up.open("{}:{}".format(self.file,self.treename)) as tree:
             print("\nloading tree with {nentries} entries\n".format(
-                nentries = len(tree)))
+                nentries = tree.num_entries))
             #for branch in branches:
                 #self.branches += tree.keys(filter_name=branch)
         #print(self.branches)
@@ -102,7 +102,7 @@ class TreeIterator:
         # event counter
         self.idx = 0
         # max number of event i.e. number of events in tree
-        self.max = len(self.tree)
+        self.max = self.tree.num_entries
         # print step i.e. print information every pstep events
         self.pstep = 100
         self.scale = 100000
