@@ -8,23 +8,31 @@ import correctionlib
 from pprint import pprint
 import awkward as ak
 
+# path to file
 filepath = os.path.abspath(__file__)
+# path to karim
 karimpath = os.path.dirname(os.path.dirname(filepath))
 
+# dicts for btag scale factors and efficiencies
 btagSF = {}
 btagEff = {}
+# directory to always updated correctionlib corrections from jsonpog
 jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration", "POG")
 
-
+# load all btag efficiencies and scale factors as well as recoil trigger scale factors
 for year in ["2016preVFP", "2016postVFP", "2017", "2018"]:
-    # efficiencies
     sfDir = os.path.join(karimpath, "data", "UL_"+year[2:])
+    # efficiencies
     btagEffjson_lep = correctionlib.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_monotop_lep_deepJet.json"))
     btagEffjson_had = correctionlib.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_monotop_had_deepJet.json"))
-    for corr in btagEffjson_lep.values():
-        print(f"Correction {corr.name} has {len(corr.inputs)} inputs")
-        for ix in corr.inputs:
-            print(f"   Input {ix.name} ({ix.type}): {ix.description}")
+    # for corr in btagEffjson_lep.values():
+    #     print(f"Correction {corr.name} has {len(corr.inputs)} inputs")
+    #     for ix in corr.inputs:
+    #         print(f"   Input {ix.name} ({ix.type}): {ix.description}")
+    # for corr in btagEffjson_had.values():
+    #     print(f"Correction {corr.name} has {len(corr.inputs)} inputs")
+    #     for ix in corr.inputs:
+    #         print(f"   Input {ix.name} ({ix.type}): {ix.description}")
     btagEff[year] = {}
     btagEff[year]["lep"] = btagEffjson_lep["btagEff"]
     btagEff[year]["had"] = btagEffjson_had["btagEff"]
@@ -40,11 +48,13 @@ for year in ["2016preVFP", "2016postVFP", "2017", "2018"]:
 
 pprint(btagEff)
 
+# systematic variations of btag scale factors
 SFb_sys = ["up_correlated","up_uncorrelated","down_correlated","down_uncorrelated"]
 SFl_sys = ["up_correlated","up_uncorrelated","down_correlated","down_uncorrelated"]
 
+# function to define which branches from the ntuples are needed
+# accepts * as wildcard
 def load_input_branches():
-
     a = """Evt_ID
 Evt_Run
 Evt_Lumi
@@ -75,9 +85,11 @@ def get_additional_variables():
         ]
     return variables
 
+# define base selection
 def base_selection(event):
     return True
 
+# soon not needed anymore
 def set_branches(wrapper, jec):
     suffix = "_"+jec
 
@@ -114,7 +126,7 @@ def set_branches(wrapper, jec):
     wrapper.SetFloatVar("recoilTriggerSF"+suffix+"_Statup")
     wrapper.SetFloatVar("recoilTriggerSF"+suffix+"_Statdown")
 
-
+# function to calculate all variables in the friend tree
 def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeights = None):
     '''
     calculate weights
@@ -128,35 +140,50 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
 
     suffix = "_"
 
-    # add basic information for friend trees
-    #wrapper.branchArrays["Evt_ID"][0] = event["Evt_ID"][0]
-    #wrapper.branchArrays["Evt_Run"][0]   = event["Evt_Run"][0]
-    #wrapper.branchArrays["Evt_Lumi"][0]  = event["Evt_Lumi"][0]
+    # number of events in current event batch
+    nevents = len(events)
+    # number of jec variations to consider
+    njecs = len(jecs)
+    # the index of the nominal jec variation in the jecs list
+    index_jec_nom = None
+    for i,jec in enumerate(jecs):
+        if jec == "nom":
+                index_jec_nom = i
+    # the nominal jec variations always needs to be there
+    assert(index_jec_nom)
 
-    # cross section norm FIXME
-    #wrapper.branchArrays["xsNorm"][0] = genWeights.getXS("incl")
+    # dictionary to collect all variables written into the friend tree
+    output_array = {}
+    # basic necessary variables
+    output_array["Evt_ID"] = events["Evt_ID"]
+    output_array["Evt_Run"] = events["Evt_Run"]
+    output_array["Evt_Lumi"] = events["Evt_Lumi"]
+    output_array["xsNorm"] = ak.Array([genWeights.getXS("incl")]*nevents)
 
     ################
     ### LEPTONIC ###
     ################
 
+    # array to hold all the MC event probabilities i.e. will later contain nevents*njecs values
     P_MC   = None
+    # dict to hold the data event probabilities
+    # the data probabilities are subject to jec variations and btag sf variation
+    # each btag sf variation has its own key
+    # value to each key will later be an array
     P_DATA_sys = {}
     sf_M_sys = {}
     for sys in SFb_sys+SFl_sys+["central"]:
         P_DATA_sys[sys] = None
         sf_M_sys[sys] = None
 
-    # necessary jet variables eta, pt, flavor, and whether jet passes medium working point
+    # jet variables necessary to calculate the btag weights: eta, pt, flavor, and whether jet passes medium working point
     eta = []
     pt = []
     flav = []
     passes_M = []
-    index_jec_nom = None
 
-    print(events)
-
-    # need to rearange the array structure a bit
+    # need to rearrange the array structure a bit because the jec variations shall be a dimension in the used awkward arrays
+    # loop over events
     for event in events:
         eta_ = []
         pt_ = []
@@ -164,8 +191,6 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
         passes_M_ = []
         # first put a single awkward array for each jec variation in a list ...
         for i,jec in enumerate(jecs):
-            if jec == "nom":
-                index_jec_nom = i
             suffix = "_"+jec
             #print(event["Jet_Eta"+suffix])
             eta_.append(np.absolute(event["Jet_Eta"+suffix]))
@@ -198,6 +223,7 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
     print("flav:",flav)
     print("passes M:",passes_M)
     
+    # apply the defined masks to get the corresponding light flavor and heavy flavor jets
     eta_lfjets = eta[mask_flav_0]
     pt_lfjets = pt[mask_flav_0]
     flav_lfjets = flav[mask_flav_0]
@@ -205,11 +231,31 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
     pt_hfjets = pt[mask_flav_4_5]
     flav_hfjets = flav[mask_flav_4_5]
 
-    print(flav_lfjets)
-    print(flav_hfjets)
-
+    #print(flav_lfjets)
+    #print(flav_hfjets)
+    print(eta_lfjets)
+    nums_njets = ak.flatten(ak.num(eta_lfjets,axis=2))
+    nums_njecs = ak.num(eta_lfjets,axis=1)
+    print(nums_njets)
+    print(nums_njecs)
+    #print(eta_lfjets_flattened_njets)
+    #print(eta_lfjets_flattened_njecs)
+    eta_lfjets_flattened = ak.flatten(ak.flatten(eta_lfjets,axis=2),axis=1)
+    pt_lfjets_flattened = ak.flatten(ak.flatten(pt_lfjets,axis=2),axis=1)
+    flav_lfjets_flattened = ak.flatten(ak.flatten(flav_lfjets,axis=2),axis=1)
+    print(eta_lfjets_flattened)
+    print(pt_lfjets_flattened)
+    print(flav_lfjets_flattened)
     # use correctionlib to determine efficiencies
     # again, jec variations first into list ...
+
+    test = btagEff[dataEra]["lep"].evaluate("M", flav_lfjets_flattened, eta_lfjets_flattened, pt_lfjets_flattened)
+    print(test)
+    test = ak.unflatten(ak.Array(test),nums_njets)
+    print(test)
+    test = ak.unflatten(test,nums_njecs)
+    print(test)
+    exit()
     eff_M = []
     for e in range(len(events)):
         eff_M_ = []
@@ -306,7 +352,6 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
     #             wrapper.branchArrays["fixedWPSFb_leptonic_"+sys+"_rel"][0] = P_DATA_sys[sys]/P_DATA_sys["central"][index_jec_nom]
     #             # print("sf {}".format(sys),P_DATA_sys[sys]/P_DATA_sys["central"][index_jec_nom])
     
-    output_array = {}
     for i,jec in enumerate(jecs):
         suffix = "_"+jec
         output_array["fixedWPSF_leptonic"+suffix] = P_DATA_sys["central"][:,i]/P_MC[:,i]
