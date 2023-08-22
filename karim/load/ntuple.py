@@ -169,6 +169,7 @@ class OutputFile(object):
     """
     Class to write a ROOT file based on uproot to be used with a 'with' statement
     """
+
     def __init__(self, fileName, treeName="Events"):
         """
         initialization of outputfile class

@@ -55,7 +55,7 @@ def calculate_variables(
                             event, output, "FIXME", jecs, dataEra, genWeights
                         )
                         # write events to output file as TTree using uproot
-                        if i==0:
+                        if i == 0:
                             print("writing variables to output tree:")
                             output["Events"] = output_dict
                         else:
@@ -65,5 +65,9 @@ def calculate_variables(
                     # open cutflow file (cff)
                     with open(outpath.replace(".root", ".cutflow.txt"), "w") as cff:
                         cff.write("entries : {}".format(num_processed))
-                        print("Cutflow file {} written.".format(outpath.replace(".root", ".cutflow.txt")))
+                        print(
+                            "Cutflow file {} written.".format(
+                                outpath.replace(".root", ".cutflow.txt")
+                            )
+                        )
                         print("\n" + "=" * 50 + "\n")
