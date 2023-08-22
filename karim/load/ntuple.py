@@ -1,18 +1,23 @@
 import ROOT
 import os
-from array import array
 import uproot as up
 
 
 class InputFile(object):
     """
-    open input file and return object within file via load method
+    Input file class based on uproot to be used with a 'with' statement
     """
 
     def __init__(self, fileName):
+        """
+        initialization
+        """
         self.file_name = fileName
 
     def __enter__(self):
+        """
+        enter function to execute at the beginning of the with statement and returning the class instance
+        """
         self.open_str = "{}".format(self.file_name)
         with up.open(self.open_str) as file:
             print("\nWill be loading file {}\n".format(self.open_str))
@@ -21,10 +26,16 @@ class InputFile(object):
         return self
 
     def __exit__(self, ctx_type, ctx_value, ctx_traceback):
+        """
+        exit function to execute at the end of the with statement e.g. to clean up
+        """
         print("Closed {}".format(self.open_str))
         del self.open_str
 
     def load(self, load_object_name):
+        """
+        load function to open an object in the file with uproot
+        """
         return up.open("{}:{}".format(self.open_str, load_object_name))
 
 
@@ -88,15 +99,21 @@ def getSystematics(tree):
 
 class TreeIterator:
     """
-    iterate over tree entries
+    Iterator class to loop over a ROOT TTree based on uproot
     """
 
     def __init__(self, inputtree, branches=[]):
+        """
+        initialize iterator class
+        """
         # tree object and desired branches
         self.tree = inputtree
         self.branches = branches
 
     def __iter__(self):
+        """
+        initialize iteration
+        """
         # event counter for iterator
         self.idx = 0
         # number of processed events directly from returned output
@@ -113,6 +130,9 @@ class TreeIterator:
         return self
 
     def __next__(self):
+        """
+        iteration function
+        """
         if self.idx % self.step == 0 and self.idx > 0:
             print("at event {}/{}".format(self.idx, self.max))
             print(
@@ -139,37 +159,20 @@ class TreeIterator:
             raise StopIteration
 
     def next(self):
-        if self.idx % self.step == 0 and self.idx > 0:
-            print("at event {}/{}".format(self.idx, self.max))
-            print(
-                "  time for {} events:  {:.1f} s".format(
-                    self.step, self.timer.RealTime()
-                )
-            )
-            print(
-                "  estimated time for {} events: {:.0f} min".format(
-                    self.scale, self.timer.RealTime() / self.step * self.scale / 60.0
-                )
-            )
-            self.timer.Start()
-        if self.idx < self.max:
-            start = self.idx
-            self.idx += self.step
-            stop = self.idx
-            return_array = self.tree.arrays(
-                self.branches, entry_start=start, entry_stop=stop, library="ak"
-            )
-            self.num_processed += len(return_array)
-        else:
-            raise StopIteration
+        """
+        manual iteration function
+        """
+        return self.__next__()
 
 
 class OutputFile(object):
     """
-    create output file
+    Class to write a ROOT file based on uproot to be used with a 'with' statement
     """
-
     def __init__(self, fileName, treeName="Events"):
+        """
+        initialization of outputfile class
+        """
         self.file_name = fileName
         self.setSampleName()
         # self.file = ROOT.TFile(self.file, "RECREATE")
@@ -177,21 +180,24 @@ class OutputFile(object):
         print("\nwriting info to file {}\n".format(self.file_name))
 
     def __enter__(self):
+        """
+        enter function to execute at the beginning of the with statement and returning the class instance
+        """
         self.open_str = "{}".format(self.file_name)
         print("\nWill be opening file {}\n".format(self.open_str))
         return self
 
     def __exit__(self, ctx_type, ctx_value, ctx_traceback):
-        # num_entries = self.file_name[self.tree_name].num_entries
-        # self.file.Write()
-        # self.file.Close()
-        # with open(self.file_name.replace(".root", ".cutflow.txt"), "w") as cff:
-        #    cff.write("entries : {}".format(num_entries))
-        # print("file {} written.".format(self.file))
-        # print("\n" + "=" * 50 + "\n")
-        pass
+        """
+        exit function to execute at the end of the with statement e.g. to clean up
+        """
+        print("Closed {}".format(self.open_str))
+        del self.open_str
 
     def open(self):
+        """
+        open function to open a ROOT file with uproot
+        """
         return up.recreate(self.open_str)
 
     def setSampleName(self):

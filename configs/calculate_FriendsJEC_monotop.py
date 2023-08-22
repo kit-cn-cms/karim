@@ -218,10 +218,10 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
     mask_flav_4_5 = np.logical_or(flav == 4, flav == 5)
     # print("flav 4/5 mask:",mask_flav_4_5)
     
-    print("eta:",eta)
-    print("pt:",pt)
-    print("flav:",flav)
-    print("passes M:",passes_M)
+    # print("eta:",eta)
+    # print("pt:",pt)
+    # print("flav:",flav)
+    # print("passes M:",passes_M)
     
     # apply the defined masks to get the corresponding light flavor and heavy flavor jets
     eta_lfjets = eta[mask_flav_0]
@@ -246,12 +246,12 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
     eta_hfjets_flattened = ak.flatten(ak.flatten(eta_hfjets,axis=2),axis=1)
     pt_hfjets_flattened = ak.flatten(ak.flatten(pt_hfjets,axis=2),axis=1)
     flav_hfjets_flattened = ak.flatten(ak.flatten(flav_hfjets,axis=2),axis=1)
-    print(eta_lfjets_flattened)
-    print(pt_lfjets_flattened)
-    print(flav_lfjets_flattened)
-    print(eta_hfjets_flattened)
-    print(pt_hfjets_flattened)
-    print(flav_hfjets_flattened)
+    # print(eta_lfjets_flattened)
+    # print(pt_lfjets_flattened)
+    # print(flav_lfjets_flattened)
+    # print(eta_hfjets_flattened)
+    # print(pt_hfjets_flattened)
+    # print(flav_hfjets_flattened)
 
     # use correctionlib to determine efficiencies on the flattened arrays
     eff_M_lfjets = btagEff[dataEra]["lep"].evaluate("M", flav_lfjets_flattened, eta_lfjets_flattened, pt_lfjets_flattened)
@@ -265,7 +265,7 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
 
     # now concatenation
     eff_M = ak.concatenate((eff_M_lfjets,eff_M_hfjets),axis=2)
-    print("eff M",eff_M)
+    # print("eff M",eff_M)
 
     # todo: check empty bins in efficiency
     #eff_M[eff_M == 0.] = 0.001
@@ -293,7 +293,7 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
         sf_M_sys_hfjets = (ak.unflatten(ak.unflatten(sf_M_sys_hfjets,nums_njets_hf),nums_njecs_hf))[:,index_jec_nom]
         sf_M_sys[sys] = ak.concatenate((sf_M_sys_lfjets,sf_M_sys_hfjets),axis=1)
     
-    print("sf M:",sf_M_sys)
+    # print("sf M:",sf_M_sys)
 
     # rearrange kinematic variable ak arrays such that their order resembles the order in the efficiency and scale factor ak arrays
     eta = ak.concatenate((eta_lfjets,eta_hfjets),axis=2)
@@ -301,10 +301,10 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
     passes_M = ak.concatenate((passes_M[mask_flav_0],passes_M[mask_flav_4_5]),axis=2)
     flav = ak.concatenate((flav_lfjets,flav_hfjets),axis=2)
 
-    print("eta:",eta)
-    print("pt:",pt)
-    print("flav:",flav)
-    print("passes M:",passes_M)
+    # print("eta:",eta)
+    # print("pt:",pt)
+    # print("flav:",flav)
+    # print("passes M:",passes_M)
 
     # find the jets that pass the medium working point
     passes_M_mask = passes_M==1
@@ -324,9 +324,9 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
         P_DATA_sys[sys] = ak.prod(eff_M_passes_M[:,index_jec_nom]*sf_M_sys[sys][passes_M[:,index_jec_nom]==1],axis=1)* \
                           ak.prod(np.add(np.negative((eff_M_fails_M[:,index_jec_nom])*(sf_M_sys[sys][passes_M[:,index_jec_nom]==0])),1.),axis=1)
     
-    print(jec)
-    print("p mc",P_MC)
-    print("p data:",P_DATA_sys)
+    # print(jec)
+    # print("p mc",P_MC)
+    # print("p data:",P_DATA_sys)
 
     # for i,jec in enumerate(jecs):
     #     suffix = "_"+jec
@@ -351,8 +351,8 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
         output_array["fixedWPSFl_leptonic_"+sys+"_rel"] = P_DATA_sys[sys]/P_DATA_sys["central"][:,index_jec_nom]
     for sys in SFb_sys:
         output_array["fixedWPSFb_leptonic_"+sys+"_rel"] = P_DATA_sys[sys]/P_DATA_sys["central"][:,index_jec_nom]
-    print("\n\n")
-    print(output_array)
+    # print("\n\n")
+    # print(output_array)
 
     return output_array
     ################

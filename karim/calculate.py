@@ -34,7 +34,6 @@ def calculate_variables(
     with load.InputFile(filename) as inputfile:
         # open input tree
         with inputfile.load("Events") as inputtree:
-            print("inputtree", inputtree)
             jecs = load.getSystematics(inputtree)
             # if no branches are explicitly given, consider all branches in input tree
             # else use only the ones explicitly provided
@@ -44,10 +43,10 @@ def calculate_variables(
                 for branch in branchesConfig:
                     branches += inputtree.keys(filter_name=branch)
 
-            # open output root file
+            # initialize output root file
             with load.OutputFile(outpath) as outfile:
+                # open output root file
                 with outfile.open() as output:
-                    first = True
                     output_dict = None
                     # start loop over inputtree entries
                     tree_iterator = load.TreeIterator(inputtree, branches)
@@ -55,14 +54,15 @@ def calculate_variables(
                         output_dict = config.calculate_variables(
                             event, output, "FIXME", jecs, dataEra, genWeights
                         )
-                        print(output_dict)
-                        if first:
+                        # write events to output file as TTree using uproot
+                        if i==0:
                             print("writing variables to output tree:")
                             output["Events"] = output_dict
-                            first = False
                         else:
                             output["Events"].extend(output_dict)
+                    # keep track of number of processed events
                     num_processed = tree_iterator.num_processed
+                    # open cutflow file (cff)
                     with open(outpath.replace(".root", ".cutflow.txt"), "w") as cff:
                         cff.write("entries : {}".format(num_processed))
                         print("Cutflow file {} written.".format(outpath.replace(".root", ".cutflow.txt")))
