@@ -3,30 +3,30 @@ import os
 from array import array
 import uproot as up
 
+
 class InputFile(object):
-    '''
-    open input file and return tree
-    '''
-    def __init__(self, filename, friendTrees = [], treeName = "Events"):
-        self.file = filename
-        self.treename = treeName
-        #self.branches = []
-        with up.open("{}:{}".format(self.file,self.treename)) as tree:
-            print("\nloading tree with {nentries} entries\n".format(
-                nentries = tree.num_entries))
-            #for branch in branches:
-                #self.branches += tree.keys(filter_name=branch)
-        #print(self.branches)
-        
-        for ft in friendTrees:
-            print("adding friendTree {}".format(ft))
-            self.tree.AddFriend("MVATree", ft)        
-    
+    """
+    open input file and return object within file via load method
+    """
+
+    def __init__(self, fileName):
+        self.file_name = fileName
+
     def __enter__(self):
-        return up.open("{}:{}".format(self.file,self.treename))
+        self.open_str = "{}".format(self.file_name)
+        with up.open(self.open_str) as file:
+            print("\nWill be loading file {}\n".format(self.open_str))
+            print("File contents:")
+            print(file.keys())
+        return self
 
     def __exit__(self, ctx_type, ctx_value, ctx_traceback):
-        pass
+        print("Closed {}".format(self.open_str))
+        del self.open_str
+
+    def load(self, load_object_name):
+        return up.open("{}:{}".format(self.open_str, load_object_name))
+
 
 jecs = [
     "jes",
@@ -62,49 +62,50 @@ jecs = [
     "jer3",
     "jer4",
     "jer5",
-    ]
+]
 validSysts = ["nom"]
-validSysts+= [j+"Up" for j in jecs]
-validSysts+= [j+"Down" for j in jecs]
+validSysts += [j + "Up" for j in jecs]
+validSysts += [j + "Down" for j in jecs]
+
 
 def getSystematics(tree):
     branches = tree.keys()
-    #print(branches)
-    postfix  = []
+    # print(branches)
+    postfix = []
     for b in branches:
         if not b.split("_")[-1].startswith("201"):
             postfix.append(b.split("_")[-1])
         else:
-            postfix.append(b.split("_")[-2]+"_"+b.split("_")[-1])
+            postfix.append(b.split("_")[-2] + "_" + b.split("_")[-1])
     jecs = list(set(postfix))
     jecs = [j for j in jecs if j in validSysts]
     jecs = list(sorted(jecs))
     print("\tfound the following JECs in the input file")
-    for j in jecs: 
+    for j in jecs:
         print("\t{}".format(j))
     return jecs
 
 
-
 class TreeIterator:
-    '''
+    """
     iterate over tree entries
-        
-    yields: DataFrame of all jet assignment hypotheses
-    '''
-    def __init__(self, inputtree, Hypotheses = None, branches = []):
+    """
+
+    def __init__(self, inputtree, branches=[]):
+        # tree object and desired branches
         self.tree = inputtree
         self.branches = branches
-        #print(self.branches)
-        self.Hypotheses = Hypotheses
 
     def __iter__(self):
-        # event counter
+        # event counter for iterator
         self.idx = 0
-        # max number of event i.e. number of events in tree
+        # number of processed events directly from returned output
+        self.num_processed = 0
+        # max number of events i.e. number of events in tree
         self.max = self.tree.num_entries
-        # print step i.e. print information every pstep events
-        self.pstep = 100
+        # event step size of iterator i.e. one iteration corresponds to processing self.step events
+        self.step = 50
+        # time extrapolation scale
         self.scale = 100000
         # ToDo add branch address initialization?
         self.timer = ROOT.TStopwatch()
@@ -112,152 +113,107 @@ class TreeIterator:
         return self
 
     def __next__(self):
-        if self.idx%self.pstep==0 and self.idx>0:
+        if self.idx % self.step == 0 and self.idx > 0:
             print("at event {}/{}".format(self.idx, self.max))
-            print("  time for {} events:  {:.1f} s".format(self.pstep, self.timer.RealTime()))
-            print("  estimated time for {} events: {:.0f} min".format(
-                self.scale, self.timer.RealTime()/self.pstep*self.scale/60.))
+            print(
+                "  time for {} events:  {:.1f} s".format(
+                    self.step, self.timer.RealTime()
+                )
+            )
+            print(
+                "  estimated time for {} events: {:.0f} min".format(
+                    self.scale, self.timer.RealTime() / self.step * self.scale / 60.0
+                )
+            )
             self.timer.Start()
-
         if self.idx < self.max:
-            #self.tree.GetEntry(self.idx)
             start = self.idx
-            self.idx+=50
+            self.idx += self.step
             stop = self.idx
-            return self.tree.arrays(self.branches,entry_start=start,entry_stop=stop,library="ak")
-            #if not self.Hypotheses is None:
-            #    return self.Hypotheses.GetPermutations(self.tree, self.tree.N_Jets)
-            #else:        
+            return_array = self.tree.arrays(
+                self.branches, entry_start=start, entry_stop=stop, library="ak"
+            )
+            self.num_processed += len(return_array)
+            return return_array
         else:
             raise StopIteration
 
     def next(self):
-        if self.idx%self.pstep==0 and self.idx>0:
+        if self.idx % self.step == 0 and self.idx > 0:
             print("at event {}/{}".format(self.idx, self.max))
-            print("  time for {} events:  {:.1f} s".format(self.pstep, self.timer.RealTime()))
-            print("  estimated time for {} events: {:.0f} min".format(
-                self.scale, self.timer.RealTime()/self.pstep*self.scale/60.))
+            print(
+                "  time for {} events:  {:.1f} s".format(
+                    self.step, self.timer.RealTime()
+                )
+            )
+            print(
+                "  estimated time for {} events: {:.0f} min".format(
+                    self.scale, self.timer.RealTime() / self.step * self.scale / 60.0
+                )
+            )
             self.timer.Start()
-
         if self.idx < self.max:
-            #self.tree.GetEntry(self.idx)
             start = self.idx
-            self.idx+=50
+            self.idx += self.step
             stop = self.idx
-            return self.tree.arrays(self.branches,entry_start=start,entry_stop=stop,library="ak")
-            #if not self.Hypotheses is None:
-            #    return self.Hypotheses.GetPermutations(self.tree, self.tree.N_Jets)
-            #else:          
+            return_array = self.tree.arrays(
+                self.branches, entry_start=start, entry_stop=stop, library="ak"
+            )
+            self.num_processed += len(return_array)
         else:
             raise StopIteration
- 
 
 
-   
 class OutputFile(object):
-    '''
-    recreate output file and initialize new MVATree
-    write rootfile, and cutflow file upon exit
-    '''
-    def __init__(self, filename, treeName = "Events"):
-        self.name = filename
-        self.setSampleName()
-        #self.file = ROOT.TFile(self.name, "RECREATE")
-        self.tree = ROOT.TTree(treeName,"KarimTree")
-        print("\nwriting info to file {}\n".format(self.name))
+    """
+    create output file
+    """
 
-        self.branchArrays = {}
+    def __init__(self, fileName, treeName="Events"):
+        self.file_name = fileName
+        self.setSampleName()
+        # self.file = ROOT.TFile(self.file, "RECREATE")
+        self.tree_name = treeName  # ROOT.TTree(treeName,"KarimTree")
+        print("\nwriting info to file {}\n".format(self.file_name))
 
     def __enter__(self):
-        return up.recreate(self.name)
+        self.open_str = "{}".format(self.file_name)
+        print("\nWill be opening file {}\n".format(self.open_str))
+        return self
 
     def __exit__(self, ctx_type, ctx_value, ctx_traceback):
-        #nentries = self.tree.GetEntries()
-        #self.file.Write()
-        #self.file.Close()
-        #with open(self.name.replace(".root",".cutflow.txt"), "w") as cff:
-        #    cff.write("entries : {}".format(nentries))
-        print("file {} written.".format(self.name))
-        print("\n"+"="*50+"\n")
-  
+        # num_entries = self.file_name[self.tree_name].num_entries
+        # self.file.Write()
+        # self.file.Close()
+        # with open(self.file_name.replace(".root", ".cutflow.txt"), "w") as cff:
+        #    cff.write("entries : {}".format(num_entries))
+        # print("file {} written.".format(self.file))
+        # print("\n" + "=" * 50 + "\n")
+        pass
+
+    def open(self):
+        return up.recreate(self.open_str)
+
     def setSampleName(self):
-        self.sampleName = os.path.basename(os.path.dirname(self.name))
+        self.sample_name = os.path.basename(os.path.dirname(self.file_name))
 
-    def SetBranchList(self, variables):
-        '''
-        initialize branches for tree
-        currently all trees are of datatype float
-        '''
-        for i, v in enumerate(variables):
-            outvar = v.replace("[","_").replace("]","")
-            if outvar in self.branchArrays: continue
-            self.branchArrays[outvar] = array("f", [0.])
-            self.tree.Branch(outvar, self.branchArrays[outvar], "{}/F".format(outvar))
-
-    def SetBranches(self, variables):
-        '''
-        initialize branches for tree
-        currently all trees are of datatype float
-        '''
-        self.branchArrays = []
-        for i, v in enumerate(variables):
-            outvar = v.replace("[","_").replace("]","")
-            self.branchArrays.append(
-                array("f", [0.]))
-            self.tree.Branch(outvar, self.branchArrays[i], "{}/F".format(outvar))
-
-    def FillTree(self, event = None):
-        ''' 
-        fill event into tree
-        '''
-        if not event is None:
-            for i, val in enumerate(event):
-                self.branchArrays[i][0] = val
-        self.tree.Fill()
-
-    def SetConfigBranches(self, config, jecs, jecDependent = False):
-        if jecDependent:
-            for jec in jecs:
-                config.set_branches(self, jec)
-        else:
-            config.set_branches(self, jec = None)
-
-    def SetIntVar(self, var):
-        self.branchArrays[var] = array("l", [0]) 
-        self.tree.Branch(var, self.branchArrays[var], "{}/L".format(var))
-
-    def SetFloatVar(self, var):
-        self.branchArrays[var] = array("f", [0.]) 
-        self.tree.Branch(var, self.branchArrays[var], "{}/F".format(var))
-
-    def SetFloatVarArray(self, var, idx):
-        self.branchArrays[var] = array("f", [0.]*20)
-        self.tree.Branch(var, self.branchArrays[var], "{}[{}]/F".format(var, idx))
-
-    def ClearArrays(self):
-        for key in self.branchArrays:
-            for i in range(len(self.branchArrays[key])):
-                if type(self.branchArrays[key][i]) == int:
-                    self.branchArrays[key][i] = -9
-                else:
-                    self.branchArrays[key][i] = -9.
 
 class GenWeights:
     def __init__(self, treepath):
         samplepath = os.path.dirname(treepath)
         ntuplepath = os.path.dirname(samplepath)
         samplename = os.path.basename(samplepath)
-        self.filename = os.path.join(ntuplepath, samplename+"_genWeights.root")
+        self.filename = os.path.join(ntuplepath, samplename + "_genWeights.root")
         if not os.path.exists(self.filename):
             print("sample does not have genWeights file")
             self.isInitialized = False
             return
-    
+
         print("loading genWeight file {}".format(self.filename))
 
         self.file = ROOT.TFile.Open(self.filename)
         self.branches = [b.GetName() for b in self.file.GetListOfKeys()]
-        
+
         self.getProcessFractions()
         self.setRateFactors()
         self.isInitialized = True
@@ -276,41 +232,42 @@ class GenWeights:
         print("process fractions:")
         inclh = self.file.Get("genWeight_incl")
         for w in self.weightTypes:
-            genh = self.file.Get("genWeight_"+w)
-            self.genFractions[w] = genh.GetMean()*genh.GetEntries()/(inclh.GetMean()*inclh.GetEntries())
+            genh = self.file.Get("genWeight_" + w)
+            self.genFractions[w] = (
+                genh.GetMean()
+                * genh.GetEntries()
+                / (inclh.GetMean() * inclh.GetEntries())
+            )
             # XS usually given in pb, lumi in fb-1
             # -> expect 1000 events for a XS of 1 [pb] in 1 [fb-1] of data if all events are selected
             # -> multiply with XS number in plotscript later on
-            self.xsNorms[w] = 1000./(genh.GetMean()*genh.GetEntries())
-            print("\t{}: {} (XS norm: {})".format(w, self.genFractions[w], self.xsNorms[w]))
-        print("="*50)
+            self.xsNorms[w] = 1000.0 / (genh.GetMean() * genh.GetEntries())
+            print(
+                "\t{}: {} (XS norm: {})".format(
+                    w, self.genFractions[w], self.xsNorms[w]
+                )
+            )
+        print("=" * 50)
 
     def setRateFactors(self):
-        self.rateFactors  = {}
+        self.rateFactors = {}
         print("rateFactors:")
         for b in self.branches:
             h = self.file.Get(b)
             self.rateFactors[b] = h.GetMean()
             print("{}: {}".format(b, self.rateFactors[b]))
-        print("="*50)                 
+        print("=" * 50)
 
-
-    
     def getRF(self, w):
         if not self.isInitialized:
-            return 1.
+            return 1.0
         if not w in self.rateFactors:
             sys.exit("could not access ratefactor {}".format(w))
         return self.rateFactors[w]
 
-    
-    def getXS(self, t = "incl"):
+    def getXS(self, t="incl"):
         if not self.isInitialized:
-            return 1.
+            return 1.0
         if not t in self.xsNorms:
             sys.exit("could not access norm type {}".format(t))
         return self.xsNorms[t]
-
-
-
-
