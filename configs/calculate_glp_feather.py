@@ -60,6 +60,8 @@ def set_branches(wrapper, jec):
         wrapper.SetIntVar("run")   
         wrapper.SetIntVar("lumi")        
         suffix = "_nominal"
+    else:
+        suffix = "_{}".format(jec)
 
     wrapper.SetFloatVar("ttB"+suffix)
     wrapper.SetFloatVar("ttH"+suffix)
@@ -90,7 +92,6 @@ def set_branches(wrapper, jec):
 
 
 def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights = None, nodes=None, graph=None, edge=None):
-
     suffix = "_{}".format(jec)
     if jec is None:
         suffix = "_nominal"
