@@ -11,7 +11,7 @@ export SCRAM_ARCH=slc7_amd64_gcc700
 cd {cmssw}/src
 eval `scram runtime -sh`
 cd -
-
+source {basepath}/venv/bin/activate
 export KERAS_BACKEND=tensorflow
 """
 recoTemplate = """

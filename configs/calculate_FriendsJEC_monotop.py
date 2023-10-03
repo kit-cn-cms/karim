@@ -25,14 +25,6 @@ for year in ["2016preVFP", "2016postVFP", "2017", "2018"]:
     # efficiencies
     btagEffjson_lep = correctionlib.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_monotop_lep_deepJet.json"))
     btagEffjson_had = correctionlib.CorrectionSet.from_file(os.path.join(sfDir, "btagEff_monotop_had_deepJet.json"))
-    # for corr in btagEffjson_lep.values():
-    #     print(f"Correction {corr.name} has {len(corr.inputs)} inputs")
-    #     for ix in corr.inputs:
-    #         print(f"   Input {ix.name} ({ix.type}): {ix.description}")
-    # for corr in btagEffjson_had.values():
-    #     print(f"Correction {corr.name} has {len(corr.inputs)} inputs")
-    #     for ix in corr.inputs:
-    #         print(f"   Input {ix.name} ({ix.type}): {ix.description}")
     btagEff[year] = {}
     btagEff[year]["lep"] = btagEffjson_lep["btagEff"]
     btagEff[year]["had"] = btagEffjson_had["btagEff"]
@@ -79,55 +71,17 @@ Hadr_Recoil_MET_T1XY_Pt*"""
     branches = a.split("\n")
     return branches
 
+# config object currently still expects this function to exist
 def get_additional_variables():
-    '''
-    get names of additional variables which are already defined in ntuples
-    which are needed for the dnn inputs
-    '''
-    variables = [
-        ]
-    return variables
+    pass
 
 # define base selection
 def base_selection(event):
     return True
 
-# soon not needed anymore
+# config object currently still expects this function to exist
 def set_branches(wrapper, jec):
-    suffix = "_"+jec
-
-    if jec == "nom":
-        wrapper.SetIntVar("Evt_ID")   
-        wrapper.SetIntVar("Evt_Run")   
-        wrapper.SetIntVar("Evt_Lumi") 
-
-        # cross section weight
-        wrapper.SetFloatVar("xsNorm")
-
-        for sys in SFb_sys:
-            wrapper.SetFloatVar("fixedWPSFb_"+sys+"_rel")
-            wrapper.SetFloatVar("fixedWPSFb_leptonic_"+sys+"_rel")
-            wrapper.SetFloatVar("fixedWPSFb_hadronic_"+sys+"_rel")
-        for sys in SFl_sys:
-            wrapper.SetFloatVar("fixedWPSFl_"+sys+"_rel")
-            wrapper.SetFloatVar("fixedWPSFl_leptonic_"+sys+"_rel")
-            wrapper.SetFloatVar("fixedWPSFl_hadronic_"+sys+"_rel")
-
-    wrapper.SetFloatVar("fixedWPSF_leptonic"+suffix)
-    wrapper.SetFloatVar("fixedWPSF_hadronic"+suffix)
-
-    # recoil trigger SFs
-    wrapper.SetFloatVar("recoil"+suffix)
-
-    wrapper.SetFloatVar("recoilTriggerSF"+suffix)
-    wrapper.SetFloatVar("recoilTriggerSF"+suffix+"_up")
-    wrapper.SetFloatVar("recoilTriggerSF"+suffix+"_down")
-
-    wrapper.SetFloatVar("recoilTriggerSF"+suffix+"_Systup")
-    wrapper.SetFloatVar("recoilTriggerSF"+suffix+"_Systdown")
-
-    wrapper.SetFloatVar("recoilTriggerSF"+suffix+"_Statup")
-    wrapper.SetFloatVar("recoilTriggerSF"+suffix+"_Statdown")
+    pass
 
 # function to calculate all variables in the friend tree
 def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeights = None):
