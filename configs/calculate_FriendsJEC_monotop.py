@@ -41,8 +41,8 @@ for year in ["2016preVFP", "2016postVFP", "2017", "2018"]:
 pprint(btagEff)
 
 # systematic variations of btag scale factors
-SFb_sys = ["up_correlated","up_uncorrelated","down_correlated","down_uncorrelated"]
-SFl_sys = ["up_correlated","up_uncorrelated","down_correlated","down_uncorrelated"]
+SFb_sys = ["b_up_correlated","b_up_uncorrelated","b_down_correlated","b_down_uncorrelated"]
+SFl_sys = ["l_up_correlated","l_up_uncorrelated","l_down_correlated","l_down_uncorrelated"]
 
 # systematic variations of the recoil trigger scale factors
 sys_recoil_triggersf = ["up","down","statup","statdown","systup","systdown"]
@@ -237,7 +237,7 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
 
     # also consider btag systematics
     for sys in SFl_sys:
-        sf_M_sys_lfjets = btagSF[dataEra_lightSF]["deepJet_incl"].evaluate(sys, "M", flav_lfjets_flattened, eta_lfjets_flattened, pt_lfjets_flattened)
+        sf_M_sys_lfjets = btagSF[dataEra_lightSF]["deepJet_incl"].evaluate(sys.replace("l_",""), "M", flav_lfjets_flattened, eta_lfjets_flattened, pt_lfjets_flattened)
         sf_M_sys_hfjets = btagSF[dataEra]["deepJet_comb"].evaluate("central", "M", flav_hfjets_flattened, eta_hfjets_flattened, pt_hfjets_flattened)
         sf_M_sys_lfjets = (ak.unflatten(ak.unflatten(sf_M_sys_lfjets,nums_njets_lf),nums_njecs_lf))[:,index_jec_nom]
         sf_M_sys_hfjets = (ak.unflatten(ak.unflatten(sf_M_sys_hfjets,nums_njets_hf),nums_njecs_hf))[:,index_jec_nom]
@@ -245,7 +245,7 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
     
     for sys in SFb_sys:
         sf_M_sys_lfjets = btagSF[dataEra_lightSF]["deepJet_incl"].evaluate("central", "M", flav_lfjets_flattened, eta_lfjets_flattened, pt_lfjets_flattened)
-        sf_M_sys_hfjets = btagSF[dataEra]["deepJet_comb"].evaluate(sys, "M", flav_hfjets_flattened, eta_hfjets_flattened, pt_hfjets_flattened)
+        sf_M_sys_hfjets = btagSF[dataEra]["deepJet_comb"].evaluate(sys.replace("b_",""), "M", flav_hfjets_flattened, eta_hfjets_flattened, pt_hfjets_flattened)
         sf_M_sys_lfjets = (ak.unflatten(ak.unflatten(sf_M_sys_lfjets,nums_njets_lf),nums_njecs_lf))[:,index_jec_nom]
         sf_M_sys_hfjets = (ak.unflatten(ak.unflatten(sf_M_sys_hfjets,nums_njets_hf),nums_njecs_hf))[:,index_jec_nom]
         sf_M_sys[sys] = ak.concatenate((sf_M_sys_lfjets,sf_M_sys_hfjets),axis=1)
@@ -305,9 +305,9 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
     #print("blablablabla",P_DATA_sys["central"][:,0].layout)
     
     for sys in SFl_sys:
-        output_array["fixedWPSFl_leptonic_"+sys+"_rel"] = P_DATA_sys[sys]/P_DATA_sys["central"][:,index_jec_nom]
+        output_array["fixedWPSFl_leptonic_"+sys.replace("l_","")+"_rel"] = P_DATA_sys[sys]/P_DATA_sys["central"][:,index_jec_nom]
     for sys in SFb_sys:
-        output_array["fixedWPSFb_leptonic_"+sys+"_rel"] = P_DATA_sys[sys]/P_DATA_sys["central"][:,index_jec_nom]
+        output_array["fixedWPSFb_leptonic_"+sys.replace("b_","")+"_rel"] = P_DATA_sys[sys]/P_DATA_sys["central"][:,index_jec_nom]
     # print("\n\n")
     # print(output_array)
 
@@ -392,7 +392,7 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
     sf_L_sys["central"] = ak.concatenate((sf_L_sys_lfjets,sf_L_sys_hfjets),axis=2)
 
     for sys in SFl_sys:
-        sf_L_sys_lfjets = btagSF[dataEra_lightSF]["deepJet_incl"].evaluate(sys, "L", flav_lfjets_flattened, eta_lfjets_flattened, pt_lfjets_flattened)
+        sf_L_sys_lfjets = btagSF[dataEra_lightSF]["deepJet_incl"].evaluate(sys.replace("l_",""), "L", flav_lfjets_flattened, eta_lfjets_flattened, pt_lfjets_flattened)
         sf_L_sys_hfjets = btagSF[dataEra]["deepJet_comb"].evaluate("central", "L", flav_hfjets_flattened, eta_hfjets_flattened, pt_hfjets_flattened)
         sf_L_sys_lfjets = (ak.unflatten(ak.unflatten(sf_L_sys_lfjets,nums_njets_lf),nums_njecs_lf))[:,index_jec_nom]
         sf_L_sys_hfjets = (ak.unflatten(ak.unflatten(sf_L_sys_hfjets,nums_njets_hf),nums_njecs_hf))[:,index_jec_nom]
@@ -400,7 +400,7 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
     
     for sys in SFb_sys:
         sf_L_sys_lfjets = btagSF[dataEra_lightSF]["deepJet_incl"].evaluate("central", "L", flav_lfjets_flattened, eta_lfjets_flattened, pt_lfjets_flattened)
-        sf_L_sys_hfjets = btagSF[dataEra]["deepJet_comb"].evaluate(sys, "L", flav_hfjets_flattened, eta_hfjets_flattened, pt_hfjets_flattened)
+        sf_L_sys_hfjets = btagSF[dataEra]["deepJet_comb"].evaluate(sys.replace("b_",""), "L", flav_hfjets_flattened, eta_hfjets_flattened, pt_hfjets_flattened)
         sf_L_sys_lfjets = (ak.unflatten(ak.unflatten(sf_L_sys_lfjets,nums_njets_lf),nums_njecs_lf))[:,index_jec_nom]
         sf_L_sys_hfjets = (ak.unflatten(ak.unflatten(sf_L_sys_hfjets,nums_njets_hf),nums_njecs_hf))[:,index_jec_nom]
         sf_L_sys[sys] = ak.concatenate((sf_L_sys_lfjets,sf_L_sys_hfjets),axis=1)
@@ -429,9 +429,9 @@ def calculate_variables(events, wrapper, sample, jecs, dataEra = None, genWeight
         output_array["fixedWPSF_hadronic"+suffix] = P_DATA_sys["central"][:,i]/P_MC[:,i]
     
     for sys in SFl_sys:
-        output_array["fixedWPSFl_hadronic_"+sys+"_rel"] = P_DATA_sys[sys]/P_DATA_sys["central"][:,index_jec_nom]
+        output_array["fixedWPSFl_hadronic_"+sys.replace("l_","")+"_rel"] = P_DATA_sys[sys]/P_DATA_sys["central"][:,index_jec_nom]
     for sys in SFb_sys:
-        output_array["fixedWPSFb_hadronic_"+sys+"_rel"] = P_DATA_sys[sys]/P_DATA_sys["central"][:,index_jec_nom]
+        output_array["fixedWPSFb_hadronic_"+sys.replace("b_","")+"_rel"] = P_DATA_sys[sys]/P_DATA_sys["central"][:,index_jec_nom]
     
 
     ##########################
