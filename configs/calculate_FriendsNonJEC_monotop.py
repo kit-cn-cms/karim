@@ -482,6 +482,10 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
         label = "vvj"
         if getattr(event, "N_zBosons") >= 1:
             pT = getattr(event, "zBoson_Pt")[0]
+    elif "G1Jet" in sample:
+        label = "aj"
+        if getattr(event, "N_GenIsolatedPhotons") >= 1:
+            pT = getattr(event, "GenIsolatedPhoton_Pt")[0]
 
     if  pT >= 30.:
         b = kFactors_QCD[label].FindBin(pT)
