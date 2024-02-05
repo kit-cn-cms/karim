@@ -40,8 +40,23 @@ def calculate_variables(filename, configpath, friendTrees, outpath, pred_type,
                 # preds_dir_nlp = "/nfs/dust/cms/user/epfeffer/ttxdl/feathers/ntuples_v14_addSamples_eval_nlp_1_1/2018"
                 # preds_dir_glp = "/nfs/dust/cms/user/epfeffer/ttxdl/feathers/ntuples_v14_addSamples_eval_glp_2/2018"
                 dir = featherdir + "ntuples_v14_jec/" + era
-                preds_dir_nlp = "/nfs/dust/cms/user/epfeffer/ttxdl/feathers/ntuples_v14_jec_eval_nlp_1_1/2018"
-                preds_dir_glp = "/nfs/dust/cms/user/epfeffer/ttxdl/feathers/ntuples_v14_jec_eval_glp_2/2018"
+                # preds_dir_nlp = "/nfs/dust/cms/user/epfeffer/ttxdl/feathers/ntuples_v14_jec_eval_nlp_1_1/2018" # first training for fitting
+                # preds_dir_glp = "/nfs/dust/cms/user/epfeffer/ttxdl/feathers/ntuples_v14_jec_eval_glp_2/2018" # first training for fitting
+                # preds_dir_nlp = "/nfs/dust/cms/user/epfeffer/ttxdl/feathers/ntuples_v14_jec_eval_nlp_PATH/2018" # first training for fitting
+                
+                # preds_dir_glp = featherdir + "ntuples_v14_jec_eval_glp_ge3_1718_redefined_twofold_v3_v1/" + era # new training for fitting
+                # preds_dir_glp = featherdir + "ntuples_v14_jec_eval_glp_ge3_1718_redefined_featurevariation_ext_v3_v1/" + era
+                # preds_dir_glp = featherdir + "ntuples_v14_jec_eval_glp_ge3_1718_redefined_featurevariation_red_v3_v1/" + era
+                # preds_dir_glp = featherdir + "ntuples_v14_jec_eval_glp_ge3_1718_redefined_nosplit_v3_v1/" + era
+                preds_dir_glp = featherdir + "ntuples_v14_jec_eval_glp_ge4jge3t-e3je3t_1718_redefined_v3_v1/" + era
+                if "addSamples" in filename:
+                    dir = featherdir + "ntuples_v14_addSamples/" + era
+                    # preds_dir_glp = featherdir + "ntuples_v14_addSamples_eval_glp_ge3_1718_redefined_twofold_v3_v1/" + era # new training for fitting
+                    # preds_dir_glp = featherdir + "ntuples_v14_addSamples_eval_glp_ge3_1718_redefined_featurevariation_ext_v3_v1/" + era
+                    # preds_dir_glp = featherdir + "ntuples_v14_addSamples_eval_glp_ge3_1718_redefined_featurevariation_red_v3_v1/" + era
+                    # preds_dir_glp = featherdir + "ntuples_v14_addSamples_eval_glp_ge3_1718_redefined_nosplit_v3_v1/" + era
+                    # preds_dir_glp = featherdir + "ntuples_v14_addSamples_eval_glp_ge4jge3t-e3je3t_1718_redefined_v3_v1/" + era
+                
             elif era == "2017":
                 dir = featherdir + "ntuples_2017_v2/" + era
                 preds_dir_nlp = featherdir + "ntuples_2017_v2_nlp_1_1/" + era

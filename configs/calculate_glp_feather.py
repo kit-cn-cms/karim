@@ -71,6 +71,7 @@ def set_branches(wrapper, jec):
     wrapper.SetFloatVar("ttLF"+suffix)
     wrapper.SetFloatVar("other"+suffix)
     wrapper.SetFloatVar("HvB"+suffix)
+    wrapper.SetFloatVar("HvZB"+suffix)
     wrapper.SetFloatVar("HvZ"+suffix)
     wrapper.SetFloatVar("HvC"+suffix)
     wrapper.SetFloatVar("HvLFO"+suffix)
@@ -103,6 +104,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     ttLF = -99
     other = -99
     HvB = -99
+    HvZB = -99
     HvZ = -99
     HvC = -99
     HvLFO = -99
@@ -135,6 +137,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         other = graph["other"+suffix]
 
         HvB = ttH/(ttB+ttH)
+        HvZB = ttH/(ttH+ttZB)
         HvZ = ttH/(ttH+ttZB+ttZnonB)
         HvC = ttH/(ttH+ttC)
         HvLFO = ttH/(ttH+ttLF+other)
@@ -188,6 +191,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     wrapper.branchArrays["ttLF"+suffix][0] = ttLF
     wrapper.branchArrays["other"+suffix][0] = other
     wrapper.branchArrays["HvB"+suffix][0] = HvB
+    wrapper.branchArrays["HvZB"+suffix][0] = HvZB
     wrapper.branchArrays["HvZ"+suffix][0] = HvZ
     wrapper.branchArrays["HvC"+suffix][0] = HvC
     wrapper.branchArrays["HvLFO"+suffix][0] = HvLFO
