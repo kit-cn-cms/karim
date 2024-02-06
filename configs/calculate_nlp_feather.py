@@ -140,8 +140,8 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     wrapper.branchArrays["lumi"][0]  = lumi
 
     nlp_top2 = nodes[nodes["node_type"]==0].nlargest(2, f"p_{jec}")
-    if len(nodes)-3>0:
-        nJets = len(nodes)-3
+    if len(nodes)-2>0:
+        nJets = len(nodes)-2 #1 lep node and 1 MET node, all other jets. But does unknown also a node?? 
     # print(nlp_top2)
 
     # jet_edge = edge.loc[edge["edge_node_index1"].isin(nodes.loc[nodes["node_type"]<1].index) & edge["edge_node_index2"].isin(nodes.loc[nodes["node_type"]<1].index)]
@@ -228,7 +228,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     wrapper.branchArrays[f"nlp_top_mt_{jec}"][0] = mt
     wrapper.branchArrays[f"nlp_average_{jec}"][0] = nlp_average
     wrapper.branchArrays[f"nJets_{jec}"][0] = nJets
-    if len(nodes)-3>0:
+    if len(nodes)-2>0: #here also, len(nodes)-3 changed to 2.
         for idx in range(nJets):
             wrapper.branchArrays[f"eval_jets_{jec}"][idx] = float(nodes[nodes["node_type"]==0][f"p_{jec}"].values[idx])
     

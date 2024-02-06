@@ -30,7 +30,8 @@ def calculate_variables(filename, configpath, friendTrees, outpath, pred_type,
             era = "2018" #TODO: add as option
             print("## ERA is: {}".format(era))
 
-            featherdir = "/nfs/dust/cms/user/epfeffer/ttxdl/feathers/"
+            #featherdir = "/nfs/dust/cms/user/epfeffer/ttxdl/feathers/"
+            featherdir = "/nfs/dust/cms/user/rrafeek/ttxsl/feathers/gnn_2018"
 
             if era == "2018":
                 # dir = featherdir + "ntuples_v14_all/" + era
@@ -39,9 +40,9 @@ def calculate_variables(filename, configpath, friendTrees, outpath, pred_type,
                 # dir = featherdir + "ntuples_v14_addSamples/" + era
                 # preds_dir_nlp = "/nfs/dust/cms/user/epfeffer/ttxdl/feathers/ntuples_v14_addSamples_eval_nlp_1_1/2018"
                 # preds_dir_glp = "/nfs/dust/cms/user/epfeffer/ttxdl/feathers/ntuples_v14_addSamples_eval_glp_2/2018"
-                dir = featherdir + "ntuples_v14_jec/" + era
-                preds_dir_nlp = "/nfs/dust/cms/user/epfeffer/ttxdl/feathers/ntuples_v14_jec_eval_nlp_1_1/2018"
-                preds_dir_glp = "/nfs/dust/cms/user/epfeffer/ttxdl/feathers/ntuples_v14_jec_eval_glp_2/2018"
+                dir = featherdir + "nlp_signalbkg/"
+                preds_dir_nlp = "/nfs/dust/cms/user/rrafeek/ttxsl/feathers/gnn_2018/predictionscr/predctn_condor/prediction_files_2018"
+                #preds_dir_glp = "/nfs/dust/cms/user/epfeffer/ttxdl/feathers/ntuples_v14_jec_eval_glp_2/2018"
             elif era == "2017":
                 dir = featherdir + "ntuples_2017_v2/" + era
                 preds_dir_nlp = featherdir + "ntuples_2017_v2_nlp_1_1/" + era
