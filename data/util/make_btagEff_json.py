@@ -68,18 +68,18 @@ def get_inputs():
         "description": "jet pT value"})
     return inputs
 
-def get_data(inFiles, wps = ["L", "M", "T"]):
+def get_data(inFiles, wps = ["L", "M", "T"], process = "MC"):
     data = {}
     data["nodetype"] = "category"
     data["input"] = "workingPoint"
     data["content"] = []
     for wp in wps:
         data["content"].append(
-            get_wp_data(inFiles, wp))
+            get_wp_data(inFiles, wp, ["l", "b", "c"], process))
 
     return data
 
-def get_wp_data(allInFiles, wp, flavors = ["l", "b", "c"]):
+def get_wp_data(allInFiles, wp, flavors = ["l", "b", "c"], process = "MC"):
     data = {}
     data["key"] = wp
     data["value"] = {}
@@ -90,12 +90,12 @@ def get_wp_data(allInFiles, wp, flavors = ["l", "b", "c"]):
     inFiles = [f for f in allInFiles if "efficiencies"+wp in f]
     for flav in flavors:
         data["value"]["content"].append(
-            get_flav_data(inFiles, flav))
+            get_flav_data(inFiles, flav, process))
 
     return data
 
 convertFlav = {"b": 5, "c": 4, "l": 0}
-def get_flav_data(allInFiles, flav):
+def get_flav_data(allInFiles, flav, process):
     data = {}
     data["key"] = convertFlav[flav]
     data["value"] = {}
@@ -107,11 +107,13 @@ def get_flav_data(allInFiles, flav):
         exit()
     inFile = inFile[0]   
     
-    data["value"] = get_eta_pt_bins(inFile)
+    data["value"] = get_eta_pt_bins(inFile, process)
     return data
     
-name = "efficiencies(L|M|T)_(l|c|b)__(MC|mc)__nom"
-def get_key(f):
+#name = "efficiencies(L|M|T)_(l|c|b)__(MC|mc)__nom"
+def get_key(f, process):
+    name="efficiencies(L|M|T)_(l|c|b)__{process}__nom".format(process=process)
+    print(name)
     key = None
     for k in list(f.GetListOfKeys()):
         match = re.match(name, k.GetName())
@@ -123,10 +125,10 @@ def get_key(f):
         exit()
     return key
 
-def get_eta_pt_bins(inFile):
+def get_eta_pt_bins(inFile, process):
     f = ROOT.TFile.Open(inFile)
     
-    key = get_key(f)
+    key = get_key(f, process)
     h = f.Get(key)
     
     data = {}
@@ -153,10 +155,12 @@ def get_eta_pt_bins(inFile):
 import optparse 
 parser = optparse.OptionParser(usage = "give rootfiles with efficiency maps as arguments")
 parser.add_option("-o", dest = "output", help = "output file")
+parser.add_option("-p", dest = "process", help = "process", default="MC")
 (opts, args) = parser.parse_args()
 
 wps = ["L", "M", "T"]
 inFiles = args
+process = opts.process
 
 data = get_meta_data()
 
@@ -165,7 +169,7 @@ correction_data = get_correction_meta_data(
     name        = "btagEff",
     description = "btagEff for deepJet b-tagging SFs for UL18")
 correction_data["inputs"] = get_inputs()
-correction_data["data"] = get_data(inFiles, wps)
+correction_data["data"] = get_data(inFiles, wps, process)
 data["corrections"].append(correction_data)
 
 

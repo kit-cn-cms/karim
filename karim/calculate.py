@@ -52,7 +52,7 @@ def calculate_variables(
                     tree_iterator = load.TreeIterator(inputtree, branches)
                     for i, event in enumerate(tree_iterator):
                         output_dict = config.calculate_variables(
-                            event, output, "FIXME", jecs, dataEra, genWeights
+                            event, output, outfile.sample_name, jecs, dataEra, genWeights
                         )
                         # write events to output file as TTree using uproot
                         if i == 0:
