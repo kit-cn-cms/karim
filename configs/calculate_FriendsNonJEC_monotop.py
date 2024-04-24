@@ -95,7 +95,7 @@ for dataEra in ["2018", "2017", "2016preVFP", "2016postVFP"]:
     data[dataEra]["muIDT"]   = mu_evaluator["NUM_TightID_DEN_TrackerMuons"]
     data[dataEra]["muIDL"]   = mu_evaluator["NUM_LooseID_DEN_TrackerMuons"]
     data[dataEra]["muISOT"]  = mu_evaluator["NUM_TightRelIso_DEN_TightIDandIPCut"]
-    data[dataEra]["muISOL"]  = mu_evaluator["NUM_LooseRelIso_DEN_TightIDandIPCut"]
+    data[dataEra]["muISOL"]  = mu_evaluator["NUM_LooseRelIso_DEN_LooseID"]
 
     # pileup SFs
     pu_evaluator = _core.CorrectionSet.from_file(
@@ -330,7 +330,7 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     muTrigSF_up = 1.
     muTrigSF_down = 1.
 
-    # tight muons are only considered, if there is exactly one tight electron (which is also loose)
+    # tight muons are only considered, if there is exactly one tight muon (which is also loose)
     if getattr(event, "N_TightMuons") == 1 and getattr(event, "N_LooseMuons") == 1:
         iMu = 0
         idsf     = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.TightMuon_Eta[iMu]), min(119., event.TightMuon_Pt[iMu]), "sf")
@@ -356,13 +356,13 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     # two loose muons for hadronic DY region
     elif getattr(event, "N_LooseMuons") == 2:
         for iMu in range(getattr(event, "N_LooseMuons")):
-            idsf     = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "sf")
-            idsfErr_up  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systup")
-            idsfErr_down  = data[dataEra]["muIDT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systdown")
+            idsf     = data[dataEra]["muIDL"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "sf")
+            idsfErr_up  = data[dataEra]["muIDL"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systup")
+            idsfErr_down  = data[dataEra]["muIDL"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systdown")
 
-            isosf    = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "sf")
-            isosfErr_up = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systup")
-            isosfErr_down = data[dataEra]["muISOT"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systdown")
+            isosf    = data[dataEra]["muISOL"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "sf")
+            isosfErr_up = data[dataEra]["muISOL"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systup")
+            isosfErr_down = data[dataEra]["muISOL"].evaluate(mudataEra[dataEra], abs(event.LooseMuon_Eta[iMu]), min(119., event.LooseMuon_Pt[iMu]), "systdown")
 
             muIDSF       *= idsf
             muIsoSF      *= isosf
@@ -396,9 +396,9 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
             pt = getattr(event, "TightPhoton_Pt")[iPho]
         else:
             pt = 499.
-        sf = data[dataEra]["photon"].evaluate(dataEra,"sf","Tight", getattr(event, "TightPhoton_Eta")[iPho], pt)
-        sf_up = data[dataEra]["photon"].evaluate(dataEra,"sfup","Tight", getattr(event, "TightPhoton_Eta")[iPho], pt)
-        sf_down = data[dataEra]["photon"].evaluate(dataEra,"sfdown","Tight", getattr(event, "TightPhoton_Eta")[iPho], pt)
+        sf = data[dataEra]["photon"].evaluate(dataEra,"sf","Medium", getattr(event, "TightPhoton_Eta")[iPho], pt)
+        sf_up = data[dataEra]["photon"].evaluate(dataEra,"sfup","Medium", getattr(event, "TightPhoton_Eta")[iPho], pt)
+        sf_down = data[dataEra]["photon"].evaluate(dataEra,"sfdown","Medium", getattr(event, "TightPhoton_Eta")[iPho], pt)
 
         phoIDSF_tight        *= sf
         phoIDSF_tight_up     *= sf_up
