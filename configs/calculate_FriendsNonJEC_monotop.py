@@ -37,7 +37,7 @@ for mode in ["evj","eej", "vvj", "aj"]:
 
 
 from correctionlib import _core
-jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration", "POG")
+jsonDir = os.path.join("/nfs/dust/cms/user/mwassmer/MonoTop/NanoAOD/jsonpog-integration", "POG")
 
 muTrigNameTight = {
     "2016preVFP":   "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight",
@@ -188,6 +188,10 @@ def set_branches(wrapper, jec):
     wrapper.SetFloatVar("pdf_up_rel")
     wrapper.SetFloatVar("pdf_down")
     wrapper.SetFloatVar("pdf_down_rel")
+    wrapper.SetFloatVar("pdf_alphas_up")
+    wrapper.SetFloatVar("pdf_alphas_down")
+    wrapper.SetFloatVar("pdf_alphas_up_rel")
+    wrapper.SetFloatVar("pdf_alphas_down_rel")
 
     wrapper.SetFloatVar("Boson_Pt") 
     for mode in ["evj","eej", "vvj", "aj"]:
@@ -425,10 +429,16 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     # rate factors
     # apply them directly to the weights
     try:
-        wrapper.branchArrays["muRUpRel_wRF"  ][0] = getattr(event, "Weight_muRUp"  ) * genWeights.getRF("LHEScaleWeight_incl_1")
-        wrapper.branchArrays["muRDownRel_wRF"][0] = getattr(event, "Weight_muRDown") * genWeights.getRF("LHEScaleWeight_incl_5")
-        wrapper.branchArrays["muFUpRel_wRF"  ][0] = getattr(event, "Weight_muFUp"  ) * genWeights.getRF("LHEScaleWeight_incl_3")
-        wrapper.branchArrays["muFDownRel_wRF"][0] = getattr(event, "Weight_muFDown") * genWeights.getRF("LHEScaleWeight_incl_7")
+        if sample.startswith("TPhiTo2Chi") or sample.startswith("Vector_MonoTop"):
+            wrapper.branchArrays["muRUpRel_wRF"  ][0] = getattr(event, "Weight_muRUp"  ) / genWeights.getRF("LHEScaleWeight_incl_6")
+            wrapper.branchArrays["muRDownRel_wRF"][0] = getattr(event, "Weight_muRDown") / genWeights.getRF("LHEScaleWeight_incl_1")
+            wrapper.branchArrays["muFUpRel_wRF"  ][0] = getattr(event, "Weight_muFUp"  ) / genWeights.getRF("LHEScaleWeight_incl_4")
+            wrapper.branchArrays["muFDownRel_wRF"][0] = getattr(event, "Weight_muFDown") / genWeights.getRF("LHEScaleWeight_incl_3")
+        else:
+            wrapper.branchArrays["muRUpRel_wRF"  ][0] = getattr(event, "Weight_muRUp"  ) / genWeights.getRF("LHEScaleWeight_incl_7")
+            wrapper.branchArrays["muRDownRel_wRF"][0] = getattr(event, "Weight_muRDown") / genWeights.getRF("LHEScaleWeight_incl_1")
+            wrapper.branchArrays["muFUpRel_wRF"  ][0] = getattr(event, "Weight_muFUp"  ) / genWeights.getRF("LHEScaleWeight_incl_5")
+            wrapper.branchArrays["muFDownRel_wRF"][0] = getattr(event, "Weight_muFDown") / genWeights.getRF("LHEScaleWeight_incl_3")
     except: pass
     try:
         wrapper.branchArrays["muRUpRel"  ][0] = getattr(event, "Weight_muRUp"  ) 
@@ -437,10 +447,10 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
         wrapper.branchArrays["muFDownRel"][0] = getattr(event, "Weight_muFDown")
     except: pass
     try:
-        wrapper.branchArrays["isrUpRel_wRF"  ][0] = getattr(event, "Weight_isrUp"  ) * genWeights.getRF("PSWeight_incl_2")
-        wrapper.branchArrays["isrDownRel_wRF"][0] = getattr(event, "Weight_isrDown") * genWeights.getRF("PSWeight_incl_0")
-        wrapper.branchArrays["fsrUpRel_wRF"  ][0] = getattr(event, "Weight_fsrUp"  ) * genWeights.getRF("PSWeight_incl_3")
-        wrapper.branchArrays["fsrDownRel_wRF"][0] = getattr(event, "Weight_fsrDown") * genWeights.getRF("PSWeight_incl_1")
+        wrapper.branchArrays["isrUpRel_wRF"  ][0] = getattr(event, "Weight_isrUp"  ) / genWeights.getRF("PSWeight_incl_0")
+        wrapper.branchArrays["isrDownRel_wRF"][0] = getattr(event, "Weight_isrDown") / genWeights.getRF("PSWeight_incl_2")
+        wrapper.branchArrays["fsrUpRel_wRF"  ][0] = getattr(event, "Weight_fsrUp"  ) / genWeights.getRF("PSWeight_incl_1")
+        wrapper.branchArrays["fsrDownRel_wRF"][0] = getattr(event, "Weight_fsrDown") / genWeights.getRF("PSWeight_incl_3")
     except: pass
     try:
         wrapper.branchArrays["isrUpRel"  ][0] = getattr(event, "Weight_isrUp"  )
@@ -525,8 +535,18 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
 
     # simple pdf weight
     if event.nPDFWeight > 0:
-        nom_pdf = event.Weight_pdf[0]
-        residuals = np.array([nom_pdf - event.Weight_pdf[i+1] for i in range(len(event.Weight_pdf)-1)])
+        nom_pdf = event.Weight_pdf[0] if event.Weight_pdf[0] != 0. else 1.
+        residuals = None
+        alphas_down_pdf = event.Weight_pdf[0]
+        alphas_up_pdf = event.Weight_pdf[0]
+        # normal case i.e. [1]-[100] hessian pdf variations, [101] pdf alpha_s down, [102] pdf alpha_s up
+        if event.nPDFWeight == 103:
+            residuals = np.array([nom_pdf - event.Weight_pdf[i] for i in range(1, 101)])
+            alphas_down_pdf = event.Weight_pdf[101]
+            alphas_up_pdf = event.Weight_pdf[102]
+        # otherwise just combine all pdf weights
+        else:
+            residuals = np.array([nom_pdf - event.Weight_pdf[i] for i in range(1, event.nPDFWeight)])
         if sample.startswith("TTbb"):
             variation = (np.mean(residuals**2, axis = 0))**0.5
         else:
@@ -535,11 +555,17 @@ def calculate_variables(event, wrapper, sample, jec = None, dataEra = None, genW
     else:
         nom_pdf = 1.
         variation = 0.
+        alphas_down_pdf = 1.
+        alphas_up_pdf = 1.
     wrapper.branchArrays["pdf_nom"][0]       =  nom_pdf
     wrapper.branchArrays["pdf_up"][0]       =  nom_pdf+variation
     wrapper.branchArrays["pdf_up_rel"][0]   = (nom_pdf+variation)/nom_pdf
     wrapper.branchArrays["pdf_down"][0]     =  nom_pdf-variation
     wrapper.branchArrays["pdf_down_rel"][0] = (nom_pdf-variation)/nom_pdf
+    wrapper.branchArrays["pdf_alphas_up"][0] = alphas_up_pdf
+    wrapper.branchArrays["pdf_alphas_down"][0] = alphas_down_pdf
+    wrapper.branchArrays["pdf_alphas_up_rel"][0] = alphas_up_pdf/nom_pdf
+    wrapper.branchArrays["pdf_alphas_down_rel"][0] = alphas_down_pdf/nom_pdf
 
     return event
 
