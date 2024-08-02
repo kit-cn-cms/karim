@@ -17,7 +17,7 @@ error  = {dir}/{name}submitScript.$(Cluster)_$(ProcId).err
 log    = {dir}/{name}submitScript.$(Cluster)_$(ProcId).log
 output = {dir}/{name}submitScript.$(Cluster)_$(ProcId).out
 run_as_owner = true
-Requirements = ( OpSysAndVer == "CentOS7" )
+Requirements = ( OpSysAndVer == "RedHat9" )
 RequestMemory = {memory}
 RequestDisk = {disk}
 +RequestRuntime = {runtime}
@@ -133,7 +133,7 @@ def condorSubmit(submitPath):
         process.wait()
         output = process.communicate()
         try:
-            jobID = int(output[0].split(".")[0])
+            jobID = int(output[0].decode().split(".")[0])
         except:
             print("something went wrong with calling the condir_submit command, submission of jobs was not successful")
             print("DEBUG:")
@@ -168,7 +168,7 @@ def monitorJobStatus(jobIDs = None):
         qstat = a.communicate()[0]
 
         nrunning = 0
-        querylines = [line for line in qstat.split("\n") if "Total for query" in line] 
+        querylines = [line for line in qstat.decode().split("\n") if "Total for query" in line] 
 
         # check if query matches
         if len(querylines) == 0:

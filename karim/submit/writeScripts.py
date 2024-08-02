@@ -1,7 +1,7 @@
 import glob
 import os
 import ROOT
-from common import getEntries
+from karim.submit.common import getEntries
 
 scriptTemplate = """
 #!/bin/bash
