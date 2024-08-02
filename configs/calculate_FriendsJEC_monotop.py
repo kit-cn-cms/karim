@@ -16,8 +16,9 @@ karimpath = os.path.dirname(os.path.dirname(filepath))
 # dicts for btag scale factors and efficiencies
 btagSF = {}
 btagEff = {}
-# directory to always updated correctionlib corrections from jsonpog
-jsonDir = os.path.join("/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration", "POG")
+# local json pog repo to not destroy things everytime xpog decides to change correction formats/inputs
+# ssh://git@gitlab.cern.ch:7999/cms-nanoAOD/jsonpog-integration.git, commit 7545d0a999f77dfcd76691be7a0712d1f5e97632
+jsonDir = os.path.join("/nfs/dust/cms/user/mwassmer/MonoTop/NanoAOD/jsonpog-integration", "POG")
 
 # different btag efficiencies per process/sample, however similar processes are combined
 # MC -> all MC processes (backup)
