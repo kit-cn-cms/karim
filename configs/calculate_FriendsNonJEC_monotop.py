@@ -37,6 +37,8 @@ for mode in ["evj","eej", "vvj", "aj"]:
 
 
 from correctionlib import _core
+# local json pog repo to not destroy things everytime xpog decides to change correction formats/inputs
+# ssh://git@gitlab.cern.ch:7999/cms-nanoAOD/jsonpog-integration.git, commit 7545d0a999f77dfcd76691be7a0712d1f5e97632
 jsonDir = os.path.join("/nfs/dust/cms/user/mwassmer/MonoTop/NanoAOD/jsonpog-integration", "POG")
 
 muTrigNameTight = {
