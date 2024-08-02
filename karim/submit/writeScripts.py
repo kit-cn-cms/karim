@@ -1,17 +1,15 @@
 import glob
 import os
 import ROOT
-from common import getEntries
+from karim.submit.common import getEntries
 
 scriptTemplate = """
 #!/bin/bash
 export VO_CMS_SW_DIR=/cvmfs/cms.cern.ch
 source $VO_CMS_SW_DIR/cmsset_default.sh
-export SCRAM_ARCH=slc7_amd64_gcc700
 cd {cmssw}/src
 eval `scram runtime -sh`
 cd -
-source {basepath}/venv/bin/activate
 export KERAS_BACKEND=tensorflow
 """
 recoTemplate = """

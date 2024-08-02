@@ -1,2 +1,2 @@
-from writeScripts import writeScripts
-from checkFiles import checkFiles
+from karim.submit.writeScripts import writeScripts
+from karim.submit.checkFiles import checkFiles

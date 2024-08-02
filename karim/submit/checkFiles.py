@@ -2,7 +2,7 @@ import glob
 import os
 import ROOT
 
-from common import getEntries
+from karim.submit.common import getEntries
 
 def checkFiles(sample, mode, nameRequirement, shellPath, outPath):
     '''

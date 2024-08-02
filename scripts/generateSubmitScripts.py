@@ -144,7 +144,7 @@ shelldir = os.path.basename(shell_path)
 
 cmd = " ".join([
     "for f in *;",
-    "do python {basedir}/karim/submit/condorSubmit.py",
+    "do python3 {basedir}/karim/submit/condorSubmit.py",
     "-f $f -o ../submit_{name} -M 2000 -r 120 -n {mode}_$f;",
     "done"]).format(
         mode = "karim_"+opts.mode.lower(),
