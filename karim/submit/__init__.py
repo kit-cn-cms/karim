@@ -1,2 +1,2 @@
-from writeScripts import writeScripts
-from checkFiles import checkFiles
+from ..submit.writeScripts import writeScripts
+from ..submit.checkFiles import checkFiles

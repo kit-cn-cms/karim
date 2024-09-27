@@ -1,18 +1,22 @@
 import glob
 import os
 import ROOT
-from common import getEntries
-# source /nfs/dust/cms/user/jdriesch/test/venv_python38_gpu/bin/activate
+from ..submit.common import getEntries
+
 scriptTemplate = """
-#!/bin/bash
+#!/bin/zsh
+source /afs/desy.de/user/e/epfeffer/.zprofile
+echo "pwd is $PWD"
+echo "setting CMSSW base to /nfs/dust/cms/user/epfeffer/ttxdl/CMSSW_14_1_0_pre4"
+CMSSW_BASE=/nfs/dust/cms/user/epfeffer/ttxdl/CMSSW_14_1_0_pre4
+
+
 export VO_CMS_SW_DIR=/cvmfs/cms.cern.ch
 source $VO_CMS_SW_DIR/cmsset_default.sh
-export SCRAM_ARCH=slc7_amd64_gcc700
 cd {cmssw}/src
 eval `scram runtime -sh`
 cd -
 
-export KERAS_BACKEND=tensorflow
 
 """
 recoTemplate = """
@@ -51,7 +55,10 @@ def writeScripts(inputSample, scriptDir, options, basepath):
     scriptNameTemplate = "/".join([scriptDir, sampleName+"_{idx}.sh"])
 
     friendTrees = "--friend-trees {}".format(options.friendTrees) if not options.friendTrees is None else ""
-    pred_type = "--pred {}".format(options.pred_type) if not options.pred_type is None else ""
+    if options.pred_type == "NLP" or options.pred_type == "GLP":
+        pred_type = "--pred {}".format(options.pred_type) if not options.pred_type is None else ""
+    else:
+        pred_type = ''
     dataEra = "--year {}".format(options.dataEra) if not options.dataEra is None else ""
     splitFeature = "--split {}".format(options.split_feature) if not options.split_feature is None else ""
     # collect rootfiles until number of events per job is reached

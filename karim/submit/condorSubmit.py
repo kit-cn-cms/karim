@@ -9,19 +9,20 @@ import time
 import optparse
 import sys
 
+# run_as_owner = true and universe = vanilla removed (NAF admin hint)
 submitTemplateNAF = """
-universe = vanilla
 executable = /bin/zsh
 arguments = {arg}
 error  = {dir}/{name}submitScript.$(Cluster)_$(ProcId).err
 log    = {dir}/{name}submitScript.$(Cluster)_$(ProcId).log
 output = {dir}/{name}submitScript.$(Cluster)_$(ProcId).out
-run_as_owner = true
-Requirements = ( OpSysAndVer == "CentOS7" )
 RequestMemory = {memory}
 RequestDisk = {disk}
 +RequestRuntime = {runtime}
 JobBatchName = {batchname}
+RequestCpus = 1
+Request_OpSysAndVer = "RedHat9"
+getenv = True
 """
 
 submitTemplateETP = """
@@ -133,7 +134,7 @@ def condorSubmit(submitPath):
         process.wait()
         output = process.communicate()
         try:
-            jobID = int(output[0].split(".")[0])
+            jobID = int(output[0].decode('utf-8').split(".")[0])
         except:
             print("something went wrong with calling the condir_submit command, submission of jobs was not successful")
             print("DEBUG:")

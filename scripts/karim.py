@@ -48,8 +48,8 @@ matchOptions.add_option("--signal-only", dest = "signal_only", default = False, 
 parser.add_option_group(matchOptions)
 
 calcOptions = optparse.OptionGroup(parser, "Calculation options")
-calcOptions.add_option("-p", "--pred", dest="pred_type", default = "NLP", choices = ["NLP", "GLP"],
-    help = "Need to definie weather its NLP or GLP. Default is GLP.")
+calcOptions.add_option("-p", "--pred", dest="pred_type", default = None,
+    help = "Need to definie weather its NLP or GLP. Default is None.")
 calcOptions.add_option("--split", dest="split_feature", default = None,
     help = "define variable upon which to split events and corresponding event vectors."
             "e.g. 'N_Jets' creates a single ntuple entry for each jet in each event")
@@ -150,6 +150,7 @@ for ntuple in args:
             outpath     = "/".join([outfilePath, outfileName])
             )
     elif opts.mode == "Calculation":
+        print("doing Calculation mode. ")
         karim.calculate_variables(
             filename        = ntuple,
             configpath      = os.path.abspath(opts.config_path),

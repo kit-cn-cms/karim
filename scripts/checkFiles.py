@@ -71,7 +71,7 @@ if totalBroken == 0:
 
 cmd = " ".join([
     "for f in resubmit*.txt;",
-    "do python {basedir}/karim/submit/condorSubmit.py",
+    "do python3 {basedir}/karim/submit/condorSubmit.py",
     "--file $f -o ../resubmit -M 2000 -r 120 -n $f;",
     "done"]).format(basedir = base)
 
