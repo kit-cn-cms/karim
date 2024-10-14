@@ -1,0 +1,34 @@
+000 (5046135.006.000) 2024-10-14 12:46:27 Job submitted from host: <131.169.223.41:9618?addrs=131.169.223.41-9618+[2001-638-700-10df--1-29]-9618&alias=bird-htc-sched21.desy.de&noUDP&sock=schedd_3603117_2564>
+...
+001 (5046135.006.000) 2024-10-14 12:46:35 Job executing on host: <131.169.160.113:40287?addrs=131.169.160.113-40287+[2001-638-700-10a0--1-71]-40287&alias=batch1074.desy.de>
+	SlotName: slot2_44@batch1074.desy.de
+	CondorScratchDir = "/var/lib/condor/execute/dir_476908"
+	Cpus = 1
+	Disk = 2049520
+	GPUs = 0
+	Memory = 2048
+...
+006 (5046135.006.000) 2024-10-14 12:46:43 Image size of job updated: 216304
+	58  -  MemoryUsage of job (MB)
+	58372  -  ResidentSetSize of job (KB)
+...
+005 (5046135.006.000) 2024-10-14 12:46:43 Job terminated.
+	(1) Normal termination (return value 1)
+		Usr 0 00:00:03, Sys 0 00:00:02  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:00:03, Sys 0 00:00:02  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	0  -  Run Bytes Sent By Job
+	0  -  Run Bytes Received By Job
+	0  -  Total Bytes Sent By Job
+	0  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :        0        1         1 
+	   Disk (KB)            :     1000  2048000   2049520 
+	   GPUs                 :                           0 
+	   Memory (MB)          :       58     2048      2048 
+	   TimeExecute (s)      :        8                    
+	   TimeSlotBusy (s)     :        8                    
+
+	Job terminated of its own accord at 2024-10-14T10:46:43Z with exit-code 1.
+...

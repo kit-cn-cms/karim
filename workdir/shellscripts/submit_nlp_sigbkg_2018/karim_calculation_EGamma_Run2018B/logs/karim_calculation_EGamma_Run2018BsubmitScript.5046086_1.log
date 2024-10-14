@@ -1,0 +1,59 @@
+000 (5046086.001.000) 2024-10-14 12:45:47 Job submitted from host: <131.169.223.41:9618?addrs=131.169.223.41-9618+[2001-638-700-10df--1-29]-9618&alias=bird-htc-sched21.desy.de&noUDP&sock=schedd_3603117_2564>
+...
+022 (5046086.001.000) 2024-10-14 12:46:18 Job disconnected, attempting to reconnect
+    Socket between submit and execute hosts closed unexpectedly
+    Trying to reconnect to slot2_29@batch1380.desy.de <131.169.164.80:45963?addrs=131.169.164.80-45963+[2001-638-700-10a0--1-450]-45963&alias=batch1380.desy.de>
+...
+024 (5046086.001.000) 2024-10-14 12:46:18 Job reconnection failed
+    Job not found at execution machine
+    Can not reconnect to slot2_29@batch1380.desy.de, rescheduling job
+...
+004 (5046086.001.000) 2024-10-14 12:46:18 Job was evicted.
+	(0) CPU times
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+	0  -  Run Bytes Sent By Job
+	0  -  Run Bytes Received By Job
+	Job not found at execution machine
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :                 1         1 
+	   Disk (KB)            :     1000  2048000   2049529 
+	   GPUs                 :                           0 
+	   Memory (MB)          :              2048      2048 
+...
+001 (5046086.001.000) 2024-10-14 12:46:33 Job executing on host: <131.169.162.127:45081?addrs=131.169.162.127-45081+[2001-638-700-10a0--1-27f]-45081&alias=batch1565.desy.de>
+	SlotName: slot2_18@batch1565.desy.de
+	CondorScratchDir = "/var/lib/condor/execute/dir_2646250"
+	Cpus = 1
+	Disk = 2050634
+	GPUs = 0
+	Memory = 2048
+...
+006 (5046086.001.000) 2024-10-14 12:46:41 Image size of job updated: 247452
+	236  -  MemoryUsage of job (MB)
+	241236  -  ResidentSetSize of job (KB)
+...
+006 (5046086.001.000) 2024-10-14 12:46:41 Image size of job updated: 247452
+	236  -  MemoryUsage of job (MB)
+	241240  -  ResidentSetSize of job (KB)
+...
+005 (5046086.001.000) 2024-10-14 12:46:41 Job terminated.
+	(1) Normal termination (return value 1)
+		Usr 0 00:00:02, Sys 0 00:00:01  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:00:02, Sys 0 00:00:01  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	0  -  Run Bytes Sent By Job
+	0  -  Run Bytes Received By Job
+	0  -  Total Bytes Sent By Job
+	0  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :        0        1         1 
+	   Disk (KB)            :     1000  2048000   2050634 
+	   GPUs                 :                           0 
+	   Memory (MB)          :      236     2048      2048 
+	   TimeExecute (s)      :        8                    
+	   TimeSlotBusy (s)     :        9                    
+
+	Job terminated of its own accord at 2024-10-14T10:46:41Z with exit-code 1.
+...

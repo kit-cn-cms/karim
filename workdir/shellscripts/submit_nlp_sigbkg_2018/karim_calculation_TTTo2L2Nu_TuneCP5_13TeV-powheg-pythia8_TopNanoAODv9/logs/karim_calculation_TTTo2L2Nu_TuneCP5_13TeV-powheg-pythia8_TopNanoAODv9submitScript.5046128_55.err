@@ -1,0 +1,43 @@
+Traceback (most recent call last):
+  File "/afs/desy.de/user/r/rrafeek/.local/lib/python3.9/site-packages/pyarrow/__init__.py", line 40, in <module>
+    from ._generated_version import version as __version__
+  File "/cvmfs/cms.cern.ch/el9_amd64_gcc12/lcg/root/6.30.07-8b1a11e1ef0e074fdfd44e162b27e71c/lib/ROOT/_facade.py", line 154, in _importhook
+    return _orig_ihook(name, *args, **kwds)
+ModuleNotFoundError: No module named 'pyarrow._generated_version'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/nfs/dust/cms/user/rrafeek/CMSSW_14_1_0_pre4/src/karim/scripts/karim.py", line 7, in <module>
+    import karim
+  File "/nfs/dust/cms/user/rrafeek/CMSSW_14_1_0_pre4/src/karim/karim/__init__.py", line 5, in <module>
+    from karim.reconstruct import evaluate_reconstruction
+  File "/cvmfs/cms.cern.ch/el9_amd64_gcc12/lcg/root/6.30.07-8b1a11e1ef0e074fdfd44e162b27e71c/lib/ROOT/_facade.py", line 154, in _importhook
+    return _orig_ihook(name, *args, **kwds)
+  File "/nfs/dust/cms/user/rrafeek/CMSSW_14_1_0_pre4/src/karim/karim/reconstruct.py", line 6, in <module>
+    import pandas as pd
+  File "/cvmfs/cms.cern.ch/el9_amd64_gcc12/lcg/root/6.30.07-8b1a11e1ef0e074fdfd44e162b27e71c/lib/ROOT/_facade.py", line 154, in _importhook
+    return _orig_ihook(name, *args, **kwds)
+  File "/cvmfs/cms.cern.ch/el9_amd64_gcc12/external/py3-pandas/2.0.1-7e0980e2f417a1fc2106b953723ea098/lib/python3.9/site-packages/pandas/__init__.py", line 22, in <module>
+    from pandas.compat import is_numpy_dev as _is_numpy_dev  # pyright: ignore # noqa:F401
+  File "/cvmfs/cms.cern.ch/el9_amd64_gcc12/lcg/root/6.30.07-8b1a11e1ef0e074fdfd44e162b27e71c/lib/ROOT/_facade.py", line 154, in _importhook
+    return _orig_ihook(name, *args, **kwds)
+  File "/cvmfs/cms.cern.ch/el9_amd64_gcc12/external/py3-pandas/2.0.1-7e0980e2f417a1fc2106b953723ea098/lib/python3.9/site-packages/pandas/compat/__init__.py", line 29, in <module>
+    from pandas.compat.pyarrow import (
+  File "/cvmfs/cms.cern.ch/el9_amd64_gcc12/lcg/root/6.30.07-8b1a11e1ef0e074fdfd44e162b27e71c/lib/ROOT/_facade.py", line 154, in _importhook
+    return _orig_ihook(name, *args, **kwds)
+  File "/cvmfs/cms.cern.ch/el9_amd64_gcc12/external/py3-pandas/2.0.1-7e0980e2f417a1fc2106b953723ea098/lib/python3.9/site-packages/pandas/compat/pyarrow.py", line 8, in <module>
+    import pyarrow as pa
+  File "/cvmfs/cms.cern.ch/el9_amd64_gcc12/lcg/root/6.30.07-8b1a11e1ef0e074fdfd44e162b27e71c/lib/ROOT/_facade.py", line 154, in _importhook
+    return _orig_ihook(name, *args, **kwds)
+  File "/afs/desy.de/user/r/rrafeek/.local/lib/python3.9/site-packages/pyarrow/__init__.py", line 56, in <module>
+    __version__ = setuptools_scm.get_version('../',
+  File "/cvmfs/cms.cern.ch/el9_amd64_gcc12/external/py3-setuptools-scm/8.0.4-9235091bf20bc3bd52eafe6e271f1376/lib/python3.9/site-packages/setuptools_scm/_get_version_impl.py", line 158, in get_version
+    _version_missing(config)
+  File "/cvmfs/cms.cern.ch/el9_amd64_gcc12/external/py3-setuptools-scm/8.0.4-9235091bf20bc3bd52eafe6e271f1376/lib/python3.9/site-packages/setuptools_scm/_get_version_impl.py", line 112, in _version_missing
+    raise LookupError(
+LookupError: setuptools-scm was unable to detect version for /nfs/dust/cms/user/rrafeek/CMSSW_14_1_0_pre4/src/karim/workdir/shellscripts.
+
+Make sure you're either building from a fully intact git repository or PyPI tarballs. Most other sources (such as GitHub's tarballs, a git checkout without the .git folder) don't contain the necessary metadata and will not work.
+
+For example, if you're using pip, instead of https://github.com/user/proj/archive/master.zip use git+https://github.com/user/proj.git#egg=proj

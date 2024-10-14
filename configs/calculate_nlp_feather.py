@@ -64,38 +64,41 @@ def set_branches(wrapper, jec):
     '''
     initialize branches of output root file
     '''
+    suffix = "_{}".format(jec)
+    if jec is None:
+        suffix = "_nominal"
     wrapper.SetIntVar("event")   
     wrapper.SetIntVar("run")   
     wrapper.SetIntVar("lumi") 
     
-    wrapper.SetFloatVar(f"nlp_first_{jec}")
-    wrapper.SetFloatVar(f"nlp_first_idx_{jec}")
-    wrapper.SetFloatVar(f"nlp_first_Pt_{jec}")
-    wrapper.SetFloatVar(f"nlp_first_Eta_{jec}")
-    wrapper.SetFloatVar(f"nlp_first_Phi_{jec}")
-    wrapper.SetFloatVar(f"nlp_first_M_{jec}")
-    wrapper.SetFloatVar(f"nlp_first_E_{jec}")
-    wrapper.SetFloatVar(f"nlp_first_CvL_{jec}")
-    wrapper.SetFloatVar(f"nlp_first_CvB_{jec}")
-    wrapper.SetFloatVar(f"nlp_second_{jec}")
-    wrapper.SetFloatVar(f"nlp_second_idx_{jec}")
-    wrapper.SetFloatVar(f"nlp_second_Pt_{jec}")
-    wrapper.SetFloatVar(f"nlp_second_Eta_{jec}")
-    wrapper.SetFloatVar(f"nlp_second_Phi_{jec}")
-    wrapper.SetFloatVar(f"nlp_second_M_{jec}")
-    wrapper.SetFloatVar(f"nlp_second_E_{jec}")
-    wrapper.SetFloatVar(f"nlp_second_CvL_{jec}")
-    wrapper.SetFloatVar(f"nlp_second_CvB_{jec}")
-    wrapper.SetFloatVar(f"nlp_top_dR_{jec}")
-    wrapper.SetFloatVar(f"nlp_top_minv_{jec}")
-    wrapper.SetFloatVar(f"nlp_top_dPhi_{jec}")
-    wrapper.SetFloatVar(f"nlp_top_dEta_{jec}")
-    wrapper.SetFloatVar(f"nlp_top_pt_{jec}")
-    wrapper.SetFloatVar(f"nlp_top_mt_{jec}")
-    wrapper.SetFloatVar(f"nlp_average_{jec}")
+    wrapper.SetFloatVar(f"nlp_first{suffix}")
+    wrapper.SetFloatVar(f"nlp_first_idx{suffix}")
+    wrapper.SetFloatVar(f"nlp_first_Pt{suffix}")
+    wrapper.SetFloatVar(f"nlp_first_Eta{suffix}")
+    wrapper.SetFloatVar(f"nlp_first_Phi{suffix}")
+    wrapper.SetFloatVar(f"nlp_first_M{suffix}")
+    wrapper.SetFloatVar(f"nlp_first_E{suffix}")
+    wrapper.SetFloatVar(f"nlp_first_CvL{suffix}")
+    wrapper.SetFloatVar(f"nlp_first_CvB{suffix}")
+    wrapper.SetFloatVar(f"nlp_second{suffix}")
+    wrapper.SetFloatVar(f"nlp_second_idx{suffix}")
+    wrapper.SetFloatVar(f"nlp_second_Pt{suffix}")
+    wrapper.SetFloatVar(f"nlp_second_Eta{suffix}")
+    wrapper.SetFloatVar(f"nlp_second_Phi{suffix}")
+    wrapper.SetFloatVar(f"nlp_second_M{suffix}")
+    wrapper.SetFloatVar(f"nlp_second_E{suffix}")
+    wrapper.SetFloatVar(f"nlp_second_CvL{suffix}")
+    wrapper.SetFloatVar(f"nlp_second_CvB{suffix}")
+    wrapper.SetFloatVar(f"nlp_top_dR{suffix}")
+    wrapper.SetFloatVar(f"nlp_top_minv{suffix}")
+    wrapper.SetFloatVar(f"nlp_top_dPhi{suffix}")
+    wrapper.SetFloatVar(f"nlp_top_dEta{suffix}")
+    wrapper.SetFloatVar(f"nlp_top_pt{suffix}")
+    wrapper.SetFloatVar(f"nlp_top_mt{suffix}")
+    wrapper.SetFloatVar(f"nlp_average{suffix}")
     
-    wrapper.SetIntVar(f"nJets_{jec}") 
-    wrapper.SetFloatVarArray(f"eval_jets_{jec}", f"nJets_{jec}")
+    wrapper.SetIntVar(f"nJets{suffix}") 
+    wrapper.SetFloatVarArray(f"eval_jets{suffix}", f"nJets{suffix}")
 
 
 def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights = None, nodes=None, graph=None, edge=None):
@@ -139,16 +142,16 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     wrapper.branchArrays["run"][0]   = run
     wrapper.branchArrays["lumi"][0]  = lumi
 
-    nlp_top2 = nodes[nodes["node_type"]==0].nlargest(2, f"p_{jec}")
+    nlp_top2 = nodes[nodes["node_type"]==0].nlargest(2, f"p{suffix}")
     if len(nodes)-2>0:
-        nJets = len(nodes)-2 #1 lep node and 1 MET node, all other jets. But does unknown also a node?? 
+        nJets = len(nodes)-2
     # print(nlp_top2)
 
     # jet_edge = edge.loc[edge["edge_node_index1"].isin(nodes.loc[nodes["node_type"]<1].index) & edge["edge_node_index2"].isin(nodes.loc[nodes["node_type"]<1].index)]
 
 
     try:
-        nlp_first = nlp_top2[f"p_{jec}"].values[0]
+        nlp_first = nlp_top2[f"p{suffix}"].values[0]
         nlp_first_idx = nlp_top2["node_mult"].values[0]
         nlp_first_Pt = nlp_top2["Pt"].values[0]
         nlp_first_Eta = nlp_top2["Eta"].values[0]
@@ -157,7 +160,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         nlp_first_E = nlp_top2["E"].values[0]
         nlp_first_CvL = nlp_top2["CvL"].values[0]
         nlp_first_CvB = nlp_top2["CvB"].values[0]
-        nlp_second = nlp_top2[f"p_{jec}"].values[1]
+        nlp_second = nlp_top2[f"p{suffix}"].values[1]
         nlp_second_idx = nlp_top2["node_mult"].values[1]
         nlp_second_Pt = nlp_top2["Pt"].values[1]
         nlp_second_Eta = nlp_top2["Eta"].values[1]
@@ -190,7 +193,7 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
         # print((p4vec(pt1, eta1, phi1, mass1, pt2, eta2, phi2, mass2)).M())
         # minv_2 = _Minv(pt1, eta1, phi1, mass1, energy1, pt2, eta2, phi2, mass2, energy2)
 
-        nlp_average = nodes[nodes["node_type"]==0][f"p_{jec}"].mean()
+        nlp_average = nodes[nodes["node_type"]==0][f"p{suffix}"].mean()
     except IndexError:
         pass
     # try:
@@ -198,38 +201,38 @@ def calculate_variables(event, wrapper, sample, jec, dataEra = None, genWeights 
     #     minv = float(jet_edge.loc[jet_edge["dR"]==jet_edge["dR"].min()]["minv"].values[0])
     # except IndexError:
     #     pass
-    wrapper.branchArrays[f"nlp_first_{jec}"][0] = nlp_first
-    wrapper.branchArrays[f"nlp_first_idx_{jec}"][0] = nlp_first_idx
-    wrapper.branchArrays[f"nlp_first_Pt_{jec}"][0] = nlp_first_Pt
-    wrapper.branchArrays[f"nlp_first_Eta_{jec}"][0] = nlp_first_Eta
-    wrapper.branchArrays[f"nlp_first_Phi_{jec}"][0] = nlp_first_Phi
-    wrapper.branchArrays[f"nlp_first_M_{jec}"][0] = nlp_first_M
-    wrapper.branchArrays[f"nlp_first_E_{jec}"][0] = nlp_first_E
-    wrapper.branchArrays[f"nlp_first_CvL_{jec}"][0] = nlp_first_CvL
-    wrapper.branchArrays[f"nlp_first_CvB_{jec}"][0] = nlp_first_CvB
-    wrapper.branchArrays[f"nlp_second_{jec}"][0] = nlp_second
-    wrapper.branchArrays[f"nlp_second_idx_{jec}"][0] = nlp_second_idx
-    wrapper.branchArrays[f"nlp_second_Pt_{jec}"][0] = nlp_second_Pt
-    wrapper.branchArrays[f"nlp_second_Eta_{jec}"][0] = nlp_second_Eta
-    wrapper.branchArrays[f"nlp_second_Phi_{jec}"][0] = nlp_second_Phi
-    wrapper.branchArrays[f"nlp_second_M_{jec}"][0] = nlp_second_M
-    wrapper.branchArrays[f"nlp_second_E_{jec}"][0] = nlp_second_E
-    wrapper.branchArrays[f"nlp_second_CvL_{jec}"][0] = nlp_second_CvL
-    wrapper.branchArrays[f"nlp_second_CvB_{jec}"][0] = nlp_second_CvB
-    wrapper.branchArrays[f"nlp_top_dR_{jec}"][0] = dR
-    wrapper.branchArrays[f"nlp_top_dEta_{jec}"][0] = dEta
-    wrapper.branchArrays[f"nlp_top_dPhi_{jec}"][0] = dPhi
-    wrapper.branchArrays[f"nlp_top_minv_{jec}"][0] = minv
+    wrapper.branchArrays[f"nlp_first{suffix}"][0] = nlp_first
+    wrapper.branchArrays[f"nlp_first_idx{suffix}"][0] = nlp_first_idx
+    wrapper.branchArrays[f"nlp_first_Pt{suffix}"][0] = nlp_first_Pt
+    wrapper.branchArrays[f"nlp_first_Eta{suffix}"][0] = nlp_first_Eta
+    wrapper.branchArrays[f"nlp_first_Phi{suffix}"][0] = nlp_first_Phi
+    wrapper.branchArrays[f"nlp_first_M{suffix}"][0] = nlp_first_M
+    wrapper.branchArrays[f"nlp_first_E{suffix}"][0] = nlp_first_E
+    wrapper.branchArrays[f"nlp_first_CvL{suffix}"][0] = nlp_first_CvL
+    wrapper.branchArrays[f"nlp_first_CvB{suffix}"][0] = nlp_first_CvB
+    wrapper.branchArrays[f"nlp_second{suffix}"][0] = nlp_second
+    wrapper.branchArrays[f"nlp_second_idx{suffix}"][0] = nlp_second_idx
+    wrapper.branchArrays[f"nlp_second_Pt{suffix}"][0] = nlp_second_Pt
+    wrapper.branchArrays[f"nlp_second_Eta{suffix}"][0] = nlp_second_Eta
+    wrapper.branchArrays[f"nlp_second_Phi{suffix}"][0] = nlp_second_Phi
+    wrapper.branchArrays[f"nlp_second_M{suffix}"][0] = nlp_second_M
+    wrapper.branchArrays[f"nlp_second_E{suffix}"][0] = nlp_second_E
+    wrapper.branchArrays[f"nlp_second_CvL{suffix}"][0] = nlp_second_CvL
+    wrapper.branchArrays[f"nlp_second_CvB{suffix}"][0] = nlp_second_CvB
+    wrapper.branchArrays[f"nlp_top_dR{suffix}"][0] = dR
+    wrapper.branchArrays[f"nlp_top_dEta{suffix}"][0] = dEta
+    wrapper.branchArrays[f"nlp_top_dPhi{suffix}"][0] = dPhi
+    wrapper.branchArrays[f"nlp_top_minv{suffix}"][0] = minv
     # wrapper.branchArrays["nlp_top_dR"][0] = dPhi
     # wrapper.branchArrays["nlp_top_minv"][0] = dEta
     # wrapper.branchArrays["nlp_top_dPhi"][0] = dR
     # wrapper.branchArrays["nlp_top_dEta"][0] = minv
-    wrapper.branchArrays[f"nlp_top_pt_{jec}"][0] = pt
-    wrapper.branchArrays[f"nlp_top_mt_{jec}"][0] = mt
-    wrapper.branchArrays[f"nlp_average_{jec}"][0] = nlp_average
-    wrapper.branchArrays[f"nJets_{jec}"][0] = nJets
-    if len(nodes)-2>0: #here also, len(nodes)-3 changed to 2.
+    wrapper.branchArrays[f"nlp_top_pt{suffix}"][0] = pt
+    wrapper.branchArrays[f"nlp_top_mt{suffix}"][0] = mt
+    wrapper.branchArrays[f"nlp_average{suffix}"][0] = nlp_average
+    wrapper.branchArrays[f"nJets{suffix}"][0] = nJets
+    if len(nodes)-2>0:
         for idx in range(nJets):
-            wrapper.branchArrays[f"eval_jets_{jec}"][idx] = float(nodes[nodes["node_type"]==0][f"p_{jec}"].values[idx])
+            wrapper.branchArrays[f"eval_jets{suffix}"][idx] = float(nodes[nodes["node_type"]==0][f"p{suffix}"].values[idx])
     
     return event

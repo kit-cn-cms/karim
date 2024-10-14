@@ -1,0 +1,19 @@
+
+executable = /bin/zsh
+arguments = /nfs/dust/cms/user/rrafeek/CMSSW_14_1_0_pre4/src/karim/workdir/shellscripts/submit_nlp_sigbkg_2018/karim_calculation_DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV-madgraphMLM-pythia8/karim_calculation_DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV-madgraphMLM-pythia8_arraySubmit.sh
+error  = /nfs/dust/cms/user/rrafeek/CMSSW_14_1_0_pre4/src/karim/workdir/shellscripts/submit_nlp_sigbkg_2018/karim_calculation_DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV-madgraphMLM-pythia8/logs/karim_calculation_DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV-madgraphMLM-pythia8submitScript.$(Cluster)_$(ProcId).err
+log    = /nfs/dust/cms/user/rrafeek/CMSSW_14_1_0_pre4/src/karim/workdir/shellscripts/submit_nlp_sigbkg_2018/karim_calculation_DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV-madgraphMLM-pythia8/logs/karim_calculation_DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV-madgraphMLM-pythia8submitScript.$(Cluster)_$(ProcId).log
+output = /nfs/dust/cms/user/rrafeek/CMSSW_14_1_0_pre4/src/karim/workdir/shellscripts/submit_nlp_sigbkg_2018/karim_calculation_DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV-madgraphMLM-pythia8/logs/karim_calculation_DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV-madgraphMLM-pythia8submitScript.$(Cluster)_$(ProcId).out
+RequestMemory = 2000
+RequestDisk = 2000000
++RequestRuntime = 10200
+JobBatchName = karim_calculation_DYJetsToLL_M-50_HT-600to800_TuneCP5_PSweights_13TeV-madgraphMLM-pythia8
+RequestCpus = 1
+Request_OpSysAndVer = "RedHat9"
+getenv = True
+
+Queue Environment From (
+"SGE_TASK_ID=1"
+"SGE_TASK_ID=2"
+"SGE_TASK_ID=3"
+)
