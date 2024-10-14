@@ -53,8 +53,8 @@ def calculate_variables(filename, configpath, friendTrees, outpath, pred_type=No
                     # preds_dir_glp = featherdir + "ntuples_v18_jec_eval_glp_ge3_1718_redefined_featurevariation_v3_v1/" + era #this is the main thing
                     # preds_dir_glp = featherdir + "ntuples_v18_jec_eval_glp_ge3_1718_redefined_twofold_v3_v1/" + era
                     # preds_dir_glp = featherdir + "ntuples_v18_jec_eval_glp_ge3_even_1718_redefined_v3_noCvBL_v1/" + era
-                    preds_dir_glp = featherdir + "prediction_results/nlp_out_v1r13/" + era
-                    preds_dir_nlp = featherdir + "prediction_results/glp_out_v1r7/" + era
+                    preds_dir_nlp = featherdir + "prediction_results/nlp_out_v1r13/" + era
+                    preds_dir_glp = featherdir + "prediction_results/glp_out_v1r7/" + era
 
                     if "addSamples" in filename:
                         dir = featherdir + "ntuples_v27_addSamples/" + era
